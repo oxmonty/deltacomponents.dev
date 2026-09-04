@@ -93,9 +93,12 @@ export function DocHeader({
           {arrow(next, "next")}
         </div>
       </div>
-      <p className="text-prose text-muted-foreground text-pretty md:max-w-[80%]">
-        {description}
-      </p>
+      {/* Full column width, not a percentage of it. shadcn caps its
+          description at 80%, but its reading column is wider than this one —
+          at 632px that cap cuts the line to ~50 characters, short of the
+          comfortable 45-75 measure, and adds a line. Full width lands at ~63.
+          Nothing collides: the arrows sit in the row above, not beside this. */}
+      <p className="text-prose text-muted-foreground text-pretty">{description}</p>
       {children}
     </div>
   );
