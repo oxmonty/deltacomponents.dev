@@ -53,12 +53,12 @@ Add an item to the `items` array:
 
 ### 3. Generated Registry JSON (`public/r/<component-name>.json`)
 
-Run the registry build script (`npm run registry:build`) to generate the JSON file. It must contain:
+Run the registry build script (`make registry`) to generate the JSON file. It must contain:
 - `$schema: "https://ui.shadcn.com/schema/registry-item.json"`
 - Full source code embedded in `files[].content`
 - All metadata matching `registry.json`
 
-> **Rebuild on every source edit, not just new components.** The JSONs in `public/r/` embed a *copy* of the source, so editing any registry file — a component **or** a shared lib like `lib/font-weight.ts` — leaves the published registry stale until you re-run `npm run registry:build`. Editing a shared lib only regenerates that lib's JSON (e.g. `font-weight.json`); consumers reference it by `registryDependencies`, so they don't need rebuilding, but the lib does. Commit the regenerated JSONs alongside the source, and rebuild before any `vercel --prod` deploy.
+> **Rebuild on every source edit, not just new components.** The JSONs in `public/r/` embed a *copy* of the source, so editing any registry file — a component **or** a shared lib like `lib/font-weight.ts` — leaves the published registry stale until you re-run `make registry`. Editing a shared lib only regenerates that lib's JSON (e.g. `font-weight.json`); consumers reference it by `registryDependencies`, so they don't need rebuilding, but the lib does. Commit the regenerated JSONs alongside the source, and rebuild before any `vercel --prod` deploy.
 
 ### 4. Component List Entry (`lib/docs/components.ts`)
 

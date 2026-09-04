@@ -10,11 +10,11 @@ framer-motion.
 ## Getting started
 
 ```bash
-npm install
-npm run dev
+bun install
+make dev
 ```
 
-The site runs at http://localhost:3000.
+The site runs at http://localhost:3000. `make` on its own lists every target.
 
 | Route | What's there |
 | --- | --- |
@@ -41,7 +41,7 @@ animations need the Inter variable font, which ships in `public/fonts`.
    the sidebar, the showcase grid, and prev/next navigation.
 4. Add a preview to `app/components/bento-previews.tsx` under the same slug.
 5. Write the doc page at `app/docs/<slug>/page.tsx`.
-6. `npm run registry:build` to regenerate `public/r`, and commit the output.
+6. `make registry` to regenerate `public/r`, and commit the output.
 
 See `component-documentation-guidelines.md` for the doc page structure and
 `motion-guidelines.md` for the spring and animation rules.
@@ -68,13 +68,18 @@ through `IconProvider`.
 
 ## Scripts
 
-| Script | Does |
+Run these through `make`, or with `bun run <script>` directly.
+
+| Target | Does |
 | --- | --- |
-| `npm run dev` | Next.js dev server (Turbopack) |
-| `npm run build` | Production build |
-| `npm run lint` | ESLint |
-| `npm test` | Vitest |
-| `npm run registry:build` | Regenerate `public/r` from `registry.json` |
+| `make dev` | Next.js dev server (Turbopack) |
+| `make build` | Production build |
+| `make start` | Build, then serve the production build |
+| `make lint` | ESLint |
+| `make typecheck` | `tsc --noEmit` |
+| `make test` | Vitest |
+| `make check` | Everything CI runs: lint, typecheck, test |
+| `make registry` | Regenerate `public/r` from `registry.json` |
 
 ## Credits
 
