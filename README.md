@@ -14,7 +14,7 @@ bun install
 make dev
 ```
 
-The site runs at http://localhost:3000. `make` on its own lists every target.
+The site runs at http://localhost:4001. `make` on its own lists every target.
 
 | Route | What's there |
 | --- | --- |
