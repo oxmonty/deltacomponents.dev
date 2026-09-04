@@ -1,0 +1,169 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "scroll-area",
+  "title": "Scroll Area",
+  "description": "Scroll container with a restyled overlay scrollbar that stays discoverable on hover and follows the shape system. Falls back to native overflow scrolling on touch-primary devices. Base UI flavor; adapted from Lina (https://lina.sameer.sh).",
+  "dependencies": [
+    "@base-ui/react"
+  ],
+  "registryDependencies": [
+    "utils",
+    "shape-context",
+    "use-touch-primary",
+    "tokens"
+  ],
+  "files": [
+    {
+      "path": "registry/base/scroll-area.tsx",
+      "content": "\"use client\";\n\n// Scroll area built on Base UI — shape-system scrollbar, native overflow\n// fallback on touch-primary devices. Scrollbar\n// machinery adapted from Lina by SameerJS6 (https://lina.sameer.sh); built on\n// @base-ui/react/scroll-area, whose scrollbars stay mounted while scrollable\n// and expose hover/scroll state as data attributes instead of Radix's\n// show/hide presence animation.\n\nimport {\n  createContext,\n  forwardRef,\n  useContext,\n  type ComponentPropsWithoutRef,\n  type ComponentRef,\n} from \"react\";\nimport { ScrollArea as ScrollAreaPrimitive } from \"@base-ui/react/scroll-area\";\nimport { cn } from \"@/lib/utils\";\nimport { useShape } from \"@/lib/shape-context\";\nimport { useTouchPrimary } from \"@/hooks/use-touch-primary\";\n\n// On touch-primary devices the Base UI machinery is skipped entirely in\n// favour of native overflow scrolling (better physics, momentum,\n// rubber-banding); the context lets the exported ScrollBar no-op there.\nconst ScrollAreaContext = createContext<boolean>(false);\n\ntype Orientation = \"vertical\" | \"horizontal\" | \"both\";\n\ninterface ScrollAreaProps extends ComponentPropsWithoutRef<\"div\"> {\n  viewportClassName?: string;\n  /** Which axes get scrollbars. Defaults to `\"vertical\"`. */\n  orientation?: Orientation;\n}\n\nconst ScrollArea = forwardRef<\n  ComponentRef<typeof ScrollAreaPrimitive.Root>,\n  ScrollAreaProps\n>(\n  (\n    {\n      className,\n      children,\n      viewportClassName,\n      orientation = \"vertical\",\n      ...props\n    },\n    ref\n  ) => {\n    const isTouch = useTouchPrimary();\n\n    return (\n      <ScrollAreaContext.Provider value={isTouch}>\n        {isTouch ? (\n          <div\n            ref={ref}\n            role=\"group\"\n            data-slot=\"scroll-area\"\n            aria-roledescription=\"scroll area\"\n            className={cn(\"relative overflow-hidden\", className)}\n            {...props}\n          >\n            <div\n              data-slot=\"scroll-area-viewport\"\n              className={cn(\n                \"size-full rounded-[inherit]\",\n                orientation === \"vertical\" && \"overflow-y-auto\",\n                orientation === \"horizontal\" && \"overflow-x-auto\",\n                orientation === \"both\" && \"overflow-auto\",\n                viewportClassName\n              )}\n              tabIndex={0}\n            >\n              {children}\n            </div>\n          </div>\n        ) : (\n          <ScrollAreaPrimitive.Root\n            ref={ref}\n            data-slot=\"scroll-area\"\n            className={cn(\"relative overflow-hidden\", className)}\n            {...props}\n          >\n            <ScrollAreaPrimitive.Viewport\n              data-slot=\"scroll-area-viewport\"\n              className={cn(\"size-full rounded-[inherit]\", viewportClassName)}\n            >\n              {/* Content gives Base UI an intrinsic size to measure\n                  horizontal overflow against. */}\n              <ScrollAreaPrimitive.Content>\n                {children}\n              </ScrollAreaPrimitive.Content>\n            </ScrollAreaPrimitive.Viewport>\n            {orientation !== \"horizontal\" && <ScrollBar orientation=\"vertical\" />}\n            {orientation !== \"vertical\" && <ScrollBar orientation=\"horizontal\" />}\n            {orientation === \"both\" && <ScrollAreaPrimitive.Corner />}\n          </ScrollAreaPrimitive.Root>\n        )}\n      </ScrollAreaContext.Provider>\n    );\n  }\n);\n\nScrollArea.displayName = \"ScrollArea\";\n\nconst ScrollBar = forwardRef<\n  ComponentRef<typeof ScrollAreaPrimitive.Scrollbar>,\n  ComponentPropsWithoutRef<typeof ScrollAreaPrimitive.Scrollbar>\n>(({ className, orientation = \"vertical\", ...props }, ref) => {\n  const isTouch = useContext(ScrollAreaContext);\n  const shape = useShape();\n\n  if (isTouch) return null;\n\n  return (\n    <ScrollAreaPrimitive.Scrollbar\n      ref={ref}\n      orientation={orientation}\n      data-slot=\"scroll-area-scrollbar\"\n      // Base UI keeps the scrollbar mounted while scrollable; visibility is\n      // a plain opacity transition off its hover/scroll state attributes,\n      // matching the cue fade — 160ms in, 120ms out (exits faster, per the\n      // animation guidelines); spring tokens are framer-motion configs and\n      // don't apply here.\n      className={cn(\n        // The 10px track stays as a comfortable hit target; the thumb inside\n        // it rests narrow and low-contrast, then widens + darkens on hover so\n        // it gets out of the way until you reach for it.\n        \"group/scrollbar absolute z-20 flex touch-none select-none\",\n        // Show immediately; on hide, wait out the 150ms thumb shrink before\n        // fading so the thumb visibly narrows back first instead of the fade\n        // masking it.\n        \"opacity-0 transition-opacity duration-120 ease-out delay-160\",\n        \"data-[hovering]:duration-160 data-[scrolling]:duration-160\",\n        \"data-[hovering]:opacity-100 data-[scrolling]:opacity-100\",\n        \"data-[hovering]:delay-0 data-[scrolling]:delay-0\",\n        orientation === \"vertical\" && \"top-0 right-0 h-full w-2.5\",\n        orientation === \"horizontal\" && \"bottom-0 left-0 h-2.5 w-full flex-col\",\n        className\n      )}\n      {...props}\n    >\n      <ScrollAreaPrimitive.Thumb\n        data-slot=\"scroll-area-thumb\"\n        className={cn(\n          // Fixed surface-relative overlay ramp (8 → 12 → 16%) — same tint\n          // direction as the menu hover/active tokens, one notch stronger.\n          \"relative bg-[rgb(var(--overlay)/0.08)] transition-[background-color,width,height] duration-160 ease-in-out\",\n          \"group-hover/scrollbar:bg-[rgb(var(--overlay)/0.12)] active:!bg-[rgb(var(--overlay)/0.16)]\",\n          shape.bg,\n          // -translate nudges the thumb 2px off the container edge; the track\n          // (and its 10px hit target) stays flush so edge-throws still land.\n          orientation === \"vertical\" &&\n            \"mx-auto my-1 w-1 -translate-x-0.5 h-[var(--scroll-area-thumb-height)] group-hover/scrollbar:w-1.5\",\n          orientation === \"horizontal\" &&\n            \"my-auto mx-1 h-1 -translate-y-0.5 w-[var(--scroll-area-thumb-width)] group-hover/scrollbar:h-1.5\"\n        )}\n      />\n    </ScrollAreaPrimitive.Scrollbar>\n  );\n});\n\nScrollBar.displayName = \"ScrollBar\";\n\nexport { ScrollArea, ScrollBar };\nexport type { ScrollAreaProps };\n",
+      "type": "registry:ui",
+      "target": "components/ui/scroll-area.tsx"
+    }
+  ],
+  "css": {
+    "@property --sf-start": {
+      "syntax": "\"<number>\"",
+      "inherits": "false",
+      "initial-value": "1"
+    },
+    "@property --sf-end": {
+      "syntax": "\"<number>\"",
+      "inherits": "false",
+      "initial-value": "1"
+    },
+    "@keyframes sf-reveal-start": {
+      "from": {
+        "--sf-start": "1"
+      },
+      "to": {
+        "--sf-start": "0"
+      }
+    },
+    "@keyframes sf-reveal-end": {
+      "from": {
+        "--sf-end": "0"
+      },
+      "to": {
+        "--sf-end": "1"
+      }
+    },
+    ".scroll-fade, .scroll-fade-x": {
+      "--scroll-fade-size": "48px"
+    },
+    ".scroll-fade": {
+      "-webkit-mask-image": "linear-gradient(to bottom, transparent 0, #000 var(--scroll-fade-size), #000 calc(100% - var(--scroll-fade-size)), transparent 100%)",
+      "mask-image": "linear-gradient(to bottom, transparent 0, #000 var(--scroll-fade-size), #000 calc(100% - var(--scroll-fade-size)), transparent 100%)"
+    },
+    ".scroll-fade-x": {
+      "-webkit-mask-image": "linear-gradient(to right, transparent 0, #000 var(--scroll-fade-size), #000 calc(100% - var(--scroll-fade-size)), transparent 100%)",
+      "mask-image": "linear-gradient(to right, transparent 0, #000 var(--scroll-fade-size), #000 calc(100% - var(--scroll-fade-size)), transparent 100%)"
+    },
+    "@keyframes sf-divider-start": {
+      "from": {
+        "opacity": "0"
+      },
+      "to": {
+        "opacity": "1"
+      }
+    },
+    "@keyframes sf-divider-end": {
+      "from": {
+        "opacity": "1"
+      },
+      "to": {
+        "opacity": "0"
+      }
+    },
+    "@supports (timeline-scope: --sf)": {
+      ".scroll-divider": {
+        "position": "relative",
+        "timeline-scope": "--sf-scroller",
+        "--scroll-divider-size": "48px"
+      },
+      ".scroll-divider .scroll-fade": {
+        "scroll-timeline-name": "--sf-scroller"
+      },
+      ".scroll-divider::before, .scroll-divider::after": {
+        "content": "\"\"",
+        "position": "absolute",
+        "left": "var(--scroll-divider-inset, 0px)",
+        "right": "var(--scroll-divider-inset, 0px)",
+        "height": "1px",
+        "background-color": "var(--border)",
+        "pointer-events": "none",
+        "z-index": "1",
+        "opacity": "0"
+      },
+      ".scroll-divider::before": {
+        "top": "0",
+        "animation": "sf-divider-start both linear",
+        "animation-timeline": "--sf-scroller",
+        "animation-range": "0 var(--scroll-divider-size)"
+      },
+      ".scroll-divider:first-child::before": {
+        "content": "none"
+      },
+      ".scroll-divider::after": {
+        "bottom": "0",
+        "animation": "sf-divider-end both linear",
+        "animation-timeline": "--sf-scroller",
+        "animation-range": "calc(100% - var(--scroll-divider-size)) 100%"
+      }
+    },
+    "@supports (animation-timeline: scroll())": {
+      ".scroll-fade": {
+        "mask-image": "linear-gradient(to bottom, rgba(0, 0, 0, var(--sf-start)) 0, #000 var(--scroll-fade-size), #000 calc(100% - var(--scroll-fade-size)), rgba(0, 0, 0, var(--sf-end)) 100%)",
+        "-webkit-mask-image": "linear-gradient(to bottom, rgba(0, 0, 0, var(--sf-start)) 0, #000 var(--scroll-fade-size), #000 calc(100% - var(--scroll-fade-size)), rgba(0, 0, 0, var(--sf-end)) 100%)",
+        "animation": "sf-reveal-start both linear, sf-reveal-end both linear",
+        "animation-timeline": "scroll(self), scroll(self)",
+        "animation-range-start": "0, calc(100% - var(--scroll-fade-size))",
+        "animation-range-end": "var(--scroll-fade-size), 100%"
+      },
+      ".scroll-fade-x": {
+        "mask-image": "linear-gradient(to right, rgba(0, 0, 0, var(--sf-start)) 0, #000 var(--scroll-fade-size), #000 calc(100% - var(--scroll-fade-size)), rgba(0, 0, 0, var(--sf-end)) 100%)",
+        "-webkit-mask-image": "linear-gradient(to right, rgba(0, 0, 0, var(--sf-start)) 0, #000 var(--scroll-fade-size), #000 calc(100% - var(--scroll-fade-size)), rgba(0, 0, 0, var(--sf-end)) 100%)",
+        "animation": "sf-reveal-start both linear, sf-reveal-end both linear",
+        "animation-timeline": "scroll(self inline), scroll(self inline)",
+        "animation-range-start": "0, calc(100% - var(--scroll-fade-size))",
+        "animation-range-end": "var(--scroll-fade-size), 100%"
+      }
+    },
+    "@media (pointer: fine)": {
+      "*": {
+        "scrollbar-width": "thin",
+        "scrollbar-color": "rgb(var(--overlay) / 0.08) transparent"
+      },
+      "::-webkit-scrollbar": {
+        "width": "10px",
+        "height": "10px"
+      },
+      "::-webkit-scrollbar-track, ::-webkit-scrollbar-corner": {
+        "background": "transparent"
+      },
+      "::-webkit-scrollbar-thumb": {
+        "background-color": "rgb(var(--overlay) / 0.08)",
+        "border": "3px solid transparent",
+        "background-clip": "content-box",
+        "border-radius": "9999px"
+      },
+      "::-webkit-scrollbar-thumb:vertical": {
+        "border-left-width": "1px",
+        "border-right-width": "5px"
+      },
+      "::-webkit-scrollbar-thumb:horizontal": {
+        "border-top-width": "1px",
+        "border-bottom-width": "5px"
+      },
+      "::-webkit-scrollbar-thumb:hover": {
+        "background-color": "rgb(var(--overlay) / 0.12)"
+      },
+      "::-webkit-scrollbar-thumb:active": {
+        "background-color": "rgb(var(--overlay) / 0.16)"
+      }
+    }
+  },
+  "categories": [
+    "components"
+  ],
+  "type": "registry:ui"
+}
