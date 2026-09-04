@@ -15,7 +15,7 @@ export default function Page() {
       <div className="w-full max-w-[680px] mx-auto py-20 sm:py-28 px-6">
         <DocHeader
           title="Delta Components"
-          description="Curated components I've developed over the years, built to make a difference in the user experience."
+          description="Curated components I've developed over the years, built to make a difference in the user's experience."
           prev={prev}
           next={next}
         >
