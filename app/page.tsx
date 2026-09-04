@@ -15,7 +15,7 @@ export default function Page() {
       <div className="w-full max-w-[680px] mx-auto py-20 sm:py-28 px-6">
         <DocHeader
           title="Delta Components"
-          description="Our own components, built on a fluid, token-driven design system."
+          description="Curated components, built to make a real difference to user experience."
           prev={prev}
           next={next}
         >
