@@ -210,15 +210,22 @@ export function DocSection({ title, id, children }: DocSectionProps) {
   // opens rather than as a caption for whatever sat above.
   return (
     <div className="flex flex-col gap-4 pt-8">
-      {/* scroll-mt keeps the heading clear of the viewport edge when someone
-          lands on it from a #link. */}
+      {/* py on the heading itself, not just space on the wrapper: `leading-none`
+          crops the line box to the glyphs, so the text sat tight against what
+          came before and after it. The padding also grows the anchor's hit
+          area. Net rhythm is 40px above the text and 20px below — more room
+          over a heading than under it, so it reads as opening the section
+          rather than captioning the one above.
+          scroll-mt keeps it clear of the viewport edge when someone lands on
+          it from a #link. */}
       <h2
         id={anchorId}
-        className="-mb-1 scroll-mt-20 text-title text-foreground leading-none"
+        className="-mb-1 scroll-mt-20 py-2 text-title text-foreground leading-none"
         style={{ fontVariationSettings: fontWeights.semibold }}
       >
         <HeadingAnchor id={anchorId}>{title}</HeadingAnchor>
       </h2>
-      {children}    </div>
+      {children}
+    </div>
   );
 }
