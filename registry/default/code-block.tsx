@@ -611,14 +611,14 @@ export function CodeBlock({
     return (
       <div
         className={cn(
-          "bg-card text-card-foreground border-border overflow-hidden rounded-lg border",
+          "bg-card text-card-foreground border-border/60 overflow-hidden rounded-lg border",
           className
         )}
         style={{ "--code-block-bg": codeBlockBgColor } as React.CSSProperties}
       >
         <div
           className={cn(
-            "border-border flex items-center justify-between border-b px-3 py-2",
+            "border-border/60 flex items-center justify-between border-b px-3 py-2",
             !paintFromTheme && "bg-background"
           )}
           style={surfaceStyle}
@@ -747,7 +747,7 @@ export function CodeBlock({
     <div
       className={cn(
         "pointer-events-auto w-full max-w-full overflow-hidden",
-        !hasClassPrefix("border") && "border-border border",
+        !hasClassPrefix("border") && "border-border/60 border",
         !hasClassPrefix("rounded") && "rounded-lg",
         className
       )}
@@ -756,7 +756,7 @@ export function CodeBlock({
       {filename && (
         <figcaption
           className={cn(
-            "border-border flex items-center justify-between border-b px-4 py-2.5 [&_svg]:size-4",
+            "border-border/60 flex items-center justify-between border-b px-4 py-2.5 [&_svg]:size-4",
             !paintFromTheme && "bg-background"
           )}
           style={{

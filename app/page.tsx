@@ -1,54 +1,32 @@
 "use client";
 
 import Link from "next/link";
-import { componentList } from "@/lib/docs/components";
+import { componentList, neighbours } from "@/lib/docs/components";
 import { DocPager } from "@/lib/docs/DocPager";
+import { DocHeader } from "@/lib/docs/DocHeader";
 import { BentoGrid } from "@/app/components/bento-grid";
 import { Button } from "@/registry/base/button";
-import { fontWeights } from "@/registry/default/lib/font-weight";
-import { useIcon } from "@/lib/icon-context";
-import { useSizeVariant } from "@/lib/size-context";
-import { Tooltip } from "@/registry/base/tooltip";
 
 export default function Page() {
-  const ArrowRight = useIcon("arrow-right");
-  // Square icon buttons follow the site-wide size step (see the size ladder in globals.css).
-  const iconSize =
-    useSizeVariant() === "compact" ? ("icon-compact" as const) : ("icon" as const);
+  const { prev, next } = neighbours("/");
 
   return (
     <div className="mt-12 lg:mt-0">
       <div className="w-full max-w-[680px] mx-auto py-20 sm:py-28 px-6">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex flex-col gap-2">
-            <h1
-              className="text-display text-foreground leading-none"
-              style={{ fontVariationSettings: fontWeights.bold }}
-            >
-              Delta Components
-            </h1>
-            <p className="text-subtitle text-muted-foreground">
-              Our own components, built on a fluid, token-driven design system.
-            </p>
-            <div className="flex items-center gap-2 mt-2">
-              <Link href="/docs" className="outline-none" tabIndex={-1}>
-                <Button variant="primary" size="sm">Learn more</Button>
-              </Link>
-            </div>
+        <DocHeader
+          title="Delta Components"
+          description="Our own components, built on a fluid, token-driven design system."
+          prev={prev}
+          next={next}
+        >
+          <div className="mt-2 flex items-center gap-2">
+            <Link href="/docs" className="outline-none" tabIndex={-1}>
+              <Button variant="primary" size="sm">
+                Learn more
+              </Button>
+            </Link>
           </div>
-          <div className="flex items-center gap-1 shrink-0">
-            <Button variant="ghost" size={iconSize} disabled aria-label="No previous page">
-              <ArrowRight className="rotate-180" />
-            </Button>
-            <Tooltip content={<span>Introduction &ensp;<kbd className="font-mono opacity-50">&rarr;</kbd></span>}>
-              <Link href="/docs" aria-label="Next: Introduction" className="outline-none" tabIndex={-1}>
-                <Button variant="ghost" size={iconSize}>
-                  <ArrowRight />
-                </Button>
-              </Link>
-            </Tooltip>
-          </div>
-        </div>
+        </DocHeader>
       </div>
       <div className="w-full max-w-[1200px] mx-auto px-6">
         <BentoGrid components={componentList} />
@@ -57,7 +35,7 @@ export default function Page() {
           uses — the rule above the pager reads as the end of the grid, so
           stopping it short of the cards' edges looks like a mistake. */}
       <div className="w-full max-w-[1200px] mx-auto px-6 pb-16">
-        <DocPager next={{ href: "/docs", name: "Introduction" }} />
+        <DocPager prev={prev} next={next} />
       </div>
     </div>
   );

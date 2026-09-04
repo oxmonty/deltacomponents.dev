@@ -42,9 +42,34 @@ export const componentList: ComponentEntry[] = [
   { slug: "tooltip", name: "Tooltip", description: "Floating tooltip with spring-based animations and configurable placement.", gridSize: "small" },
 ];
 
-/** Prev/next navigation order for doc pages. Used by DocPage's arrow nav.
- *  Keep in sync with the sidebar order in `app/components/sidebar.tsx`. */
-export const docOrder: Array<{ slug: string; name: string }> = componentList.map((c) => ({
-  slug: c.slug,
-  name: labelOf(c),
-}));
+export interface PageLink {
+  href: string;
+  name: string;
+}
+
+/** The standalone pages in the sidebar's Sections group, in the order they
+ *  appear there. */
+export const sectionList: PageLink[] = [
+  { href: "/", name: "Showcase" },
+  { href: "/docs", name: "Introduction" },
+  { href: "/docs/contributing", name: "Contributing" },
+];
+
+/** Every page in the sidebar, in reading order: the sections, then the
+ *  components. One list drives the header arrows, the bottom pager and the
+ *  left/right keyboard shortcuts, so the three can't disagree about what comes
+ *  next. */
+export const pageOrder: PageLink[] = [
+  ...sectionList,
+  ...componentList.map((c) => ({ href: `/docs/${c.slug}`, name: labelOf(c) })),
+];
+
+/** The pages either side of `href`, or null at the ends. */
+export function neighbours(href: string): { prev: PageLink | null; next: PageLink | null } {
+  const i = pageOrder.findIndex((p) => p.href === href);
+  if (i === -1) return { prev: null, next: null };
+  return {
+    prev: i > 0 ? pageOrder[i - 1] : null,
+    next: i < pageOrder.length - 1 ? pageOrder[i + 1] : null,
+  };
+}

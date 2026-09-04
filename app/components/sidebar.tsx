@@ -13,7 +13,7 @@ import {
   SidebarMenuButton,
   useSidebar,
 } from "@/registry/base/sidebar";
-import { componentList, labelOf } from "@/lib/docs/components";
+import { componentList, labelOf, sectionList } from "@/lib/docs/components";
 import { GitHubStarButton, SettingsContent } from "@/app/components/right-panel";
 
 interface NavEntry {
@@ -93,19 +93,19 @@ export function SiteSidebar() {
         <SidebarGroup>
           <SidebarGroupLabel>
             Sections
-            <span className="text-[11px]">2</span>
+            <span className="text-[11px]">{sectionList.length}</span>
           </SidebarGroupLabel>
           <SidebarMenu aria-label="Main navigation">
-            <SidebarMenuItem>
-              <SidebarMenuButton render={<Link href="/" />} isActive={pathname === "/"}>
-                Showcase
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton render={<Link href="/docs" />} isActive={pathname === "/docs"}>
-                Introduction
-              </SidebarMenuButton>
-            </SidebarMenuItem>
+            {sectionList.map((section) => (
+              <SidebarMenuItem key={section.href}>
+                <SidebarMenuButton
+                  render={<Link href={section.href} />}
+                  isActive={pathname === section.href}
+                >
+                  {section.name}
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            ))}
           </SidebarMenu>
         </SidebarGroup>
 

@@ -14,9 +14,10 @@ import { SiteSidebar } from "@/app/components/sidebar";
 import { RightPanel } from "@/app/components/right-panel";
 import { RightRailProvider } from "@/lib/right-rail";
 import { showShortcutToast } from "@/lib/docs/settings-toast";
-import { componentList } from "@/lib/docs/components";
+import { pageOrder } from "@/lib/docs/components";
 
-const pageOrder = ["/", "/docs", ...componentList.map((c) => `/docs/${c.slug}`)];
+// Left/right arrows walk the same order the sidebar and pager use.
+const pagePaths = pageOrder.map((p) => p.href);
 
 /** Toasts the sidebar's "[" toggle the way the settings shortcuts toast
  *  theirs: a bare "[" press arms a short window, and the provider's own
@@ -104,9 +105,9 @@ export function SidebarLayout({ children, defaultOpen = true }: SidebarLayoutPro
   const router = useRouter();
   // Arrow key navigation between pages — ref-based so held keys keep advancing
   // (closures over `pathname` would re-bind per nav and lose key-repeat events).
-  const expectedIndexRef = useRef(pageOrder.indexOf(pathname));
+  const expectedIndexRef = useRef(pagePaths.indexOf(pathname));
   useEffect(() => {
-    expectedIndexRef.current = pageOrder.indexOf(pathname);
+    expectedIndexRef.current = pagePaths.indexOf(pathname);
   }, [pathname]);
 
   useEffect(() => {
@@ -138,11 +139,11 @@ export function SidebarLayout({ children, defaultOpen = true }: SidebarLayoutPro
       if (currentIndex === -1) return;
 
       const nextIndex = e.key === "ArrowLeft" ? currentIndex - 1 : currentIndex + 1;
-      if (nextIndex < 0 || nextIndex >= pageOrder.length) return;
+      if (nextIndex < 0 || nextIndex >= pagePaths.length) return;
 
       e.preventDefault();
       expectedIndexRef.current = nextIndex;
-      router.push(pageOrder[nextIndex]);
+      router.push(pagePaths[nextIndex]);
     }
 
     window.addEventListener("keydown", handleKeyDown);

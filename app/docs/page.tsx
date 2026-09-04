@@ -1,56 +1,23 @@
 "use client";
 
-import Link from "next/link";
 import { fontWeights } from "@/registry/default/lib/font-weight";
-import { Button } from "@/registry/base/button";
-import { useIcon } from "@/lib/icon-context";
-import { useSizeVariant } from "@/lib/size-context";
-import { docOrder } from "@/lib/docs/components";
+import { neighbours } from "@/lib/docs/components";
 import { DocPager } from "@/lib/docs/DocPager";
+import { DocHeader } from "@/lib/docs/DocHeader";
 import { InputCopy } from "@/registry/default/input-copy";
 import { CodeBlock } from "@/registry/default/code-block";
-import { Tooltip } from "@/registry/base/tooltip";
 
 export default function DocsIndex() {
-  const ArrowRight = useIcon("arrow-right");
-  // Square icon buttons follow the site-wide size step (see the size ladder in globals.css).
-  const iconSize =
-    useSizeVariant() === "compact" ? ("icon-compact" as const) : ("icon" as const);
-  const firstComponent = docOrder[0];
+  const { prev, next } = neighbours("/docs");
 
   return (
     <div className="flex flex-col gap-8 px-6">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1
-            className="text-display text-foreground leading-none mb-2"
-            style={{ fontVariationSettings: fontWeights.bold }}
-          >
-            Introduction
-          </h1>
-          <p className="text-prose text-muted-foreground">
-            What Delta Components is, and how to install it.
-          </p>
-        </div>
-        <div className="flex items-center gap-1 shrink-0">
-          <Tooltip content={<span>Showcase &ensp;<kbd className="font-mono opacity-50">&larr;</kbd></span>}>
-            <Link href="/" aria-label="Previous: Showcase" className="outline-none" tabIndex={-1}>
-              <Button variant="ghost" size={iconSize}>
-                <ArrowRight className="rotate-180" />
-              </Button>
-            </Link>
-          </Tooltip>
-          {firstComponent && (
-            <Tooltip content={<span>{firstComponent.name} &ensp;<kbd className="font-mono opacity-50">&rarr;</kbd></span>}>
-              <Link href={`/docs/${firstComponent.slug}`} aria-label={`Next: ${firstComponent.name}`} className="outline-none" tabIndex={-1}>
-                <Button variant="ghost" size={iconSize}>
-                  <ArrowRight />
-                </Button>
-              </Link>
-            </Tooltip>
-          )}
-        </div>
-      </div>
+      <DocHeader
+        title="Introduction"
+        description="What Delta Components is, and how to install it."
+        prev={prev}
+        next={next}
+      />
 
       <section className="flex flex-col gap-6 text-prose text-foreground/90 leading-relaxed">
         <div className="flex flex-col gap-2">
@@ -194,14 +161,7 @@ import { CaretRight, MagnifyingGlass } from "@phosphor-icons/react";
         />
       </div>
 
-      <DocPager
-        prev={{ href: "/", name: "Showcase" }}
-        next={
-          firstComponent
-            ? { href: `/docs/${firstComponent.slug}`, name: firstComponent.name }
-            : null
-        }
-      />
+      <DocPager prev={prev} next={next} />
     </div>
   );
 }
