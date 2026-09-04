@@ -611,7 +611,7 @@ export function CodeBlock({
     return (
       <div
         className={cn(
-          "bg-card text-card-foreground border-border/60 overflow-hidden rounded-lg border",
+          "bg-card text-card-foreground border-border/60 overflow-hidden rounded-lg border [background-clip:padding-box]",
           className
         )}
         style={{ "--code-block-bg": codeBlockBgColor } as React.CSSProperties}
@@ -747,7 +747,7 @@ export function CodeBlock({
     <div
       className={cn(
         "pointer-events-auto w-full max-w-full overflow-hidden",
-        !hasClassPrefix("border") && "border-border/60 border",
+        !hasClassPrefix("border") && "border-border/60 border [background-clip:padding-box]",
         !hasClassPrefix("rounded") && "rounded-lg",
         className
       )}
