@@ -122,7 +122,7 @@ export default function ContributingPage() {
         alt=""
         width={745}
         height={663}
-        className="w-40 self-start rounded-md"
+        className="w-40 self-start"
       />
 
       <DocPager prev={prev} next={next} />
