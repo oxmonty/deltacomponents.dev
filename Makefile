@@ -40,6 +40,9 @@ test: ## Run Vitest unit tests
 check: lint typecheck test ## Run every check CI runs
 
 ## Registry:
+toc: ## Rebuild lib/docs/toc.generated.ts from the doc pages
+	bun run toc:build
+
 registry: ## Rebuild public/r from registry.json
 	bun run registry:build
 

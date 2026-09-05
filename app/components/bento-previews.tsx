@@ -4,8 +4,14 @@ import { useState } from "react";
 import { Button } from "@/registry/base/button";
 import { Switch } from "@/registry/base/switch";
 import { Tooltip } from "@/registry/base/tooltip";
-import { CodeBlock } from "@/registry/default/code-block";
+import { Code } from "@/registry/default/code";
 import { PATRICK_DARK } from "@/lib/docs/code-themes";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/registry/default/tabs";
 import {
   ProductCard,
   ProductCardContent,
@@ -64,12 +70,12 @@ function TooltipPreview() {
   );
 }
 
-function CodeBlockPreview() {
+function CodePreview() {
   return (
     // Narrower than the stage on purpose: edge-to-edge the block reads as
     // cropped rather than as a card sitting on a surface.
     <div className="w-full max-w-[440px]">
-      <CodeBlock
+      <Code
         filename="tally.rs"
         language="rust"
         theme={PATRICK_DARK}
@@ -105,9 +111,40 @@ function ProductCardPreview() {
   );
 }
 
+function TabsPreview() {
+  return (
+    // Same shape as the demos on the docs page: a `w-fit` block whose strip and
+    // copy share a left edge, centred as one unit by the card's stage. Needs
+    // the two-column card — in one column the stage is 213px against the
+    // strip's 232, and a `w-fit` block that cannot shrink pins left instead.
+    <Tabs defaultValue="account" className="w-fit max-w-full">
+      <TabsList>
+        <TabsTrigger value="account">Account</TabsTrigger>
+        <TabsTrigger value="password">Password</TabsTrigger>
+        <TabsTrigger value="settings">Settings</TabsTrigger>
+      </TabsList>
+      {/* The panels differ only in one line, so the stage is pinned to a
+          single row's height and they cross-fade in the same spot rather than
+          resizing the card as the reader clicks through. */}
+      <div className="relative min-h-[24px]">
+        <TabsContent value="account" className="absolute inset-x-0 top-0" animate>
+          <p className="text-caption text-muted-foreground">Manage your account settings.</p>
+        </TabsContent>
+        <TabsContent value="password" className="absolute inset-x-0 top-0" animate>
+          <p className="text-caption text-muted-foreground">Change your password here.</p>
+        </TabsContent>
+        <TabsContent value="settings" className="absolute inset-x-0 top-0" animate>
+          <p className="text-caption text-muted-foreground">Configure your preferences.</p>
+        </TabsContent>
+      </div>
+    </Tabs>
+  );
+}
+
 export const previewMap: Record<string, React.FC> = {
+  tabs: TabsPreview,
   "product-card": ProductCardPreview,
-  "code-block": CodeBlockPreview,
+  "code": CodePreview,
   button: ButtonPreview,
   switch: SwitchPreview,
   tooltip: TooltipPreview,

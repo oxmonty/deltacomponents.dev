@@ -9,7 +9,7 @@ import { Tooltip } from "@/registry/base/tooltip";
 import { Switch } from "@/registry/base/switch";
 import { AnimatePresence } from "framer-motion";
 import { InspectOverlay } from "./InspectOverlay";
-import { CodeBlock } from "@/registry/default/code-block";
+import { Code } from "@/registry/default/code";
 
 /** Snippets longer than this collapse behind an Expand affordance; shorter
  *  ones render in full. Roughly the point where a reader stops taking the
@@ -28,7 +28,7 @@ interface ComponentPreviewProps {
    *  gallery rows do that, where one sample covers several frames. */
   code?: string;
   /** Height the code panel is clipped to while collapsed. The default leaves
-   *  roughly nine readable lines: CodeBlock's Expand affordance is a 96px
+   *  roughly nine readable lines: Code's Expand affordance is a 96px
    *  gradient pinned to the bottom, so a shorter clip is largely covered by
    *  it. Only applies once the snippet is long enough to collapse at all. */
   codeCollapsedHeight?: string;
@@ -99,8 +99,10 @@ export function ComponentPreview({
   const frameRef = useRef<HTMLDivElement>(null);
 
   // Clicking an empty part of the preview routes keyboard control into the demo
-  // (focuses its first interactive element); :focus-within then shows the
-  // contrasted border. Clicking outside / Tab away hands keys back to the page.
+  // (focuses its first interactive element). Clicking outside / Tab away hands
+  // keys back to the page. The frame itself stays put: the focused control
+  // draws its own ring, and having the border react as well made the frame
+  // darken every time someone touched the demo.
   const handlePreviewMouseDown = (e: MouseEvent<HTMLDivElement>) =>
     routeKeyboardOnMouseDown(e, previewRef.current);
 
@@ -125,7 +127,7 @@ export function ComponentPreview({
       // the inspect overlay's layers) to its own stacking context, so a
       // portalled dialog's z-50 overlay dims the WHOLE frame instead of
       // sliding underneath the header.
-      className={`relative isolate flex flex-col gap-0 w-full border border-border/60 transition-[border-color] duration-150 ease-out focus-within:border-foreground/25 ${shape.container}`}
+      className={`relative isolate flex flex-col gap-0 w-full border border-border/60 ${shape.container}`}
     >
       {/* Control strip. With the Preview/Code tabs gone it carries only the
           extras, so it is slim and right-aligned rather than a tab bar; the
@@ -231,12 +233,12 @@ export function ComponentPreview({
 
         {/* The source sits UNDER the demo rather than behind a tab, clipped to a
             teaser with a gradient and an Expand affordance — the shape shadcn's
-            docs use. CodeBlock already owns that behaviour, so this composes it
+            docs use. Code already owns that behaviour, so this composes it
             rather than reimplementing the collapse. Its own border and corners
             come off: the frame around it supplies both, and only the hairline
             separating it from the demo is kept. */}
         {code && (
-          <CodeBlock
+          <Code
             code={code}
             language="tsx"
             showLineNumbers={false}

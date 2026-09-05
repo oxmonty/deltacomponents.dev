@@ -27,11 +27,14 @@ import {
 } from "@/lib/docs/icon-playground";
 import { SurfaceProvider } from "@/lib/surface-context";
 import { RightRailTarget } from "@/lib/right-rail";
+import { DocsToc } from "@/lib/docs/DocsToc";
+import { AuthorCredit } from "@/app/components/author-credit";
 import { showShortcutToast } from "@/lib/docs/settings-toast";
 import { Tooltip } from "@/registry/base/tooltip";
 import { ScrollArea } from "@/registry/base/scroll-area";
+import { site } from "@/lib/config";
 
-const REPO = "oxmonty/deltacomponents.dev";
+const REPO = site.repo;
 
 function formatStars(n: number): string {
   if (n >= 1000) {
@@ -57,7 +60,7 @@ function GitHubIcon({ size = 16, className }: { size?: number; className?: strin
   );
 }
 
-/** Standalone GitHub star-count button — rendered next to the "Make them yours" heading. */
+/** Standalone GitHub star-count button — rendered next to the "Customise" heading. */
 // One fetch per page load, shared by every instance (right panel + the
 // sidebar sheet's footer). Without the cache, each sheet open remounted the
 // button and refired the unauthenticated API call — GitHub rate-limits those
@@ -233,19 +236,6 @@ export function SettingsContent({ tooltipSide = "left" }: { tooltipSide?: "left"
         </Tooltip>
       </div>
 
-      {/* Credit */}
-      <p className="text-body text-muted-foreground">
-        Built on{" "}
-        <a
-          href="https://github.com/mickadesign/fluid-functionalism"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="rounded text-muted-foreground hover:text-foreground transition-colors duration-80 outline-none focus-visible:ring-1 focus-visible:ring-[color:var(--focus-ring,#6B97FF)] focus-visible:ring-offset-2"
-        >
-          Fluid Functionalism
-        </a>
-      </p>
-
     </div>
   );
 }
@@ -373,6 +363,13 @@ export function RightPanel() {
           under the mask, never outside pushing the gradient down. */}
       <ScrollArea viewportClassName="scroll-fade max-h-[calc(100svh-2rem)]">
       <div className="flex flex-col gap-3">
+        {/* Above the properties card: what the reader is looking at comes
+            before what they can change about it. Deliberately not a card —
+            it is a list of links to read past, not a surface to act on — but
+            padded to the card's inset so both columns of text line up.
+            Renders nothing on a page with fewer than two headings. */}
+        <DocsToc className="px-4 pt-2" />
+
         <aside className="p-4 rounded-lg bg-muted">
           <SurfaceProvider value={2}>
             <div className="flex items-center justify-between pt-2 pb-2">
@@ -380,11 +377,14 @@ export function RightPanel() {
                 className="text-title text-foreground leading-none"
                 style={{ fontVariationSettings: fontWeights.semibold }}
               >
-                Make them yours
+                Customise
               </h2>
               <GitHubStarButton />
             </div>
             <SettingsContent tooltipSide="left" />
+            {/* Desktop's home for the credit. Below xl this panel is gone and
+                SiteFooter carries it instead. */}
+            <AuthorCredit />
           </SurfaceProvider>
         </aside>
 

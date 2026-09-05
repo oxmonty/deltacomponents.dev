@@ -838,9 +838,35 @@
       ]
     },
     {
-      "name": "code-block",
+      "name": "tabs",
       "type": "registry:ui",
-      "title": "Code Block",
+      "title": "Tabs",
+      "description": "Tab navigation with three variants, a spring-driven indicator, and radii that follow the shape system so nested corners stay concentric.",
+      "dependencies": [
+        "framer-motion"
+      ],
+      "registryDependencies": [
+        "utils",
+        "springs",
+        "shape-context",
+        "tokens"
+      ],
+      "files": [
+        {
+          "path": "registry/default/tabs.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/tabs.tsx"
+        }
+      ],
+      "docs": "Docs & live playground: https://deltacomponents.dev/docs/tabs.",
+      "categories": [
+        "components"
+      ]
+    },
+    {
+      "name": "code",
+      "type": "registry:ui",
+      "title": "Code",
       "description": "Syntax-highlighted code block with a filename bar, copy button, optional line numbers, expand/collapse, and a package-manager tab strip that expands an npx command into npm, yarn, pnpm, and bun.",
       "dependencies": [
         "prism-react-renderer",
@@ -855,14 +881,14 @@
       ],
       "files": [
         {
-          "path": "registry/default/code-block.tsx",
+          "path": "registry/default/code.tsx",
           "type": "registry:ui",
-          "target": "components/ui/code-block.tsx"
+          "target": "components/ui/code.tsx"
         },
         {
-          "path": "registry/default/code-block-icons.tsx",
+          "path": "registry/default/code-icons.tsx",
           "type": "registry:ui",
-          "target": "components/ui/code-block-icons.tsx"
+          "target": "components/ui/code-icons.tsx"
         },
         {
           "path": "registry/default/lib/prism-languages.ts",
@@ -870,7 +896,7 @@
           "target": "lib/prism-languages.ts"
         }
       ],
-      "docs": "Docs & live playground: https://deltacomponents.dev/docs/code-block.",
+      "docs": "Docs & live playground: https://deltacomponents.dev/docs/code.",
       "categories": [
         "components"
       ]

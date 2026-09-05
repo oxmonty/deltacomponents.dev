@@ -7,6 +7,7 @@ import { cn } from "@/registry/default/lib/utils";
 import { fontWeights } from "@/registry/default/lib/font-weight";
 import { spring } from "@/lib/springs";
 import { Badge } from "@/registry/default/badge";
+import { useIcon } from "@/lib/icon-context";
 
 const sizeClasses: Record<string, string> = {
   large: "md:col-span-2 md:row-span-2",
@@ -39,6 +40,10 @@ interface BentoCardProps {
 }
 
 export function BentoCard({ slug, name, isNew, gridSize = "small", animateLayout = false, action, className: extraClassName, previewClassName, style, children }: BentoCardProps) {
+  // Rotated arrow-right rather than a dedicated arrow-up-right key: that key
+  // would have to be added to the IconName union and to all five icon packs
+  // for one glyph that a 45deg turn already draws correctly in every pack.
+  const ArrowRight = useIcon("arrow-right");
   // No click-to-focus wiring here. Previously a mousedown on empty space
   // inside the card routed focus to the preview's first interactive element
   // (so the user could keyboard-drive the demo afterwards). In practice it
@@ -62,6 +67,12 @@ export function BentoCard({ slug, name, isNew, gridSize = "small", animateLayout
       >
         {name}
       </span>
+      {slug && (
+        <ArrowRight
+          aria-hidden
+          className="-ml-1 size-3.5 -rotate-45 text-muted-foreground transition-colors duration-80 group-hover/link:text-foreground"
+        />
+      )}
       {isNew && (
         <Badge variant="dot" color="blue" size="sm">
           New

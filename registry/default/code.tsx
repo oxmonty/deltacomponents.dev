@@ -13,7 +13,7 @@ import "@/registry/default/lib/prism-languages"
 
 import { cn } from "@/registry/default/lib/utils"
 import { useThemeContext } from "@/registry/default/lib/theme-context"
-import { getIconForFile } from "@/registry/default/code-block-icons"
+import { getIconForFile } from "@/registry/default/code-icons"
 import { Button } from "@/registry/base/button"
 
 type PackageManager = "npm" | "yarn" | "pnpm" | "bun"
@@ -143,7 +143,7 @@ const lightTheme: PrismTheme = {
   ],
 }
 
-interface CodeBlockProps {
+interface CodeProps {
   npm?: string
   yarn?: string
   pnpm?: string
@@ -289,9 +289,11 @@ function convertNpxToPackageManagers(npxCommand: string): {
  *  `group-hover` for a glyph inside one. */
 function chromeTone(onTheme: boolean, within: "self" | "group") {
   const hover = within === "self" ? "hover" : "group-hover"
+  // A touch device never hovers, so the glyph would sit at its resting tone
+  // forever — it is shown at full strength there instead.
   return onTheme
-    ? `opacity-60 ${hover}:opacity-100`
-    : `text-muted-foreground ${hover}:text-foreground`
+    ? `opacity-60 ${hover}:opacity-100 [@media(hover:none)]:opacity-100`
+    : `text-muted-foreground ${hover}:text-foreground [@media(hover:none)]:text-foreground`
 }
 
 /** Copy `value`, falling back when the async Clipboard API is unavailable.
@@ -302,10 +304,19 @@ function chromeTone(onTheme: boolean, within: "self" | "group") {
  *  throws. The same applies to any consumer serving this component over HTTP
  *  on an internal network.
  *
- *  The fallback selects the text in an off-screen field and runs the legacy
+ *  The fallback selects the text in an off-screen node and runs the legacy
  *  `execCommand("copy")`. It is deprecated but universally implemented, and it
  *  is the only path available without TLS. Returns whether the copy landed, so
- *  the button only claims success when it actually copied. */
+ *  the button only claims success when it actually copied.
+ *
+ *  The node is a span, not a focused textarea. `execCommand("copy")` takes
+ *  whatever is selected, and a selection needs no focus — while focusing a
+ *  field (the usual recipe, which has to flip `contentEditable` on to make iOS
+ *  select it at all) reads to iOS as "about to type": Safari collapses its
+ *  bottom address bar for a keyboard that never arrives, then puts it back a
+ *  frame later when the node is removed. Selecting a plain node skips the
+ *  whole performance. `white-space: pre` keeps the newlines, which the copy
+ *  takes from the rendered text rather than the string. */
 async function copyToClipboard(value: string): Promise<boolean> {
   try {
     if (navigator.clipboard?.writeText) {
@@ -313,17 +324,19 @@ async function copyToClipboard(value: string): Promise<boolean> {
       return true
     }
   } catch {
-    // Present but refused (permissions policy, denied prompt) — try the field.
+    // Present but refused (permissions policy, denied prompt) — try the node.
   }
 
-  // Off-screen rather than invisible: a field with `display:none`,
-  // `visibility:hidden` or zero size cannot be selected, so the copy would
-  // silently do nothing. 16px stops iOS zooming to it.
-  const field = document.createElement("textarea")
-  field.value = value
-  field.setAttribute("readonly", "")
-  field.style.cssText = "position:fixed;top:0;left:-9999px;font-size:16px"
-  document.body.appendChild(field)
+  // Off-screen rather than invisible: text under `display:none` or
+  // `visibility:hidden` is not selectable, so the copy would silently do
+  // nothing. Parked at the viewport's top-left rather than off at -9999px —
+  // selecting something makes the browser reveal it, and revealing a node
+  // 9999px to the left is what made mobile lurch sideways on every copy.
+  const holder = document.createElement("span")
+  holder.textContent = value
+  holder.style.cssText =
+    "position:fixed;top:0;left:0;width:1px;height:1px;overflow:hidden;opacity:0;white-space:pre;user-select:text;-webkit-user-select:text"
+  document.body.appendChild(holder)
 
   // Put whatever the reader had highlighted back afterwards.
   const selection = document.getSelection()
@@ -331,26 +344,17 @@ async function copyToClipboard(value: string): Promise<boolean> {
     selection && selection.rangeCount > 0 ? selection.getRangeAt(0) : null
 
   try {
-    // iOS ignores select() on a readonly field, so it is made editable for the
-    // moment of the copy and selected through a Range; setSelectionRange and
-    // select() cover every other browser.
-    field.contentEditable = "true"
-    field.readOnly = false
     const range = document.createRange()
-    range.selectNodeContents(field)
+    range.selectNodeContents(holder)
     selection?.removeAllRanges()
     selection?.addRange(range)
-    field.setSelectionRange(0, value.length)
-    field.select()
     return document.execCommand("copy")
   } catch {
     return false
   } finally {
-    field.remove()
-    if (previous) {
-      selection?.removeAllRanges()
-      selection?.addRange(previous)
-    }
+    selection?.removeAllRanges()
+    holder.remove()
+    if (previous) selection?.addRange(previous)
   }
 }
 
@@ -394,6 +398,11 @@ function CopyButton({
       className={cn(
         "group size-7 border-none shadow-none transition-colors",
         "bg-transparent hover:bg-[var(--copy-button-hover-bg,var(--muted))] active:bg-[var(--copy-button-hover-bg,var(--muted))]",
+        // No hover on a phone, and the button floats over the code with no
+        // filename bar to sit in — without a resting ground the glyph lands on
+        // top of whatever the first line happens to be. Same mix as the hover
+        // ground, a touch stronger so it reads as a chip on its own.
+        "[@media(hover:none)]:bg-[var(--copy-button-rest-bg,var(--muted))]",
         className
       )}
       style={
@@ -401,6 +410,7 @@ function CopyButton({
           ...(iconColor
             ? {
                 "--copy-button-hover-bg": `color-mix(in srgb, ${iconColor} 7%, transparent)`,
+                "--copy-button-rest-bg": `color-mix(in srgb, ${iconColor} 12%, transparent)`,
                 // Only when the chrome rides the theme colour; otherwise the
                 // muted/foreground classes own it.
                 ...(onTheme ? { color: iconColor } : {}),
@@ -454,7 +464,10 @@ function HighlightedCode({
         <pre
           className={cn(
             className,
-            "relative min-w-0 py-3.5 outline-none",
+            // w-max so the block grows to the longest line, min-w-full so it
+            // still fills the scroller when every line is short. Together they
+            // give the rows below a width to stretch to.
+            "relative w-max min-w-full py-3.5 outline-none",
             "leading-6 font-normal",
             textClassName
           )}
@@ -472,7 +485,11 @@ function HighlightedCode({
             <div
               key={i}
               {...getLineProps({ line })}
-              className="relative flex min-h-[24px]"
+              // A sticky child can only stay put inside its own containing
+              // block. Left to size on its content, a short line's row ended
+              // before the scroll did and its number slid away with it; at the
+              // full block width every gutter survives the whole scroll.
+              className="relative flex min-h-[24px] w-max min-w-full"
             >
               {showLineNumbers && (
                 // Sticky so the gutter survives a horizontal scroll; it paints
@@ -485,7 +502,7 @@ function HighlightedCode({
                   style={{
                     fontFamily: monoFontFamily,
                     color: lineNumberColor,
-                    backgroundColor: "var(--code-block-bg)",
+                    backgroundColor: "var(--code-bg)",
                   }}
                 >
                   {i + 1}
@@ -509,7 +526,7 @@ function HighlightedCode({
   )
 }
 
-export function CodeBlock({
+export function Code({
   npm,
   yarn,
   pnpm,
@@ -531,7 +548,7 @@ export function CodeBlock({
   defaultExpanded = false,
   collapsedHeight = "12rem",
   expandLabel = "Expand",
-}: CodeBlockProps) {
+}: CodeProps) {
   const [packageManager, setPackageManager] = React.useState<PackageManager>(
     defaultPackageManager
   )
@@ -541,7 +558,7 @@ export function CodeBlock({
   // line numbers) that must match at hydration. The `mounted` guard flips it
   // to the real value after mount. The token flash is barely perceptible; the
   // *background* flicker, the loud part, is already gone because
-  // `--code-block-bg` routes through `var(--card)` — a string-stable value, so
+  // `--code-bg` routes through `var(--card)` — a string-stable value, so
   // SSR and client agree and CSS picks the right colour before paint.
   const { resolvedTheme } = useThemeContext()
   const [mounted, setMounted] = useState(false)
@@ -614,7 +631,7 @@ export function CodeBlock({
           "bg-card text-card-foreground border-border/60 overflow-hidden rounded-lg border [background-clip:padding-box]",
           className
         )}
-        style={{ "--code-block-bg": codeBlockBgColor } as React.CSSProperties}
+        style={{ "--code-bg": codeBlockBgColor } as React.CSSProperties}
       >
         <div
           className={cn(
@@ -751,7 +768,7 @@ export function CodeBlock({
         !hasClassPrefix("rounded") && "rounded-lg",
         className
       )}
-      style={{ "--code-block-bg": codeBlockBgColor } as React.CSSProperties}
+      style={{ "--code-bg": codeBlockBgColor } as React.CSSProperties}
     >
       {filename && (
         <figcaption
@@ -813,7 +830,7 @@ export function CodeBlock({
               !scrollbar && "scrollbar-hide"
             )}
             style={{
-              backgroundColor: "var(--code-block-bg)",
+              backgroundColor: "var(--code-bg)",
               maxHeight: isExpanded ? "none" : collapsedHeight,
             }}
           >
@@ -825,7 +842,7 @@ export function CodeBlock({
               "relative max-h-[450px] w-full overflow-auto",
               !scrollbar && "scrollbar-hide"
             )}
-            style={{ backgroundColor: "var(--code-block-bg)" }}
+            style={{ backgroundColor: "var(--code-bg)" }}
           >
             {highlighted}
           </div>

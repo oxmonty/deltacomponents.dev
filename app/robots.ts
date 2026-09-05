@@ -1,6 +1,8 @@
 import type { MetadataRoute } from "next";
 
-const SITE_URL = "https://deltacomponents.dev";
+import { site } from "@/lib/config";
+
+const SITE_URL = site.url;
 
 // Aggressive AI/scraper crawlers that ignore crawl-rate norms.
 // Well-behaved bots honor this; abusive ones won't — Vercel Firewall is the real enforcement.

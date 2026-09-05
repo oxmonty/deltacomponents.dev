@@ -43,8 +43,10 @@ animations need the Inter variable font, which ships in `public/fonts`.
 5. Write the doc page at `app/docs/<slug>/page.tsx`.
 6. `make registry` to regenerate `public/r`, and commit the output.
 
-See `component-documentation-guidelines.md` for the doc page structure and
-`motion-guidelines.md` for the spring and animation rules.
+Agent-facing guides live in `agents/` (root `CLAUDE.md` symlinks to
+`agents/AGENTS.md`): `agents/component-documentation-guidelines.md` for the doc
+page structure, `agents/motion-guidelines.md` for the spring and animation
+rules.
 
 ## Design system
 
@@ -83,6 +85,5 @@ Run these through `make`, or with `bun run <script>` directly.
 
 ## Credits
 
-Forked from [Fluid Functionalism](https://github.com/mickadesign/fluid-functionalism)
-by [@micka_design](https://x.com/micka_design), whose design system, tokens,
-and motion rules this library builds on. MIT licensed.
+Built by [Patrick Prunty](https://patrickprunty.com). MIT licensed — see
+`LICENSE` for the full notice.

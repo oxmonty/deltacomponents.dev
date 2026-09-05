@@ -1,6 +1,6 @@
 "use client";
 
-import { CodeBlock } from "@/registry/default/code-block";
+import { Code } from "@/registry/default/code";
 import { PATRICK_DARK } from "@/lib/docs/code-themes";
 import { ComponentPreview } from "@/lib/docs/ComponentPreview";
 import { PropsTable, type PropDef } from "@/lib/docs/PropsTable";
@@ -71,23 +71,23 @@ mod tests {
     }
 }`;
 
-const basicCode = `import { CodeBlock } from "./components";
+const basicCode = `import { Code } from "./components";
 
-<CodeBlock language="tsx" code={source} />`;
+<Code language="tsx" code={source} />`;
 
-const filenameCode = `<CodeBlock
+const filenameCode = `<Code
   filename="greet.ts"
   language="typescript"
   code={source}
 />`;
 
 const packageManagerCode = `// A fenced npx command expands into all four managers.
-const install = "\`\`\`npx\\nshadcn@latest add code-block\\n\`\`\`";
+const install = "\`\`\`npx\\nshadcn@latest add code\\n\`\`\`";
 
-<CodeBlock code={install} />
+<Code code={install} />
 
 // Or pass the commands yourself:
-<CodeBlock
+<Code
   npm="npm i prism-react-renderer"
   pnpm="pnpm add prism-react-renderer"
 />`;
@@ -104,9 +104,9 @@ const patrickDark: PrismTheme = {
   ],
 };
 
-<CodeBlock filename="word_count.rs" language="rust" theme={patrickDark} code={source} />`;
+<Code filename="word_count.rs" language="rust" theme={patrickDark} code={source} />`;
 
-const expandableCode = `<CodeBlock
+const expandableCode = `<Code
   filename="hooks.ts"
   code={source}
   expandable
@@ -131,16 +131,16 @@ const codeBlockProps: PropDef[] = [
   { name: "textClassName", type: "string", default: '"text-[14px]"', description: "Font size for the code. A `text-*` class in `className` overrides it." },
 ];
 
-export default function CodeBlockDoc() {
+export default function CodeDoc() {
   return (
     <DocPage
-      slug="code-block"
+      slug="code"
       description="Syntax-highlighted code with a copy button, a filename bar, and a package-manager tab strip."
     >
       <DocSection title="Basic">
         <ComponentPreview code={basicCode} padding="compact">
           <div className="w-full max-w-[520px]">
-            <CodeBlock language="tsx" code={SAMPLE} />
+            <Code language="tsx" code={SAMPLE} />
           </div>
         </ComponentPreview>
       </DocSection>
@@ -148,7 +148,7 @@ export default function CodeBlockDoc() {
       <DocSection title="With a filename">
         <ComponentPreview code={filenameCode} padding="compact">
           <div className="w-full max-w-[520px]">
-            <CodeBlock filename="greet.ts" language="typescript" code={SAMPLE} />
+            <Code filename="greet.ts" language="typescript" code={SAMPLE} />
           </div>
         </ComponentPreview>
       </DocSection>
@@ -156,7 +156,7 @@ export default function CodeBlockDoc() {
       <DocSection title="Package managers">
         <ComponentPreview code={packageManagerCode} padding="compact">
           <div className="w-full max-w-[520px]">
-            <CodeBlock code={"```npx\nshadcn@latest add code-block\n```"} />
+            <Code code={"```npx\nshadcn@latest add code\n```"} />
           </div>
         </ComponentPreview>
       </DocSection>
@@ -164,7 +164,7 @@ export default function CodeBlockDoc() {
       <DocSection title="Custom theme">
         <ComponentPreview code={customThemeCode} padding="compact">
           <div className="w-full max-w-[520px]">
-            <CodeBlock
+            <Code
               filename="word_count.rs"
               language="rust"
               theme={PATRICK_DARK}
@@ -177,7 +177,7 @@ export default function CodeBlockDoc() {
       <DocSection title="Expandable">
         <ComponentPreview code={expandableCode} padding="compact">
           <div className="w-full max-w-[520px]">
-            <CodeBlock
+            <Code
               filename="hooks.ts"
               language="typescript"
               code={LONG_SAMPLE}

@@ -1,12 +1,13 @@
 "use client";
 
-import { type MouseEvent, type ReactNode } from "react";
+import { type ReactNode } from "react";
+import { cn } from "@/registry/default/lib/utils";
 import { fontWeights } from "@/registry/default/lib/font-weight";
-import { CodeBlock } from "@/registry/default/code-block";
 import { componentList, labelOf, neighbours, toLabel } from "@/lib/docs/components";
-import { installUrl } from "@/lib/registry-url";
 import { DocPager } from "@/lib/docs/DocPager";
 import { DocHeader } from "@/lib/docs/DocHeader";
+import { headingId } from "@/lib/docs/heading-id";
+import { InstallTabs } from "@/lib/docs/InstallTabs";
 
 interface DocPageProps {
   /** Optional: with a `slug`, the heading comes from that component's entry in
@@ -47,23 +48,10 @@ export function DocPage({
 
       {slug && showInstall && (
         <div className="flex flex-col gap-3">
-          <h2
-            className="text-title text-foreground leading-none"
-            style={{ fontVariationSettings: fontWeights.semibold }}
-          >
+          <AnchoredHeading className="text-title text-foreground leading-none">
             Installation
-          </h2>
-          {/* A fenced npx command, so CodeBlock expands it into npm / yarn /
-              pnpm / bun and the reader copies the one they actually use.
-              npm stays selected by default — it is what the shadcn CLI
-              documents. */}
-          <CodeBlock
-            code={`\`\`\`npx\nshadcn@latest add ${installUrl(installSlug ?? slug)}\n\`\`\``}
-            defaultPackageManager="npm"
-          />
-          {installNote && (
-            <p className="text-caption text-muted-foreground">{installNote}</p>
-          )}
+          </AnchoredHeading>
+          <InstallTabs slug={installSlug ?? slug} note={installNote} />
         </div>
       )}
       {children}
@@ -73,49 +61,17 @@ export function DocPage({
   );
 }
 
-/** Slug for a section heading, matching how shadcn's docs build theirs: the
- *  text, spaces to dashes, apostrophes and question marks dropped, lowercased.
- *  Kept identical so `#custom-colors` style links behave the same here. */
-export function headingId(text: string): string | undefined {
-  return (
-    text
-      .trim()
-      .replace(/\s+/g, "-")
-      .replace(/['?]/g, "")
-      .toLowerCase() || undefined
-  );
-}
-
 /** Wraps a heading so the whole thing is a link to itself, with a `#` that
  *  fades in on hover — and on keyboard focus too, which shadcn's version
- *  leaves out: without it the affordance is invisible to anyone tabbing. */
+ *  leaves out: without it the affordance is invisible to anyone tabbing.
+ *
+ *  A plain fragment link: the site-wide HashScroll listener (mounted in the
+ *  root layout) is what actually moves the viewport. */
 function HeadingAnchor({ id, children }: { id?: string; children: ReactNode }) {
   if (!id) return <>{children}</>;
 
-  // Scrolling the viewport explicitly rather than letting the fragment or
-  // scrollIntoView do it: the page content sits inside a clipped ancestor, so
-  // both of those resolve to that container instead of the viewport and end up
-  // moving nothing. The offset comes from the heading's own scroll-margin, so
-  // the two stay in step.
-  const handleClick = (event: MouseEvent<HTMLAnchorElement>) => {
-    // Leave modified clicks alone — they open a new tab or window.
-    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-    const heading = document.getElementById(id);
-    if (!heading) return;
-    event.preventDefault();
-
-    const margin = parseFloat(getComputedStyle(heading).scrollMarginTop) || 0;
-    window.scrollTo({
-      top: heading.getBoundingClientRect().top + window.scrollY - margin,
-      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
-        ? "auto"
-        : "smooth",
-    });
-    window.history.pushState(null, "", `#${id}`);
-  };
-
   return (
-    <a href={`#${id}`} onClick={handleClick} className="group no-underline">
+    <a href={`#${id}`} className="group no-underline">
       <span className="underline-offset-4 group-hover:underline">{children}</span>
       <span
         aria-hidden="true"
@@ -124,6 +80,38 @@ function HeadingAnchor({ id, children }: { id?: string; children: ReactNode }) {
         #
       </span>
     </a>
+  );
+}
+
+interface AnchoredHeadingProps {
+  /** Heading level. The site's content pages nest h3s under h2s. */
+  as?: "h2" | "h3";
+  /** Overrides the slug derived from the text — for a heading whose text would
+   *  collide with another on the page, or whose link is already published. */
+  id?: string;
+  className?: string;
+  /** Plain text: it is the anchor's slug as well as what the heading reads. */
+  children: string;
+}
+
+/** A heading that links to itself. `scroll-mt` keeps it clear of the viewport
+ *  edge when someone lands on it from a `#link`. */
+export function AnchoredHeading({
+  as: Tag = "h2",
+  id,
+  className,
+  children,
+}: AnchoredHeadingProps) {
+  const anchorId = id ?? headingId(children);
+
+  return (
+    <Tag
+      id={anchorId}
+      className={cn("scroll-mt-20", className)}
+      style={{ fontVariationSettings: fontWeights.semibold }}
+    >
+      <HeadingAnchor id={anchorId}>{children}</HeadingAnchor>
+    </Tag>
   );
 }
 
@@ -151,14 +139,15 @@ export function DocSection({ title, id, children }: DocSectionProps) {
           rather than captioning the one above.
           scroll-mt keeps it clear of the viewport edge when someone lands on
           it from a #link. */}
-      <h2
+      <AnchoredHeading
         id={anchorId}
-        className="-mb-1 scroll-mt-20 py-2 text-title text-foreground leading-none"
-        style={{ fontVariationSettings: fontWeights.semibold }}
+        className="-mb-1 py-2 text-title text-foreground leading-none"
       >
-        <HeadingAnchor id={anchorId}>{title}</HeadingAnchor>
-      </h2>
+        {title}
+      </AnchoredHeading>
       {children}
     </div>
   );
 }
+
+export { headingId };

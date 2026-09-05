@@ -12,6 +12,7 @@ import {
 } from "@/registry/base/sidebar";
 import { SiteSidebar } from "@/app/components/sidebar";
 import { RightPanel } from "@/app/components/right-panel";
+import { SiteFooter } from "@/app/components/site-footer";
 import { RightRailProvider } from "@/lib/right-rail";
 import { showShortcutToast } from "@/lib/docs/settings-toast";
 import { pageOrder } from "@/lib/docs/components";
@@ -172,6 +173,7 @@ export function SidebarLayout({ children, defaultOpen = true }: SidebarLayoutPro
         {/* Main content */}
         <SidebarInset className="min-w-0">
           {children}
+          <SiteFooter />
         </SidebarInset>
 
         {/* Desktop right panel */}

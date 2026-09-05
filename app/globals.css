@@ -257,7 +257,7 @@
    isolates the touch platform rather than every Apple device — a Mac keeps
    Inter, which is what the desktop design was drawn against.
 
-   Note: the font-weight animations (see motion-guidelines.md) drive
+   Note: the font-weight animations (see agents/motion-guidelines.md) drive
    `font-variation-settings: 'wght'`. SF exposes a weight axis on recent iOS,
    but where it doesn't the text simply lands on the nearest static weight
    rather than tweening — the layout is reserved by the ghost span either way,
@@ -436,7 +436,7 @@ html, body {
      so a `code` span sits inside a line of prose without pushing it apart.
      Sized in em, not the type scale, so it tracks whatever it is nested in —
      body copy, a table cell, a caption. Excludes code inside <pre>, which
-     CodeBlock styles itself. Base layer, so a page can still override. */
+     Code styles itself. Base layer, so a page can still override. */
   code:not(pre code) {
     background: var(--code-chip-bg);
     color: var(--code-chip-fg);
@@ -507,6 +507,24 @@ html[data-size="compact"] {
 }
 @utility text-caption {
   font-size: var(--fs-caption, 13px);
+}
+
+/* Numbered step, for a procedure like the manual install. Ported from www's
+   docs: the number sits ON the rule its container draws, straddling it, so the
+   line reads as threading the steps together rather than fencing them off.
+   `left` + `translateX` place the circle over the border rather than beside it,
+   so the container's own padding is what indents each step's content clear of
+   the line. Needs `counter-reset: step` on an ancestor — see Steps. */
+@utility step {
+  counter-increment: step;
+  position: relative;
+
+  &::before {
+    @apply border-border bg-background text-muted-foreground absolute z-10 flex size-6 items-center justify-center rounded-full border text-center font-mono text-xs font-medium;
+    content: counter(step);
+    left: -3.69rem;
+    transform: translateX(60%);
+  }
 }
 
 /* Shape cross-fade: ShapeProvider adds `.transitioning` around the rounded↔pill
@@ -938,16 +956,11 @@ html.transitioning *::after {
   box-shadow: 0 1px 2px rgb(0 0 0 / 0.08);
 }
 
-/* Keyboard-active card (focus is inside it): a step above hover so it reads as
-   "this is the container receiving shortcuts", but only a step. Drawn from
-   --foreground at high opacity it put a near-black rule around the card the
-   moment you touched anything inside it, which read as an error state rather
-   than as focus. The ladder is 12% at rest, 20% hovered, 30% focused. Placed
-   after :hover so it wins when a card is both hovered and focused. */
-.bento-card-border:focus-within {
-  border-color: color-mix(in oklab, var(--foreground), transparent 70%);
-  box-shadow: 0 1px 3px rgb(0 0 0 / 0.12);
-}
+/* No :focus-within treatment on the card. Every demo inside one is
+   interactive, so touching a switch or a tab lit the whole card up — the
+   container reacting to something the reader did to a control inside it. The
+   control's own focus ring already says where focus is; the card saying it
+   again just made the frame flicker as you played with the demo. */
 
 /* Dark mode runs the same ladder with a softer border and heavier drops — the
    card has to separate from a dark ground rather than sit on a light one. */
@@ -959,11 +972,6 @@ html.transitioning *::after {
 .dark .bento-card-border:hover {
   border-color: var(--border);
   box-shadow: 0 1px 2px rgb(0 0 0 / 0.6);
-}
-
-.dark .bento-card-border:focus-within {
-  border-color: color-mix(in oklab, var(--foreground), transparent 55%);
-  box-shadow: 0 1px 3px rgb(0 0 0 / 0.7);
 }
 
 @media (min-width: 768px) {

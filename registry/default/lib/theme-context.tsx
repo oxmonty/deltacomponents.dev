@@ -62,7 +62,7 @@ function ThemeProvider({
   // `disableTransitionOnChange`, and it is the behaviour www runs with. A
   // theme change is a discrete state change, not an animation: letting colours
   // tween means a beat where half the page is one theme and half the other,
-  // and anything painting from JS (CodeBlock picks a whole syntax palette that
+  // and anything painting from JS (Code picks a whole syntax palette that
   // way) lands instantly while the CSS around it is still mid-fade.
   //
   // A LAYOUT effect, not a passive one, so the class lands in the same frame

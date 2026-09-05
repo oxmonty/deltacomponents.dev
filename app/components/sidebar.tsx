@@ -126,7 +126,7 @@ export function SiteSidebar() {
               className="text-title text-foreground leading-none"
               style={{ fontVariationSettings: "'wght' 600" }}
             >
-              Make them yours
+              Customise
             </h2>
             <GitHubStarButton />
           </div>

@@ -2,7 +2,9 @@ import type { MetadataRoute } from "next";
 import { readdirSync } from "node:fs";
 import { join } from "node:path";
 
-const SITE_URL = "https://deltacomponents.dev";
+import { site } from "@/lib/config";
+
+const SITE_URL = site.url;
 
 // API routes carry no pages of their own.
 const EXCLUDE = ["/api"];

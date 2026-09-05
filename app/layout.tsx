@@ -12,12 +12,14 @@ import { ShapeShortcut } from "@/lib/docs/shape-shortcut";
 import { SizeShortcut } from "@/lib/docs/size-shortcut";
 import { SizeAttribute } from "@/lib/docs/size-attribute";
 import { SettingsToast } from "@/lib/docs/settings-toast";
+import { HashScroll } from "@/lib/docs/hash-scroll";
 import { SidebarLayout } from "@/app/components/sidebar-layout";
+import { site } from "@/lib/config";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://deltacomponents.dev"),
-  title: "Delta Components",
-  description: "An open source component library built on the Fluid Functionalism design system.",
+  metadataBase: new URL(site.url),
+  title: site.name,
+  description: site.description,
   icons: {
     icon: [
       { url: "/metadata/favicon.svg", type: "image/svg+xml" },
@@ -30,14 +32,14 @@ export const metadata: Metadata = {
   },
   manifest: "/metadata/site.webmanifest",
   openGraph: {
-    title: "Delta Components",
-    description: "An open source component library built on the Fluid Functionalism design system.",
+    title: site.name,
+    description: site.description,
     images: [{ url: "/metadata/og.png", width: 1200, height: 630 }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Delta Components",
-    description: "An open source component library built on the Fluid Functionalism design system.",
+    title: site.name,
+    description: site.description,
     images: ["/metadata/og.png"],
   },
 };
@@ -54,7 +56,11 @@ export default async function RootLayout({
   const sidebarDefaultOpen = cookieStore.get("sidebar_state")?.value !== "false";
 
   return (
-    <html lang="en" suppressHydrationWarning>
+    // data-scroll-behavior is Next's opt-in: without it the router forces
+    // `scroll-behavior: auto` for the duration of every route change, so the
+    // smooth scroll in globals.css never applies to sidebar or pager
+    // navigation. With it, both glide to the top of the new page.
+    <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth">
       <head>
         {/* Dark mode is a class on <html>, so a system-dark visitor would get
             one light frame before ThemeProvider's effect runs. This blocks
@@ -72,7 +78,7 @@ export default async function RootLayout({
         {/* reducedMotion="user" makes every framer-motion component honor the
             OS "reduce motion" setting: transform / scale / position / layout
             animations are dropped, opacity and color fades are kept. One switch
-            for the whole system — see motion-guidelines.md. */}
+            for the whole system — see agents/motion-guidelines.md. */}
         <MotionConfig reducedMotion="user">
           <ShapeProvider defaultShape="rounded">
             <ShapeShortcut />
@@ -83,6 +89,7 @@ export default async function RootLayout({
                 <IconPlaygroundProvider defaultLibrary="untitledui">
                   <SidebarLayout defaultOpen={sidebarDefaultOpen}>{children}</SidebarLayout>
                   <SettingsToast />
+                  <HashScroll />
                   <Analytics />
                   <SpeedInsights />
                 </IconPlaygroundProvider>

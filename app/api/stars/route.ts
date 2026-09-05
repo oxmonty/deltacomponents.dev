@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 
-const REPO = "oxmonty/deltacomponents.dev";
+import { site } from "@/lib/config";
+
+const REPO = site.repo;
 
 // Live GitHub star count, cached server-side for 60s so we call GitHub at most
 // once a minute no matter how many visitors poll this route.
