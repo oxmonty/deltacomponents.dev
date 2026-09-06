@@ -51,6 +51,7 @@ function useCssPresence<T extends { key: string }>(items: T[]) {
   const lastRef = useRef(new Map<string, T>());
   const [exitingKeys, setExitingKeys] = useState<string[]>([]);
 
+  const live = new Set(items.map((it) => it.key));
   // A string, not the array: `items` is a fresh array on every render, so
   // depending on its identity would run this every commit again.
   const liveKeys = items.map((it) => it.key).join("\u0000");
@@ -60,7 +61,6 @@ function useCssPresence<T extends { key: string }>(items: T[]) {
   });
 
   useIsoLayoutEffect(() => {
-    const live = new Set(items.map((it) => it.key));
     setExitingKeys((prev) => {
       const next = prev.filter((key) => !live.has(key));
       for (const key of lastRef.current.keys()) {
@@ -80,9 +80,16 @@ function useCssPresence<T extends { key: string }>(items: T[]) {
     );
   }, []);
 
+  // `exitingKeys` is state, pruned by the effect above — so on the render
+  // where a key comes back alive it is still in that list from the previous
+  // commit. Filtering against the live set here (not only in the effect) is
+  // what stops the same key rendering twice: a row that leaves and returns at
+  // the same level and position keeps its key, which is exactly what makes
+  // the highlight glide rather than remount.
   const shown: (T & { exiting?: boolean })[] = [
     ...items,
     ...exitingKeys
+      .filter((key) => !live.has(key))
       .map((key) => lastRef.current.get(key))
       .filter((it): it is T => it !== undefined)
       .map((it) => ({ ...it, exiting: true })),
