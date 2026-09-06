@@ -4,12 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { cn } from "@/registry/default/lib/utils";
 import { fontWeights } from "@/registry/default/lib/font-weight";
 import { Button } from "@/registry/base/button";
-import {
-  Select,
-  SelectTrigger,
-  SelectContent,
-  SelectItem,
-} from "@/registry/base/select";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import {
   useShape,
   useShapeContext,
@@ -137,7 +132,6 @@ export function SettingsContent({ tooltipSide = "left" }: { tooltipSide?: "left"
   const MoonIcon = useIcon("moon");
   const RectHorizIcon = useIcon("rectangle-horizontal");
   const CircleIcon = useIcon("circle");
-  const PaletteIcon = useIcon("palette");
 
   const themeOptions = [
     { label: "System", value: "system" as Theme, icon: MonitorIcon },
@@ -158,8 +152,13 @@ export function SettingsContent({ tooltipSide = "left" }: { tooltipSide?: "left"
   const iconOptions = iconLibraryOrder.map((lib) => ({
     label: iconLibraryLabels[lib],
     value: lib,
-    icon: PaletteIcon,
   }));
+
+  // A native `<option>` can't carry a glyph — the platform draws the list — so
+  // the icon that used to sit on every row now only marks the chosen value on
+  // the closed control, which is where it was doing the work anyway.
+  const ActiveThemeIcon = themeOptions.find((o) => o.value === theme)?.icon;
+  const ActiveShapeIcon = shapeOptions.find((o) => o.value === shape)?.icon;
 
   return (
     <div className="flex flex-col gap-2">
@@ -168,75 +167,67 @@ export function SettingsContent({ tooltipSide = "left" }: { tooltipSide?: "left"
         <Tooltip content={<span>Press &ensp;<kbd className="font-mono opacity-50">T</kbd>&ensp; to cycle</span>} side={tooltipSide}>
           <div className="flex items-center justify-between">
             <span className="text-body text-muted-foreground">Theme</span>
-            <Select value={theme} onValueChange={(v) => setTheme(v as Theme)}>
-              <SelectTrigger
-                variant="borderless"
-                className="min-w-0 w-auto h-7 px-2 text-body"
-                icon={themeOptions.find((o) => o.value === theme)?.icon}
-              />
-              <SelectContent>
-                {themeOptions.map((o, i) => (
-                  <SelectItem key={o.value} value={o.value} index={i} icon={o.icon}>
-                    {o.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <NativeSelect
+              aria-label="Theme"
+              value={theme}
+              onChange={(e) => setTheme(e.target.value as Theme)}
+              icon={ActiveThemeIcon ? <ActiveThemeIcon size={16} strokeWidth={1.5} /> : undefined}
+            >
+              {themeOptions.map((o) => (
+                <NativeSelectOption key={o.value} value={o.value}>
+                  {o.label}
+                </NativeSelectOption>
+              ))}
+            </NativeSelect>
           </div>
         </Tooltip>
         <Tooltip content={<span>Press &ensp;<kbd className="font-mono opacity-50">R</kbd>&ensp; to toggle</span>} side={tooltipSide}>
           <div className="flex items-center justify-between">
             <span className="text-body text-muted-foreground">Radius</span>
-            <Select value={shape} onValueChange={(v) => setShape(v as ShapeVariant)}>
-              <SelectTrigger
-                variant="borderless"
-                className="min-w-0 w-auto h-7 px-2 text-body"
-                icon={shapeOptions.find((o) => o.value === shape)?.icon}
-              />
-              <SelectContent>
-                {shapeOptions.map((o, i) => (
-                  <SelectItem key={o.value} value={o.value} index={i} icon={o.icon}>
-                    {o.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <NativeSelect
+              aria-label="Radius"
+              value={shape}
+              onChange={(e) => setShape(e.target.value as ShapeVariant)}
+              icon={ActiveShapeIcon ? <ActiveShapeIcon size={16} strokeWidth={1.5} /> : undefined}
+            >
+              {shapeOptions.map((o) => (
+                <NativeSelectOption key={o.value} value={o.value}>
+                  {o.label}
+                </NativeSelectOption>
+              ))}
+            </NativeSelect>
           </div>
         </Tooltip>
         <Tooltip content={<span>Press &ensp;<kbd className="font-mono opacity-50">S</kbd>&ensp; to toggle</span>} side={tooltipSide}>
           <div className="flex items-center justify-between">
             <span className="text-body text-muted-foreground">Size</span>
-            <Select value={size} onValueChange={(v) => setSize(v as SizeVariant)}>
-              <SelectTrigger
-                variant="borderless"
-                className="min-w-0 w-auto h-7 px-2 text-body"
-              />
-              <SelectContent>
-                {sizeOptions.map((o, i) => (
-                  <SelectItem key={o.value} value={o.value} index={i}>
-                    {o.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <NativeSelect
+              aria-label="Size"
+              value={size}
+              onChange={(e) => setSize(e.target.value as SizeVariant)}
+            >
+              {sizeOptions.map((o) => (
+                <NativeSelectOption key={o.value} value={o.value}>
+                  {o.label}
+                </NativeSelectOption>
+              ))}
+            </NativeSelect>
           </div>
         </Tooltip>
         <Tooltip content={<span>Press &ensp;<kbd className="font-mono opacity-50">I</kbd>&ensp; to cycle</span>} side={tooltipSide}>
           <div className="flex items-center justify-between">
             <span className="text-body text-muted-foreground">Icons</span>
-            <Select value={iconLibrary} onValueChange={(v) => setIconLibrary(v as IconLibrary)}>
-              <SelectTrigger
-                variant="borderless"
-                className="min-w-0 w-auto h-7 px-2 text-body"
-              />
-              <SelectContent>
-                {iconOptions.map((o, i) => (
-                  <SelectItem key={o.value} value={o.value} index={i}>
-                    {o.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <NativeSelect
+              aria-label="Icons"
+              value={iconLibrary}
+              onChange={(e) => setIconLibrary(e.target.value as IconLibrary)}
+            >
+              {iconOptions.map((o) => (
+                <NativeSelectOption key={o.value} value={o.value}>
+                  {o.label}
+                </NativeSelectOption>
+              ))}
+            </NativeSelect>
           </div>
         </Tooltip>
       </div>
