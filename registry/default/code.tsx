@@ -220,8 +220,19 @@ function chromeTone(onTheme: boolean, within: "self" | "group") {
   // A touch device never hovers, so the glyph would sit at its resting tone
   // forever — it is shown at full strength there instead.
   return onTheme
-    ? `opacity-60 ${hover}:opacity-100 [@media(hover:none)]:opacity-100`
-    : `text-muted-foreground ${hover}:text-foreground [@media(hover:none)]:text-foreground`
+    ? `${chromeRestingTone(onTheme)} ${hover}:opacity-100 [@media(hover:none)]:opacity-100`
+    : `${chromeRestingTone(onTheme)} ${hover}:text-foreground [@media(hover:none)]:text-foreground`
+}
+
+/** `chromeTone`'s resting half on its own, for the chrome that never lights
+ *  up: the filename bar's file icon and label. They sit in the same row as the
+ *  copy button, so anything brighter than the glyph it sits beside reads as the
+ *  filename shouting over the control — which is what `text-foreground/75` did.
+ *  Both branches are here for the same reason as in `chromeTone`: on a block
+ *  painting from its own palette the app's muted token is the wrong grey, so
+ *  the label rides the theme's colour at the glyph's opacity instead. */
+function chromeRestingTone(onTheme: boolean) {
+  return onTheme ? "opacity-60" : "text-muted-foreground"
 }
 
 /** Copy `value`, falling back when the async Clipboard API is unavailable.
@@ -716,7 +727,7 @@ export function Code({
           <div
             className={cn(
               "flex items-center gap-2",
-              paintFromTheme ? "opacity-75" : "text-foreground/75",
+              chromeRestingTone(paintFromTheme),
               effectiveTextClassName
             )}
           >
