@@ -83,7 +83,7 @@ function PlayText({
       value={value}
       onChange={(e) => onChange(e.target.value)}
       aria-label="Button label"
-      className="h-7 w-[124px] rounded-md bg-transparent px-2 text-right text-body text-foreground transition-colors duration-80 hover:bg-hover focus:bg-hover outline-none focus-visible:ring-1 focus-visible:ring-[color:var(--focus-ring,#6B97FF)]"
+      className="h-7 w-[124px] rounded-md bg-transparent px-2 text-body text-foreground transition-colors duration-80 hover:bg-hover focus:bg-hover outline-none focus-visible:ring-1 focus-visible:ring-[color:var(--focus-ring,#6B97FF)]"
     />
   );
 }

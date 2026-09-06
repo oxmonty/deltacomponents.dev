@@ -13,12 +13,6 @@ import {
 import { useSizeContext, type SizeVariant } from "@/lib/size-context";
 import { useThemeContext, type Theme } from "@/registry/default/lib/theme-context";
 import { useIcon } from "@/lib/icon-context";
-import {
-  useIconLibrary,
-  iconLibraryOrder,
-  iconLibraryLabels,
-  type IconLibrary,
-} from "@/lib/docs/icon-playground";
 import { SurfaceProvider } from "@/lib/surface-context";
 import { RightRailTarget } from "@/lib/right-rail";
 import { DocsToc } from "@/lib/docs/DocsToc";
@@ -125,7 +119,6 @@ export function SettingsContent({ tooltipSide = "left" }: { tooltipSide?: "left"
   const { theme, setTheme } = useThemeContext();
   const { shape, setShape } = useShapeContext();
   const { size, setSize } = useSizeContext();
-  const { iconLibrary, setIconLibrary } = useIconLibrary();
 
   const MonitorIcon = useIcon("monitor");
   const SunIcon = useIcon("sun");
@@ -148,11 +141,6 @@ export function SettingsContent({ tooltipSide = "left" }: { tooltipSide?: "left"
     { label: "Default", value: "default" as SizeVariant },
     { label: "Compact", value: "compact" as SizeVariant },
   ];
-
-  const iconOptions = iconLibraryOrder.map((lib) => ({
-    label: iconLibraryLabels[lib],
-    value: lib,
-  }));
 
   // A native `<option>` can't carry a glyph — the platform draws the list — so
   // the icon that used to sit on every row now only marks the chosen value on
@@ -207,22 +195,6 @@ export function SettingsContent({ tooltipSide = "left" }: { tooltipSide?: "left"
               onChange={(e) => setSize(e.target.value as SizeVariant)}
             >
               {sizeOptions.map((o) => (
-                <NativeSelectOption key={o.value} value={o.value}>
-                  {o.label}
-                </NativeSelectOption>
-              ))}
-            </NativeSelect>
-          </div>
-        </Tooltip>
-        <Tooltip content={<span>Press &ensp;<kbd className="font-mono opacity-50">I</kbd>&ensp; to cycle</span>} side={tooltipSide}>
-          <div className="flex items-center justify-between">
-            <span className="text-body text-muted-foreground">Icons</span>
-            <NativeSelect
-              aria-label="Icons"
-              value={iconLibrary}
-              onChange={(e) => setIconLibrary(e.target.value as IconLibrary)}
-            >
-              {iconOptions.map((o) => (
                 <NativeSelectOption key={o.value} value={o.value}>
                   {o.label}
                 </NativeSelectOption>

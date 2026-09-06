@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { usePathname } from "next/navigation";
-import { fontWeights } from "@/registry/default/lib/font-weight";
 import { cn } from "@/registry/default/lib/utils";
 import { TOC } from "@/lib/docs/toc.generated";
 
@@ -63,15 +62,10 @@ export function DocsToc({ className }: { className?: string }) {
       aria-label="On this page"
       className={cn("flex flex-col gap-2", className)}
     >
-      {/* Semibold at 12px: the label has to hold its own as a heading against
-          the column of links under it without growing to compete with the
-          "Customise" title below. */}
-      <p
-        className="text-muted-foreground text-xs"
-        style={{ fontVariationSettings: fontWeights.semibold }}
-      >
-        On This Page
-      </p>
+      {/* The left rail's group-label treatment exactly — 12px, muted at 70%,
+          no added weight. It is the same kind of thing in the same kind of
+          column, and the two rails sit either side of the page. */}
+      <p className="text-muted-foreground/70 text-[12px]">On This Page</p>
       {entries.map((entry) => (
         <a
           key={entry.id}

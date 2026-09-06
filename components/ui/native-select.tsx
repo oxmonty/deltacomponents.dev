@@ -38,7 +38,12 @@ export function NativeSelect({
   const shape = useShape();
 
   return (
-    <div className="relative w-fit has-[select:disabled]:opacity-50">
+    // A fixed width, not `w-fit`: these sit in a column of settings rows whose
+    // values differ in length ("System" against "Untitled UI"), and sized to
+    // content every row started at a different x. 124px is the width the
+    // playground's text field already uses, so selects and inputs share one
+    // left edge down the rail.
+    <div className="relative w-[124px] has-[select:disabled]:opacity-50">
       {icon && (
         <span
           aria-hidden
