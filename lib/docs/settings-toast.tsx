@@ -1,11 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { motion } from "framer-motion";
 import { Toaster, toast } from "sonner";
 
 import { cn } from "@/lib/utils";
-import { spring } from "@/lib/springs";
 import { fontWeights } from "@/lib/font-weight";
 import { useShape, useShapeContext } from "@/lib/shape-context";
 import { useSizeContext } from "@/lib/size-context";
@@ -81,31 +79,30 @@ function ShortcutToast({
 }) {
   const shapeClasses = useShape();
 
-  // Pressed-state feedback for repeat presses: dip the scale, then spring
-  // back. Modeled as a retargeting transition (pressed → released) rather
-  // than keyframes so a press mid-release smoothly redirects instead of
-  // restarting — the toast reads as a button being tapped again. spring.fast:
-  // micro-interaction tier. The first render skips the dip — Sonner's own
-  // entrance covers the initial appearance.
-  const [pressed, setPressed] = useState(false);
+  // Pressed-state feedback for repeat presses: dip the scale, then come back.
+  // A transition can only run one way per state change, so it would give the
+  // recovery and lose the dip that makes the toast read as a key being tapped
+  // again. A keyframe animation carries both halves, and remounting the node
+  // (`key={dipKey}`) is what restarts it — including on a press that lands
+  // mid-recovery, which is the case a retargeting spring used to handle.
+  // The first render skips it: Sonner's own entrance covers that.
+  const [dipKey, setDipKey] = useState(0);
   const mountedRef = useRef(false);
   useEffect(() => {
     if (!mountedRef.current) {
       mountedRef.current = true;
       return;
     }
-    setPressed(true);
-    const release = setTimeout(() => setPressed(false), 80);
-    return () => clearTimeout(release);
+    setDipKey((k) => k + 1);
   }, [press]);
 
   return (
-    <motion.div
-      animate={{ scale: pressed ? 0.95 : 1 }}
-      transition={spring.fast}
+    <div
+      key={dipKey}
       className={cn(
         "mx-auto flex h-9 w-max items-center gap-2 bg-foreground px-3 text-body text-background",
-        shapeClasses.bg
+        shapeClasses.bg,
+        dipKey > 0 && "animate-toast-press"
       )}
       style={{ fontVariationSettings: fontWeights.medium }}
     >
@@ -119,7 +116,7 @@ function ShortcutToast({
         {keyLabel}
       </kbd>
       <span className="[text-box:trim-both_cap_alphabetic]">{message}</span>
-    </motion.div>
+    </div>
   );
 }
 

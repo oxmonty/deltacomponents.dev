@@ -5,9 +5,13 @@ import { useIcon } from "@/lib/icon-context";
 import { Button } from "@/registry/base/button";
 import { ComponentPreview } from "@/lib/docs/ComponentPreview";
 import { PropsTable, type PropDef } from "@/lib/docs/PropsTable";
-import { DocPage, DocSection } from "@/lib/docs/DocPage";
+import { DocPage, DocSection, DocSubSection } from "@/lib/docs/DocPage";
 import { PlaygroundLayout } from "@/lib/docs/playground";
 import { ButtonPlayground } from "@/lib/docs/playgrounds/button";
+
+const usageCode = `import { Button } from "./components";
+
+<Button>Button</Button>`;
 
 const variantsCode = `import { Button } from "./components";
 
@@ -74,52 +78,59 @@ export default function ButtonDoc() {
   const [loading, setLoading] = useState(false);
 
   return (
-    <DocPage
-      slug="button"
-      description="Versatile button with variants, sizes, loading state, and icon support."
-    >
+    <DocPage slug="button">
       <DocSection title="Playground">
         <ButtonPlaygroundSection />
       </DocSection>
 
-      <DocSection title="Variants">
-        <ComponentPreview code={variantsCode}>
-          <div className="flex flex-wrap items-center gap-2">
-            <Button variant="primary">Primary</Button>
-            <Button variant="secondary">Secondary</Button>
-            <Button variant="tertiary">Tertiary</Button>
-            <Button variant="ghost">Ghost</Button>
-          </div>
+      <DocSection title="Usage">
+        <ComponentPreview code={usageCode} padding="compact">
+          <Button>Button</Button>
         </ComponentPreview>
       </DocSection>
 
-      <DocSection title="With Icons">
-        <ComponentPreview code={iconsCode}>
-          <div className="flex flex-wrap items-center gap-2">
-            <Button leadingIcon={Plus}>Create</Button>
-            <Button variant="secondary" trailingIcon={ArrowRight}>Next</Button>
-            <Button variant="tertiary" leadingIcon={Search} trailingIcon={ArrowRight}>Search</Button>
-          </div>
-        </ComponentPreview>
-      </DocSection>
+      <DocSection title="Examples">
+        <DocSubSection title="Variants">
+          <ComponentPreview code={variantsCode}>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button variant="primary">Primary</Button>
+              <Button variant="secondary">Secondary</Button>
+              <Button variant="tertiary">Tertiary</Button>
+              <Button variant="ghost">Ghost</Button>
+            </div>
+          </ComponentPreview>
+        </DocSubSection>
 
-      <DocSection title="Loading & Disabled">
-        <ComponentPreview code={loadingCode}>
-          <div className="flex flex-wrap items-center gap-2">
-            <Button loading={loading} onClick={() => {
-              setLoading(true);
-              setTimeout(() => setLoading(false), 2000);
-            }}>
-              {loading ? "Loading" : "Click me"}
-            </Button>
-            <Button variant="secondary" loading leadingIcon={Loader}>Saving</Button>
-            <Button disabled>Disabled</Button>
-          </div>
-        </ComponentPreview>
+        <DocSubSection title="With Icons">
+          <ComponentPreview code={iconsCode}>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button leadingIcon={Plus}>Create</Button>
+              <Button variant="secondary" trailingIcon={ArrowRight}>Next</Button>
+              <Button variant="tertiary" leadingIcon={Search} trailingIcon={ArrowRight}>Search</Button>
+            </div>
+          </ComponentPreview>
+        </DocSubSection>
+
+        <DocSubSection title="Loading & Disabled">
+          <ComponentPreview code={loadingCode}>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button loading={loading} onClick={() => {
+                setLoading(true);
+                setTimeout(() => setLoading(false), 2000);
+              }}>
+                {loading ? "Loading" : "Click me"}
+              </Button>
+              <Button variant="secondary" loading leadingIcon={Loader}>Saving</Button>
+              <Button disabled>Disabled</Button>
+            </div>
+          </ComponentPreview>
+        </DocSubSection>
       </DocSection>
 
       <DocSection title="API Reference">
-        <PropsTable props={buttonProps} />
+        <DocSubSection title="Button">
+          <PropsTable props={buttonProps} />
+        </DocSubSection>
       </DocSection>
     </DocPage>
   );

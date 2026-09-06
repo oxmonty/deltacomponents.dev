@@ -4,13 +4,12 @@ import {
   createContext,
   useContext,
   useEffect,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
 import { Tooltip as TooltipPrimitive } from "@base-ui/react/tooltip";
-import { motion, useMotionValue } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { spring } from "@/lib/springs";
 import { fontWeights } from "@/lib/font-weight";
 import { useShape } from "@/lib/shape-context";
 
@@ -108,16 +107,17 @@ interface TooltipProps {
 // Animation helpers
 // ---------------------------------------------------------------------------
 
-function getSlideOffset(side: TooltipSide) {
+// The tooltip slides in 4px from this direction and back out on exit.
+function getSlideClasses(side: TooltipSide) {
   switch (side) {
     case "top":
-      return { y: 4 };
+      return "data-[starting-style]:translate-y-1 data-[ending-style]:translate-y-1";
     case "bottom":
-      return { y: -4 };
+      return "data-[starting-style]:-translate-y-1 data-[ending-style]:-translate-y-1";
     case "left":
-      return { x: 4 };
+      return "data-[starting-style]:translate-x-1 data-[ending-style]:translate-x-1";
     case "right":
-      return { x: -4 };
+      return "data-[starting-style]:-translate-x-1 data-[ending-style]:-translate-x-1";
   }
 }
 
@@ -143,24 +143,25 @@ function Tooltip({
   const portalContainer = useContext(TooltipPortalContainerContext);
   const hasAmbientProvider = useContext(TooltipGroupContext);
 
-  const slideOffset = getSlideOffset(side);
-
-  // Cursor-follow offset from the trigger's center, driven as a motion value
-  // so per-move updates skip React re-renders.
-  const followOffset = useMotionValue(0);
+  // Cursor-follow offset from the trigger's center, written straight to a CSS
+  // custom property on the popup element so per-move updates skip React
+  // re-renders entirely.
+  const popupRef = useRef<HTMLDivElement>(null);
   // A force-opened follow-cursor tooltip has no cursor to follow — it rests
   // centered on the trigger until a real pointer takes over.
   useEffect(() => {
-    if (forceOpen && followCursor) followOffset.set(0);
-  }, [forceOpen, followCursor, followOffset]);
+    if (forceOpen && followCursor) {
+      popupRef.current?.style.setProperty("--tooltip-follow", "0px");
+    }
+  }, [forceOpen, followCursor]);
   const handleFollowMove = (event: React.PointerEvent) => {
     if (!followCursor) return;
     const rect = event.currentTarget.getBoundingClientRect();
-    followOffset.set(
+    const offset =
       followCursor === "y"
         ? event.clientY - (rect.top + rect.height / 2)
-        : event.clientX - (rect.left + rect.width / 2)
-    );
+        : event.clientX - (rect.left + rect.width / 2);
+    popupRef.current?.style.setProperty("--tooltip-follow", `${offset}px`);
   };
 
   const tooltip = (
@@ -185,61 +186,31 @@ function Tooltip({
           className={cn("z-50", contentClassName)}
         >
           <TooltipPrimitive.Popup
-            render={(props, state) => {
-              const exiting = state.transitionStatus === "ending";
-              const contentChildren = content;
-              const {
-                style: baseStyle,
-                // motion.div has incompatible drag/animation event signatures —
-                // strip the React-DOM versions so they don't fight motion's own.
-                onDrag: _onDrag,
-                onDragStart: _onDragStart,
-                onDragEnd: _onDragEnd,
-                onAnimationStart: _onAnimationStart,
-                onAnimationEnd: _onAnimationEnd,
-                onAnimationIteration: _onAnimationIteration,
-                ...rest
-              } = props as React.HTMLAttributes<HTMLDivElement>;
-              return (
-                // Outer wrapper carries Base UI's popup props plus the
-                // cursor-follow motion value; the inner box keeps the
-                // enter/exit slide so the two transforms don't fight.
-                <motion.div
-                  {...rest}
-                  style={{
-                    ...(baseStyle as React.CSSProperties | undefined),
-                    ...(followCursor === "y"
-                      ? { y: followOffset }
-                      : followCursor === "x"
-                        ? { x: followOffset }
-                        : {}),
-                  }}
-                >
-                  <motion.div
-                    className={cn(
-                      // Trim recenters the label; the padding bump only applies
-                      // where text-box is supported, keeping the same overall
-                      // height (~26px) as untrimmed browsers.
-                      "bg-foreground text-background text-[12px] px-2 py-1",
-                      "[text-box:trim-both_cap_alphabetic] supports-[text-box:trim-both]:py-2",
-                      shape.bg,
-                      className
-                    )}
-                    style={{ fontVariationSettings: fontWeights.medium }}
-                    initial={{ opacity: 0, ...slideOffset }}
-                    animate={
-                      exiting
-                        ? { opacity: 0, ...slideOffset }
-                        : { opacity: 1, x: 0, y: 0 }
-                    }
-                    transition={exiting ? spring.fast.exit : spring.fast}
-                  >
-                    {contentChildren}
-                  </motion.div>
-                </motion.div>
-              );
+            ref={popupRef}
+            className={cn(
+              // Trim recenters the label; the padding bump only applies
+              // where text-box is supported, keeping the same overall
+              // height (~26px) as untrimmed browsers.
+              "bg-foreground text-background text-[12px] px-2 py-1",
+              "[text-box:trim-both_cap_alphabetic] supports-[text-box:trim-both]:py-2",
+              shape.bg,
+              "transition-[opacity,transform] duration-(--motion-fast) ease-spring",
+              "data-[ending-style]:duration-(--motion-fast-exit)",
+              "data-[starting-style]:opacity-0 data-[ending-style]:opacity-0",
+              getSlideClasses(side),
+              className
+            )}
+            style={{
+              fontVariationSettings: fontWeights.medium,
+              ...(followCursor === "y"
+                ? { translate: "0 var(--tooltip-follow, 0px)" }
+                : followCursor === "x"
+                  ? { translate: "var(--tooltip-follow, 0px) 0" }
+                  : {}),
             }}
-          />
+          >
+            {content}
+          </TooltipPrimitive.Popup>
         </TooltipPrimitive.Positioner>
       </TooltipPrimitive.Portal>
     </TooltipPrimitive.Root>

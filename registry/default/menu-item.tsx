@@ -11,7 +11,6 @@ import {
   type ReactNode,
 } from "react";
 import type { IconComponent } from "@/lib/icon-context";
-import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { fontWeights } from "@/lib/font-weight";
 import { shapeMap } from "@/lib/shape-context";
@@ -194,38 +193,39 @@ const MenuItem = forwardRef<HTMLDivElement, MenuItemProps>(
             {label}
           </span>
         </span>
-        <AnimatePresence>
-          {checked && (
-            <motion.svg
-              key="check"
-              width={sizeClasses.icon}
-              height={sizeClasses.icon}
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="text-foreground shrink-0"
-              initial={{ opacity: 1 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 1 }}
-            >
-              <motion.path
-                d="M4 12L9 17L20 6"
-                initial={{ pathLength: skipAnimation ? 1 : 0 }}
-                animate={{
-                  pathLength: 1,
-                  transition: { duration: 0.08, ease: "easeOut" },
-                }}
-                exit={{
-                  pathLength: 0,
-                  transition: { duration: 0.04, ease: "easeIn" },
-                }}
-              />
-            </motion.svg>
-          )}
-        </AnimatePresence>
+        {/* Permanently mounted (zero footprint via display:none when
+            unchecked) so the check can draw in/out instead of popping. The
+            radio tick's exit (40ms) is the one bespoke, non-tiered duration
+            called out in agents/motion-guidelines.md — everything else here
+            reaches for the fast tier. */}
+        <svg
+          aria-hidden="true"
+          width={sizeClasses.icon}
+          height={sizeClasses.icon}
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={2}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          data-checked={checked || undefined}
+          className="hidden shrink-0 text-foreground transition-[display] transition-discrete duration-40 ease-in data-[checked=true]:block data-[checked=true]:duration-(--motion-fast) data-[checked=true]:ease-spring"
+        >
+          <path
+            d="M4 12L9 17L20 6"
+            pathLength="100"
+            data-checked={checked || undefined}
+            className={cn(
+              "[stroke-dasharray:100] [stroke-dashoffset:100] transition-[stroke-dashoffset] duration-40 ease-in",
+              "data-[checked=true]:[stroke-dashoffset:0] data-[checked=true]:duration-(--motion-fast) data-[checked=true]:ease-spring",
+              // Skip the draw-in only for an item that mounts already
+              // checked (the pre-selected radio option) — a later toggle
+              // still animates normally.
+              !skipAnimation &&
+                "data-[checked=true]:starting:[stroke-dashoffset:100]"
+            )}
+          />
+        </svg>
       </>
     );
 

@@ -1,14 +1,15 @@
 "use client";
 
 import * as React from "react";
-import { motion } from "framer-motion";
 
 import { cn } from "@/lib/utils";
-import { spring } from "@/lib/springs";
 import { useShape } from "@/lib/shape-context";
+import { useSurface } from "@/lib/surface-context";
+import { surfaceClasses } from "@/lib/surface-classes";
 
 type TabVariant = "default" | "underline" | "ghost";
 type TabSize = "sm" | "default" | "lg";
+type ActivationMode = "automatic" | "manual";
 
 interface TabItem {
   id: string;
@@ -17,25 +18,23 @@ interface TabItem {
   disabled?: boolean;
 }
 
-/** Where the sliding indicator currently sits, in the list's own coordinates. */
-interface Rect {
-  left: number;
-  width: number;
-}
-
 interface TabsContextValue {
   activeTab: string;
   setActiveTab: (id: string) => void;
   variant: TabVariant;
   size: TabSize;
-  indicatorThickness?: string;
   indicatorClassName?: string;
   concentric: boolean;
-  hoveredIndex: number | null;
-  setHoveredIndex: (index: number | null) => void;
-  activeIndex: number;
-  setActiveIndex: (index: number) => void;
-  tabRefs: React.RefObject<(HTMLButtonElement | null)[]>;
+  activationMode: ActivationMode;
+  baseId: string;
+  /** Keyed by trigger `value`, not position — populated and cleaned up from
+   *  each trigger's ref callback. Nothing reads triggers by index anymore, so
+   *  a conditionally-rendered or reordered tab can't leave a stale slot or
+   *  point the indicator at the wrong element. */
+  triggerElements: Map<string, HTMLButtonElement>;
+  /** Values that have been the active tab at least once. A panel mounts the
+   *  first time it appears here and then stays mounted (see `TabsContent`). */
+  activatedTabs: Set<string>;
 }
 
 const TabsContext = React.createContext<TabsContextValue | null>(null);
@@ -54,15 +53,21 @@ interface TabsProps {
   className?: string;
   variant?: TabVariant;
   size?: TabSize;
-  /** Override the underline indicator thickness (e.g. "2px", "4px"). */
-  indicatorThickness?: string;
-  /** Override the active indicator's background (e.g. "bg-muted"). */
+  /** Override the active indicator's classes — its background, or the
+   *  underline bar's thickness (e.g. `h-0.5`). Merges over the defaults, so
+   *  only the utilities that actually conflict (bg-*, h-*, …) are replaced. */
   indicatorClassName?: string;
   /** Nest the radii: the list takes the shape system's container radius, the
    *  triggers its element radius. The two differ by exactly the list's 4px
    *  padding in both `rounded` and `pill`, so the corners stay concentric
    *  whichever the reader picks — see the note on `radii` below. */
   concentric?: boolean;
+  /** `automatic` (default) selects a tab as the arrow keys move focus onto
+   *  it, per the WAI-ARIA Tabs pattern. `manual` only moves focus; the reader
+   *  commits with Enter/Space. Use `manual` when selecting a tab has a cost
+   *  (e.g. it fires a request) that shouldn't happen for every tab arrowed
+   *  past on the way to the one they want. */
+  activationMode?: ActivationMode;
 }
 
 function Tabs({
@@ -73,14 +78,14 @@ function Tabs({
   className,
   variant = "default",
   size = "default",
-  indicatorThickness,
   indicatorClassName,
   concentric = false,
+  activationMode = "automatic",
 }: TabsProps) {
   const [internalValue, setInternalValue] = React.useState(defaultValue ?? "");
-  const [hoveredIndex, setHoveredIndex] = React.useState<number | null>(null);
-  const [activeIndex, setActiveIndex] = React.useState(0);
-  const tabRefs = React.useRef<(HTMLButtonElement | null)[]>([]);
+  const baseId = React.useId();
+  const triggerElements = React.useRef<Map<string, HTMLButtonElement>>(new Map()).current;
+  const activatedTabs = React.useRef<Set<string>>(new Set()).current;
 
   const activeTab = value ?? internalValue;
   const setActiveTab = React.useCallback(
@@ -91,23 +96,35 @@ function Tabs({
     [value, onValueChange]
   );
 
+  const contextValue = React.useMemo<TabsContextValue>(
+    () => ({
+      activeTab,
+      setActiveTab,
+      variant,
+      size,
+      indicatorClassName,
+      concentric,
+      activationMode,
+      baseId,
+      triggerElements,
+      activatedTabs,
+    }),
+    [
+      activeTab,
+      setActiveTab,
+      variant,
+      size,
+      indicatorClassName,
+      concentric,
+      activationMode,
+      baseId,
+      triggerElements,
+      activatedTabs,
+    ]
+  );
+
   return (
-    <TabsContext.Provider
-      value={{
-        activeTab,
-        setActiveTab,
-        variant,
-        size,
-        indicatorThickness,
-        indicatorClassName,
-        concentric,
-        hoveredIndex,
-        setHoveredIndex,
-        activeIndex,
-        setActiveIndex,
-        tabRefs,
-      }}
-    >
+    <TabsContext.Provider value={contextValue}>
       <div data-slot="tabs" className={cn("flex flex-col gap-2", className)}>
         {children}
       </div>
@@ -156,6 +173,20 @@ function radii(shape: ReturnType<typeof useShape>, concentric: boolean) {
   return { outer: concentric ? shape.container : shape.bg, inner: shape.bg };
 }
 
+// The indicator (and the hover wash) sit at 0,0 and read their real position
+// from `--tab-x`/`--tab-w` (or `--tab-hover-x`/`--tab-hover-w`), written
+// straight to the list's style from a layout effect and from pointer
+// handlers — never through React state, so hovering or selecting a tab
+// re-renders nothing and can't be stalled by a panel that's busy rendering.
+// Both the transition and the indicator's own visibility are gated on
+// `[data-placed=true]` on the list, set by the layout effect after its first
+// run. So the indicator is simply *there* on first paint and only animates on
+// subsequent moves — and the server-rendered markup, which has no measurement
+// yet, doesn't paint a zero-width box whose ring reads as a sliver at the
+// left edge until hydration.
+const PLACED_TRANSITION =
+  "group-data-[placed=true]/tabs:transition-[translate,width] group-data-[placed=true]/tabs:duration-(--motion-moderate) group-data-[placed=true]/tabs:ease-spring";
+
 interface TabsListProps {
   children: React.ReactNode;
   className?: string;
@@ -163,45 +194,124 @@ interface TabsListProps {
 
 function TabsList({ children, className }: TabsListProps) {
   const {
+    activeTab,
     variant,
     size,
-    hoveredIndex,
-    activeIndex,
-    tabRefs,
     concentric,
-    indicatorThickness,
     indicatorClassName,
+    activationMode,
+    setActiveTab,
+    triggerElements,
   } = useTabs();
   const shape = useShape();
   const { outer, inner } = radii(shape, concentric);
+  const substrate = useSurface();
+  // bg two steps up so the pill clears the track in both themes; shadow one
+  // step up so the chip stays quiet rather than reading as a popover.
+  const pill = surfaceClasses(substrate + 2, substrate + 1);
 
-  const [hoverRect, setHoverRect] = React.useState<Rect | null>(null);
-  const [activeRect, setActiveRect] = React.useState<Rect | null>(null);
+  const listRef = React.useRef<HTMLDivElement>(null);
+  const placedRef = React.useRef(false);
 
-  // The rect is kept after the pointer leaves so the wash can fade out where it
-  // stood. Clearing it would unmount the element and make the wash vanish.
-  React.useEffect(() => {
-    if (hoveredIndex === null || variant !== "underline") return;
-    const el = tabRefs.current[hoveredIndex];
-    if (el) setHoverRect({ left: el.offsetLeft, width: el.offsetWidth });
-  }, [hoveredIndex, variant, tabRefs]);
+  // Re-measures the active trigger's box whenever it changes identity, and
+  // keeps watching it (and the list) for as long as it stays active — a
+  // resize from a web font loading, the container changing width, or a
+  // relabel all move the trigger without a selection change to key off.
+  React.useLayoutEffect(() => {
+    const list = listRef.current;
+    if (!list) return;
 
-  const hoverVisible = variant === "underline" && hoveredIndex !== null;
+    const measure = () => {
+      const el = triggerElements.get(activeTab);
+      if (!el) return;
+      list.style.setProperty("--tab-x", `${el.offsetLeft}px`);
+      list.style.setProperty("--tab-w", `${el.offsetWidth}px`);
+      if (!placedRef.current) {
+        placedRef.current = true;
+        list.dataset.placed = "true";
+      }
+    };
 
-  // The indicator tracks the active trigger's box. Measured after layout
-  // rather than from a ref during render, because the triggers register
-  // themselves as they mount and a width read during the first pass is zero.
-  React.useEffect(() => {
-    const el = tabRefs.current[activeIndex];
-    if (el) setActiveRect({ left: el.offsetLeft, width: el.offsetWidth });
-  }, [activeIndex, tabRefs, size, variant]);
+    measure();
+    if (typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver(measure);
+    ro.observe(list);
+    const activeEl = triggerElements.get(activeTab);
+    if (activeEl) ro.observe(activeEl);
+    return () => ro.disconnect();
+  }, [activeTab, triggerElements]);
+
+  // WAI-ARIA Tabs pattern: Left/Right move and wrap, Home/End jump to the
+  // ends, disabled tabs are skipped. The order comes from the DOM at the
+  // moment of the keypress rather than a stored array, so it's always right
+  // even if tabs were reordered or added/removed since the last render.
+  const handleKeyDown = React.useCallback(
+    (e: React.KeyboardEvent<HTMLDivElement>) => {
+      if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(e.key)) return;
+      const list = listRef.current;
+      if (!list) return;
+      const tabs = Array.from(
+        list.querySelectorAll<HTMLButtonElement>('[role="tab"]')
+      ).filter((tab) => !tab.disabled);
+      if (tabs.length === 0) return;
+
+      e.preventDefault();
+      // Keep the handled arrow from also reaching window-level listeners
+      // (the docs site's ←/→ page navigation).
+      e.stopPropagation();
+
+      const current = tabs.indexOf(document.activeElement as HTMLButtonElement);
+      let next: HTMLButtonElement;
+      if (e.key === "Home") next = tabs[0];
+      else if (e.key === "End") next = tabs[tabs.length - 1];
+      else {
+        const delta = e.key === "ArrowRight" ? 1 : -1;
+        const base = current === -1 ? 0 : current;
+        next = tabs[(base + delta + tabs.length) % tabs.length];
+      }
+
+      next.focus();
+      if (activationMode === "automatic") {
+        const nextValue = next.dataset.value;
+        if (nextValue) setActiveTab(nextValue);
+      }
+    },
+    [activationMode, setActiveTab]
+  );
+
+  // Underline's hover wash: event-delegated on the list instead of wired to
+  // each trigger, so it needs no registry of its own — the hovered element's
+  // own offsetLeft/offsetWidth (relative to this list, its offsetParent) is
+  // all the position it takes. Written straight to CSS custom properties, so
+  // moving the pointer across the strip touches no React state.
+  const handlePointerOver = React.useCallback(
+    (e: React.PointerEvent<HTMLDivElement>) => {
+      if (variant !== "underline") return;
+      const list = listRef.current;
+      const tab = (e.target as HTMLElement).closest<HTMLButtonElement>('[role="tab"]');
+      if (!list || !tab || tab.disabled) return;
+      list.style.setProperty("--tab-hover-x", `${tab.offsetLeft}px`);
+      list.style.setProperty("--tab-hover-w", `${tab.offsetWidth}px`);
+      list.dataset.tabHover = "true";
+    },
+    [variant]
+  );
+
+  const handlePointerLeave = React.useCallback(() => {
+    if (variant !== "underline") return;
+    delete listRef.current?.dataset.tabHover;
+  }, [variant]);
 
   return (
     <div
+      ref={listRef}
       data-slot="tabs-list"
       role="tablist"
+      onKeyDown={handleKeyDown}
+      onPointerOver={handlePointerOver}
+      onPointerLeave={handlePointerLeave}
       className={cn(
-        "text-muted-foreground relative inline-flex items-center",
+        "text-muted-foreground group/tabs relative inline-flex items-center",
         listHeight[size],
         variant === "default" && ["bg-muted w-fit justify-center p-1", outer],
         variant === "ghost" && "w-fit justify-center gap-1 bg-transparent p-0",
@@ -210,59 +320,58 @@ function TabsList({ children, className }: TabsListProps) {
         className
       )}
     >
-      {/* Underline's hover wash: instant under the pointer (hover is the highest
-          -frequency interaction there is — an entrance animation on it would
-          replay its attention cost on every pass), sliding between triggers on
-          the selection's tier, and fading out where it stood rather than
-          snapping away. */}
-      {variant === "underline" && hoverRect && (
-        <motion.div
-          className={cn("bg-muted absolute z-0", hoverHeight[size], inner)}
-          initial={false}
-          animate={{
-            left: hoverRect.left,
-            width: hoverRect.width,
-            opacity: hoverVisible ? 1 : 0,
-          }}
-          transition={{ ...spring.moderate, opacity: { duration: 0.08 } }}
+      {/* Underline's hover wash: appears instantly under the pointer, slides
+          between triggers on the moderate tier, and fades out where it stood
+          rather than snapping away (hover is the highest-frequency
+          interaction there is — an entrance animation on it would replay its
+          attention cost on every pass). Zero width until the first hover, so
+          it's invisible rather than misplaced before that. */}
+      {variant === "underline" && (
+        <div
+          aria-hidden="true"
+          className={cn(
+            "bg-muted pointer-events-none absolute z-0 left-0 w-(--tab-hover-w) opacity-0",
+            "group-data-[tab-hover=true]/tabs:opacity-100",
+            PLACED_TRANSITION,
+            hoverHeight[size],
+            inner
+          )}
+          // `translate` (not the `translate-x-*` utility) so the dynamic X
+          // offset and the fixed -50% vertical centering combine in the one
+          // CSS property they share, instead of one silently overriding the
+          // other.
           style={{
             top: `calc(50% + ${hoverOffset[size]})`,
-            translateY: "-50%",
+            translate: "var(--tab-hover-x, 0px) -50%",
           }}
-          aria-hidden="true"
         />
       )}
 
-      {(variant === "default" || variant === "ghost") && activeRect && (
-        <motion.div
+      {(variant === "default" || variant === "ghost") && (
+        <div
+          aria-hidden="true"
           className={cn(
-            "absolute z-0",
-            indicatorClassName ||
-              (variant === "ghost" ? "bg-muted" : "bg-background"),
+            "absolute z-0 left-0 w-(--tab-w) translate-x-(--tab-x)",
+            "hidden group-data-[placed=true]/tabs:block",
+            PLACED_TRANSITION,
             indicatorHeight[size],
             inner,
-            variant === "default" && "shadow-sm"
+            variant === "ghost" ? "bg-muted" : pill,
+            indicatorClassName
           )}
-          // initial={false} so the indicator is simply *there* on first paint
-          // instead of flying in from the left edge on mount.
-          initial={false}
-          animate={{ left: activeRect.left, width: activeRect.width }}
-          transition={spring.moderate}
-          aria-hidden="true"
         />
       )}
 
-      {variant === "underline" && activeRect && (
-        <motion.div
-          className={cn(
-            "bg-foreground absolute bottom-0 z-10",
-            !indicatorThickness && underlineThickness[size]
-          )}
-          initial={false}
-          animate={{ left: activeRect.left, width: activeRect.width }}
-          transition={spring.moderate}
-          style={{ height: indicatorThickness || undefined }}
+      {variant === "underline" && (
+        <div
           aria-hidden="true"
+          className={cn(
+            "bg-foreground absolute bottom-0 z-10 left-0 w-(--tab-w) translate-x-(--tab-x)",
+            "hidden group-data-[placed=true]/tabs:block",
+            PLACED_TRANSITION,
+            underlineThickness[size],
+            indicatorClassName
+          )}
         />
       )}
 
@@ -297,63 +406,49 @@ interface TabsTriggerProps {
 
 const TabsTrigger = React.forwardRef<HTMLButtonElement, TabsTriggerProps>(
   ({ value, children, className, disabled = false, icon }, forwardedRef) => {
-    const {
-      activeTab,
-      setActiveTab,
-      variant,
-      size,
-      concentric,
-      setHoveredIndex,
-      setActiveIndex,
-      tabRefs,
-    } = useTabs();
+    const { activeTab, setActiveTab, variant, size, concentric, baseId, triggerElements } =
+      useTabs();
     const shape = useShape();
     const { inner } = radii(shape, concentric);
     const isActive = activeTab === value;
-    const indexRef = React.useRef(-1);
 
-    const setTabRef = React.useCallback(
-      (el: HTMLButtonElement | null) => {
-        if (el) {
-          const existing = tabRefs.current.indexOf(el);
-          if (existing === -1) {
-            indexRef.current = tabRefs.current.length;
-            tabRefs.current.push(el);
-          } else {
-            indexRef.current = existing;
-          }
-        }
-
+    // Registers this trigger by its value, not a mount-order index, so a
+    // conditionally-rendered or reordered tab can't leave a stale slot behind
+    // or drift the indicator to the wrong element. The cleanup (React 19 ref
+    // callbacks may return one) removes it again on unmount.
+    const setTabRef = React.useCallback<React.RefCallback<HTMLButtonElement>>(
+      (el) => {
+        if (el) triggerElements.set(value, el);
         if (typeof forwardedRef === "function") forwardedRef(el);
         else if (forwardedRef) forwardedRef.current = el;
+        return () => {
+          triggerElements.delete(value);
+          if (typeof forwardedRef === "function") forwardedRef(null);
+        };
       },
-      [tabRefs, forwardedRef]
+      [value, triggerElements, forwardedRef]
     );
-
-    React.useEffect(() => {
-      if (isActive && indexRef.current >= 0) setActiveIndex(indexRef.current);
-    }, [isActive, setActiveIndex]);
 
     return (
       <button
         ref={setTabRef}
+        id={`${baseId}-trigger-${value}`}
         type="button"
         role="tab"
         aria-selected={isActive}
         aria-disabled={disabled}
+        aria-controls={`${baseId}-panel-${value}`}
         disabled={disabled}
+        // Roving tabindex: only the selected trigger is in the Tab order —
+        // Left/Right/Home/End (handled on the list) move focus among the rest.
+        tabIndex={isActive ? 0 : -1}
         data-state={isActive ? "active" : "inactive"}
         data-slot="tabs-trigger"
         data-value={value}
         onClick={() => {
           if (disabled) return;
           setActiveTab(value);
-          setActiveIndex(indexRef.current);
         }}
-        onMouseEnter={() =>
-          variant === "underline" && setHoveredIndex(indexRef.current)
-        }
-        onMouseLeave={() => variant === "underline" && setHoveredIndex(null)}
         className={cn(
           "relative z-10 inline-flex items-center justify-center gap-1.5 font-medium whitespace-nowrap",
           "transition-colors duration-80",
@@ -404,16 +499,12 @@ interface TabsContentProps {
   value: string;
   children: React.ReactNode;
   className?: string;
-  /** Keep every panel in the DOM. Costs nothing to switch and leaves the
-   *  content readable by crawlers, at the price of rendering it all up front. */
+  /** Render this panel from the first render instead of waiting for it to
+   *  become active — for crawlers, or content that must exist up front. */
   forceMount?: boolean;
-  /** Fade the panel in on entry. Off by default: for heavy panels the fade is
-   *  the thing that makes a tab switch feel slow. */
-  animate?: boolean;
-  /** Rise this many pixels on entry. */
-  animateY?: number;
-  /** Overrides `animate` when set explicitly. */
-  animateOpacity?: boolean;
+  /** Fade the panel in on entry. Off by default: for a heavy panel the fade
+   *  is the thing that makes a tab switch feel slow. */
+  fadeIn?: boolean;
 }
 
 function TabsContent({
@@ -421,52 +512,49 @@ function TabsContent({
   children,
   className,
   forceMount = false,
-  animate = false,
-  animateY,
-  animateOpacity,
+  fadeIn = false,
 }: TabsContentProps) {
-  const { activeTab } = useTabs();
+  const { activeTab, baseId, activatedTabs } = useTabs();
   const isActive = activeTab === value;
-  const shouldFade = animateOpacity ?? animate;
-  const hasAnimation = animateY !== undefined || shouldFade;
 
-  if (!forceMount && !isActive) return null;
+  // A panel mounts the first time it becomes active and then stays mounted —
+  // hidden via the `hidden` attribute rather than unmounted, so a panel
+  // backed by an API doesn't refetch (and flash empty) on every revisit.
+  // `forceMount` mounts every panel up front instead of waiting for a visit.
+  if (isActive) activatedTabs.add(value);
+  if (!forceMount && !activatedTabs.has(value)) return null;
 
-  const panelProps = {
-    role: "tabpanel",
-    "data-state": isActive ? "active" : "inactive",
-    "data-slot": "tabs-content",
-    className: cn(
-      "mt-2 outline-none",
-      "focus-visible:ring-1 focus-visible:ring-[color:var(--focus-ring,#6B97FF)]",
-      !isActive && forceMount && "hidden",
-      className
-    ),
-    tabIndex: 0,
-  } as const;
-
-  if (!hasAnimation) return <div {...panelProps}>{children}</div>;
-
-  // The motion props go on the panel itself, never on a wrapper: a wrapper
-  // would have to be `display: contents` to stay out of the layout, and an
-  // element with no box takes neither opacity nor transform — the animation
-  // would be written to the DOM and paint nothing.
-  //
-  // Enters on `moderate`, the tier the indicator that sent it uses. `animate`
-  // (not just `initial`) carries the state so a forceMount panel, which never
-  // remounts, still fades between active and inactive.
   return (
-    <motion.div
-      {...panelProps}
-      initial={{ opacity: shouldFade ? 0 : 1, y: animateY ?? 0 }}
-      animate={{
-        opacity: shouldFade && !isActive ? 0 : 1,
-        y: isActive ? 0 : (animateY ?? 0),
-      }}
-      transition={spring.moderate}
+    <div
+      id={`${baseId}-panel-${value}`}
+      role="tabpanel"
+      aria-labelledby={`${baseId}-trigger-${value}`}
+      // `inert` drops the panel from the accessibility tree and out of the
+      // tab order the instant it goes inactive, regardless of how long the
+      // fade-out that follows takes to finish painting.
+      inert={!isActive || undefined}
+      hidden={!isActive}
+      data-state={isActive ? "active" : "inactive"}
+      data-slot="tabs-content"
+      tabIndex={0}
+      className={cn(
+        "mt-2 outline-none",
+        "focus-visible:ring-1 focus-visible:ring-[color:var(--focus-ring,#6B97FF)]",
+        // `hidden` is plain `display: none`, which a transition can't
+        // normally animate out of — `allow-discrete` plus `@starting-style`
+        // is what lets `display` itself ride the same transition as opacity,
+        // so a panel can fade in the moment it stops being hidden.
+        fadeIn && [
+          "opacity-100 starting:opacity-0",
+          "[&[hidden]]:opacity-0",
+          "transition-[opacity,display] [transition-behavior:allow-discrete]",
+          "duration-(--motion-moderate) ease-spring",
+        ],
+        className
+      )}
     >
       {children}
-    </motion.div>
+    </div>
   );
 }
 
@@ -540,6 +628,7 @@ export {
   type TabItem,
   type TabVariant,
   type TabSize,
+  type ActivationMode,
   type TabsProps,
   type TabsListProps,
   type TabsTriggerProps,

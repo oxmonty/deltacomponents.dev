@@ -1,13 +1,11 @@
 "use client";
 
 import { forwardRef, useState, useCallback, useRef, useEffect, useId, type HTMLAttributes } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useIcon } from "@/lib/icon-context";
 import { fontWeights } from "@/lib/font-weight";
 import { useShape } from "@/lib/shape-context";
 import { useSize, type SizeVariant } from "@/lib/size-context";
-import { spring } from "@/lib/springs";
 import { Tooltip } from "@/registry/base/tooltip";
 
 type InputCopyVariant = "icon" | "button";
@@ -37,7 +35,6 @@ const InputCopy = forwardRef<HTMLDivElement, InputCopyProps>(
     const CopyIcon = useIcon("copy");
     // "copied" and "error" both occupy the same animation slot on the button
     const [status, setStatus] = useState<"idle" | "copied" | "error">("idle");
-    const [copyCount, setCopyCount] = useState(0);
     // "idle" = normal tooltip behavior, "copied" = force open, "suppressed" = force closed
     const [tooltipState, setTooltipState] = useState<"idle" | "copied" | "suppressed">("idle");
     const timeoutRef = useRef<ReturnType<typeof setTimeout>>(null);
@@ -90,7 +87,6 @@ const InputCopy = forwardRef<HTMLDivElement, InputCopyProps>(
         ok = copyViaExecCommand();
       }
       setStatus(ok ? "copied" : "error");
-      setCopyCount((c) => c + 1);
       setTooltipState(tooltipWasVisibleRef.current ? "copied" : "suppressed");
       if (ok) onCopy?.();
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
@@ -118,179 +114,151 @@ const InputCopy = forwardRef<HTMLDivElement, InputCopyProps>(
       setTooltipState((prev) => prev === "copied" ? "suppressed" : prev);
     }, []);
 
+    // Cross-fade instead of framer's AnimatePresence mode="wait": all three
+    // icons stay mounted, stacked in one grid cell, and swap via opacity +
+    // scale on their own data-active flag. The sequencing mode="wait" gave
+    // (old icon fully gone before the new one starts) isn't reproduced — see
+    // the migration report.
     const iconSwitch = (
-      <AnimatePresence mode="wait" initial={false}>
-        {status === "error" ? (
-          <motion.span
-            key={`error-${copyCount}`}
-            initial={{ opacity: 0, scale: 0.6 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.8 }}
-            transition={spring.fast}
-            className="flex items-center justify-center text-destructive [&_svg]:stroke-[1.5] [&_svg]:transition-[stroke-width] [&_svg]:duration-80 group-hover:[&_svg]:stroke-[2]"
+      <span className="relative grid">
+        <span
+          aria-hidden="true"
+          data-active={status === "error" || undefined}
+          className="col-start-1 row-start-1 flex scale-80 items-center justify-center opacity-0 text-destructive transition-[opacity,scale] duration-(--motion-fast) ease-spring data-[active=true]:scale-100 data-[active=true]:opacity-100 [&_svg]:stroke-[1.5] [&_svg]:transition-[stroke-width] [&_svg]:duration-80 group-hover:[&_svg]:stroke-[2]"
+        >
+          <svg
+            width={14}
+            height={14}
+            viewBox="2 4 20 16"
+            fill="none"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
           >
-            <svg
-              width={14}
-              height={14}
-              viewBox="2 4 20 16"
-              fill="none"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <motion.path
-                d="M9 9L15 15M15 9L9 15"
-                initial={{ pathLength: 0 }}
-                animate={{
-                  pathLength: 1,
-                  transition: { duration: 0.08, ease: "easeOut" },
-                }}
-              />
-            </svg>
-          </motion.span>
-        ) : status === "copied" ? (
-          <motion.span
-            key={`check-${copyCount}`}
-            initial={{ opacity: 0, scale: 0.6 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.8 }}
-            transition={spring.fast}
-            className="flex items-center justify-center [&_svg]:stroke-[1.5] [&_svg]:transition-[stroke-width] [&_svg]:duration-80 group-hover:[&_svg]:stroke-[2]"
+            <path
+              d="M9 9L15 15M15 9L9 15"
+              pathLength="100"
+              data-active={status === "error" || undefined}
+              className="[stroke-dasharray:100] [stroke-dashoffset:100] transition-[stroke-dashoffset] duration-(--motion-fast) ease-spring data-[active=true]:[stroke-dashoffset:0]"
+            />
+          </svg>
+        </span>
+        <span
+          aria-hidden="true"
+          data-active={status === "copied" || undefined}
+          className="col-start-1 row-start-1 flex scale-80 items-center justify-center opacity-0 transition-[opacity,scale] duration-(--motion-fast) ease-spring data-[active=true]:scale-100 data-[active=true]:opacity-100 [&_svg]:stroke-[1.5] [&_svg]:transition-[stroke-width] [&_svg]:duration-80 group-hover:[&_svg]:stroke-[2]"
+        >
+          <svg
+            width={14}
+            height={14}
+            viewBox="2 4 20 16"
+            fill="none"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
           >
-            <svg
-              width={14}
-              height={14}
-              viewBox="2 4 20 16"
-              fill="none"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <motion.path
-                d="M6 12L10 16L18 8"
-                initial={{ pathLength: 0 }}
-                animate={{
-                  pathLength: 1,
-                  transition: { duration: 0.08, ease: "easeOut" },
-                }}
-              />
-            </svg>
-          </motion.span>
-        ) : (
-          <motion.span
-            key="copy"
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.8 }}
-            transition={spring.fast}
-            className="flex items-center justify-center"
-          >
-            <CopyIcon size={14} strokeWidth={1.5} className="transition-[stroke-width] duration-80 group-hover:stroke-[2]" />
-          </motion.span>
-        )}
-      </AnimatePresence>
+            <path
+              d="M6 12L10 16L18 8"
+              pathLength="100"
+              data-active={status === "copied" || undefined}
+              className="[stroke-dasharray:100] [stroke-dashoffset:100] transition-[stroke-dashoffset] duration-(--motion-fast) ease-spring data-[active=true]:[stroke-dashoffset:0]"
+            />
+          </svg>
+        </span>
+        <span
+          aria-hidden="true"
+          data-active={status === "idle" || undefined}
+          className="col-start-1 row-start-1 flex scale-80 items-center justify-center opacity-0 transition-[opacity,scale] duration-(--motion-fast) ease-spring data-[active=true]:scale-100 data-[active=true]:opacity-100"
+        >
+          <CopyIcon size={14} strokeWidth={1.5} className="transition-[stroke-width] duration-80 group-hover:stroke-[2]" />
+        </span>
+      </span>
     );
 
     const actionElement = variant === "button" ? (
       <span
         className={cn(
-          "shrink-0 flex items-center gap-1.5 px-1.5 transition-colors duration-80",
+          "relative grid shrink-0 px-1.5 transition-colors duration-80",
           rowPy,
           sizeClasses.text,
           "text-muted-foreground group-hover:text-foreground",
         )}
         style={{ fontVariationSettings: fontWeights.normal }}
       >
-        <AnimatePresence mode="wait" initial={false}>
-          {status === "error" ? (
-            <motion.span
-              key={`error-label-${copyCount}`}
-              className="flex items-center gap-1.5 text-destructive"
-              initial={{ opacity: 0, scale: 0.6 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.8 }}
-              transition={spring.fast}
+        {/* Each label already reserves "Copied"-width via its own ghost
+            span below, so stacking them in one grid cell (which sizes to
+            the largest child) doesn't change the row's width. */}
+        <span
+          aria-hidden="true"
+          data-active={status === "error" || undefined}
+          className="col-start-1 row-start-1 flex scale-80 items-center gap-1.5 text-destructive opacity-0 transition-[opacity,scale] duration-(--motion-fast) ease-spring data-[active=true]:scale-100 data-[active=true]:opacity-100"
+        >
+          <span className="flex items-center justify-center">
+            <svg
+              width={14}
+              height={14}
+              viewBox="2 4 20 16"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
             >
-              <span className="flex items-center justify-center">
-                <svg
-                  width={14}
-                  height={14}
-                  viewBox="2 4 20 16"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <motion.path
-                    d="M9 9L15 15M15 9L9 15"
-                    initial={{ pathLength: 0 }}
-                    animate={{
-                      pathLength: 1,
-                      transition: { duration: 0.08, ease: "easeOut" },
-                    }}
-                  />
-                </svg>
-              </span>
-              <span className="select-none inline-grid text-left">
-                <span className="col-start-1 row-start-1 invisible" aria-hidden="true">Copied</span>
-                <span className="col-start-1 row-start-1">Failed</span>
-              </span>
-            </motion.span>
-          ) : status === "copied" ? (
-            <motion.span
-              key={`check-label-${copyCount}`}
-              className="flex items-center gap-1.5"
-              initial={{ opacity: 0, scale: 0.6 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.8 }}
-              transition={spring.fast}
+              <path
+                d="M9 9L15 15M15 9L9 15"
+                pathLength="100"
+                data-active={status === "error" || undefined}
+                className="[stroke-dasharray:100] [stroke-dashoffset:100] transition-[stroke-dashoffset] duration-(--motion-fast) ease-spring data-[active=true]:[stroke-dashoffset:0]"
+              />
+            </svg>
+          </span>
+          <span className="select-none inline-grid text-left">
+            <span className="col-start-1 row-start-1 invisible" aria-hidden="true">Copied</span>
+            <span className="col-start-1 row-start-1">Failed</span>
+          </span>
+        </span>
+        <span
+          aria-hidden="true"
+          data-active={status === "copied" || undefined}
+          className="col-start-1 row-start-1 flex scale-80 items-center gap-1.5 opacity-0 transition-[opacity,scale] duration-(--motion-fast) ease-spring data-[active=true]:scale-100 data-[active=true]:opacity-100"
+        >
+          <span className="flex items-center justify-center">
+            <svg
+              width={14}
+              height={14}
+              viewBox="2 4 20 16"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
             >
-              <span className="flex items-center justify-center">
-                <svg
-                  width={14}
-                  height={14}
-                  viewBox="2 4 20 16"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <motion.path
-                    d="M6 12L10 16L18 8"
-                    initial={{ pathLength: 0 }}
-                    animate={{
-                      pathLength: 1,
-                      transition: { duration: 0.08, ease: "easeOut" },
-                    }}
-                  />
-                </svg>
-              </span>
-              <span className="select-none inline-grid text-left">
-                <span className="col-start-1 row-start-1 invisible" aria-hidden="true">Copied</span>
-                <span className="col-start-1 row-start-1">Copied</span>
-              </span>
-            </motion.span>
-          ) : (
-            <motion.span
-              key="copy-label"
-              className="flex items-center gap-1.5"
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.8 }}
-              transition={spring.fast}
-            >
-              <span className="flex items-center justify-center">
-                <CopyIcon size={14} strokeWidth={1.5} className="transition-[stroke-width] duration-80 group-hover:stroke-[2]" />
-              </span>
-              <span className="select-none inline-grid text-left">
-                <span className="col-start-1 row-start-1 invisible" aria-hidden="true">Copied</span>
-                <span className="col-start-1 row-start-1">Copy</span>
-              </span>
-            </motion.span>
-          )}
-        </AnimatePresence>
+              <path
+                d="M6 12L10 16L18 8"
+                pathLength="100"
+                data-active={status === "copied" || undefined}
+                className="[stroke-dasharray:100] [stroke-dashoffset:100] transition-[stroke-dashoffset] duration-(--motion-fast) ease-spring data-[active=true]:[stroke-dashoffset:0]"
+              />
+            </svg>
+          </span>
+          <span className="select-none inline-grid text-left">
+            <span className="col-start-1 row-start-1 invisible" aria-hidden="true">Copied</span>
+            <span className="col-start-1 row-start-1">Copied</span>
+          </span>
+        </span>
+        <span
+          aria-hidden="true"
+          data-active={status === "idle" || undefined}
+          className="col-start-1 row-start-1 flex scale-80 items-center gap-1.5 opacity-0 transition-[opacity,scale] duration-(--motion-fast) ease-spring data-[active=true]:scale-100 data-[active=true]:opacity-100"
+        >
+          <span className="flex items-center justify-center">
+            <CopyIcon size={14} strokeWidth={1.5} className="transition-[stroke-width] duration-80 group-hover:stroke-[2]" />
+          </span>
+          <span className="select-none inline-grid text-left">
+            <span className="col-start-1 row-start-1 invisible" aria-hidden="true">Copied</span>
+            <span className="col-start-1 row-start-1">Copy</span>
+          </span>
+        </span>
       </span>
     ) : (
       <span

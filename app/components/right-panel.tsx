@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { spring } from "@/registry/default/lib/springs";
+import { cn } from "@/registry/default/lib/utils";
 import { fontWeights } from "@/registry/default/lib/font-weight";
 import { Button } from "@/registry/base/button";
 import {
@@ -45,7 +44,7 @@ function formatStars(n: number): string {
 }
 
 /** GitHub mark, shaped as an IconComponent so it can ride Button's leadingIcon slot. */
-function GitHubIcon({ size = 16, className }: { size?: number; className?: string }) {
+export function GitHubIcon({ size = 16, className }: { size?: number; className?: string }) {
   return (
     <svg
       width={size}
@@ -247,7 +246,6 @@ export function RightPanel() {
   // free while no right-side Sidebar is mounted). Same guards as the other
   // site shortcuts: no modifiers, and typing surfaces own their keys.
   const [open, setOpen] = useState(true);
-  const reduceMotion = useReducedMotion() ?? false;
   // The listener registers once; the ref keeps the current value in reach so
   // the toast can announce the RESULT without a setState-updater side effect.
   const openRef = useRef(open);
@@ -283,46 +281,44 @@ export function RightPanel() {
   return (
     <>
       {/* Collapsed, the panel leaves a way back in its own top-right spot —
-          the same ghost trigger the sidebar uses, mirrored. */}
-      <AnimatePresence>
-        {!open && (
-          <motion.div
-            // Mirrors the left rail's reopen trigger: same top-4 inset from
-            // its edge, same default trigger size.
-            className="fixed top-4 right-4 z-40 max-xl:hidden"
-            initial={reduceMotion ? false : { opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{
-              opacity: 0,
-              transition: reduceMotion ? { duration: 0 } : spring.fast.exit,
-            }}
-            transition={reduceMotion ? { duration: 0 } : spring.fast}
-          >
-            <Tooltip
-              side="left"
-              content={
-                <span className="flex items-center gap-2">
-                  <span className="[text-box:trim-both_cap_alphabetic]">
-                    Expand properties panel
-                  </span>
-                  <kbd className="-my-1 flex h-4 min-w-4 items-center justify-center rounded border border-background/30 px-1 font-sans text-[10px] text-background/80">
-                    ]
-                  </kbd>
-                </span>
-              }
-            >
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label="Expand properties panel"
-                onClick={() => setOpen(true)}
-              >
-                <PanelRightIcon />
-              </Button>
-            </Tooltip>
-          </motion.div>
+          the same ghost trigger the sidebar uses, mirrored. Permanently
+          rendered (rather than mounted/unmounted) so the appear/disappear can
+          be a plain CSS transition: `xl:` scopes the open state to desktop
+          only (mirrors the old `max-xl:hidden`), and `inert` keeps it out of
+          the tab order and off-screen readers while collapsed. */}
+      <div
+        data-open={!open || undefined}
+        inert={open || undefined}
+        className={cn(
+          "fixed top-4 right-4 z-40 hidden opacity-0 scale-95",
+          "transition-[opacity,transform,display] duration-(--motion-fast-exit) ease-spring transition-discrete",
+          "xl:data-[open=true]:block xl:data-[open=true]:opacity-100 xl:data-[open=true]:scale-100 xl:data-[open=true]:duration-(--motion-fast)",
+          "xl:starting:data-[open=true]:opacity-0 xl:starting:data-[open=true]:scale-95",
         )}
-      </AnimatePresence>
+      >
+        <Tooltip
+          side="left"
+          content={
+            <span className="flex items-center gap-2">
+              <span className="[text-box:trim-both_cap_alphabetic]">
+                Expand properties panel
+              </span>
+              <kbd className="-my-1 flex h-4 min-w-4 items-center justify-center rounded border border-background/30 px-1 font-sans text-[10px] text-background/80">
+                ]
+              </kbd>
+            </span>
+          }
+        >
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label="Expand properties panel"
+            onClick={() => setOpen(true)}
+          >
+            <PanelRightIcon />
+          </Button>
+        </Tooltip>
+      </div>
     {/* max-xl:fixed — during the xl-fade-block fade-out the panel keeps
         display:block for the transition (allow-discrete), which would hold its
         264px of flex space and make the content reflow a second time when
@@ -335,25 +331,27 @@ export function RightPanel() {
         inner wrapper (else it would override `flex` and drop the gap).
         The "]" toggle animates width/margin (the sidebar-shell technique: the
         outer collapses while the inner keeps its true width) so the page
-        content reflows into the space instead of snapping. */}
-    <motion.div
-      className="shrink-0 overflow-hidden sticky top-4 self-start mt-4 xl-fade-block max-xl:fixed max-xl:top-0 max-xl:right-0 max-xl:z-40 max-xl:pointer-events-none"
-      initial={false}
-      animate={{
-        width: open ? 256 : 0,
-        // 16px on the right, matching the 16px top (sticky top-4) and the
-        // 16px the max-h calc leaves at the bottom — one even inset.
-        marginRight: open ? 16 : 0,
-        opacity: open ? 1 : 0,
-      }}
-      transition={
-        reduceMotion ? { duration: 0 } : open ? spring.slow : spring.slow.exit
-      }
-      style={{ pointerEvents: open ? undefined : "none" }}
-      // Collapsed is width:0 + opacity:0 — still in the DOM, so without
-      // inert every control inside would stay tabbable and announced.
-      inert={open ? undefined : true}
-    >
+        content reflows into the space instead of snapping.
+        Two independent fades (this breakpoint one, and the "]" toggle below)
+        can't share one element in plain CSS the way a single framer `animate`
+        call could — each needs its own transitioned element, and nested
+        opacities multiply, so the panel is only visible when BOTH are 1. The
+        breakpoint fade stays on this outer element; the "]" toggle's
+        width/margin/opacity collapse moves to the wrapper just inside it. */}
+    <div className="shrink-0 sticky top-4 self-start mt-4 xl-fade-block max-xl:fixed max-xl:top-0 max-xl:right-0 max-xl:z-40 max-xl:pointer-events-none">
+      <div
+        data-open={open}
+        className={cn(
+          "w-0 mr-0 opacity-0 pointer-events-none overflow-hidden",
+          "transition-[width,margin-right,opacity] duration-(--motion-slow-exit) ease-spring",
+          // 16px on the right, matching the 16px top (sticky top-4) and the
+          // 16px the max-h calc leaves at the bottom — one even inset.
+          "data-[open=true]:w-64 data-[open=true]:mr-4 data-[open=true]:opacity-100 data-[open=true]:pointer-events-auto data-[open=true]:duration-(--motion-slow)",
+        )}
+        // Collapsed is width:0 + opacity:0 — still in the DOM, so without
+        // inert every control inside would stay tabbable and announced.
+        inert={open ? undefined : true}
+      >
       <div className="w-64">
       {/* Taller stacks (settings + playground controls) scroll within the
           viewport instead of running past it — the house ScrollArea (quiet
@@ -363,13 +361,6 @@ export function RightPanel() {
           under the mask, never outside pushing the gradient down. */}
       <ScrollArea viewportClassName="scroll-fade max-h-[calc(100svh-2rem)]">
       <div className="flex flex-col gap-3">
-        {/* Above the properties card: what the reader is looking at comes
-            before what they can change about it. Deliberately not a card —
-            it is a list of links to read past, not a surface to act on — but
-            padded to the card's inset so both columns of text line up.
-            Renders nothing on a page with fewer than two headings. */}
-        <DocsToc className="px-4 pt-2" />
-
         <aside className="p-4 rounded-lg bg-muted">
           <SurfaceProvider value={2}>
             <div className="flex items-center justify-between pt-2 pb-2">
@@ -388,12 +379,22 @@ export function RightPanel() {
           </SurfaceProvider>
         </aside>
 
+        {/* Under the properties card, not over it. The card is the panel's
+            banner — the thing that is on every page and that the reader
+            reaches for — so it holds the top of the rail, and the page's own
+            contents list follows it. Deliberately not a card itself: it is a
+            list of links to read past, not a surface to act on, but padded to
+            the card's inset so both columns of text line up. Renders nothing
+            on a page with fewer than two headings. */}
+        <DocsToc className="px-4 pt-2" />
+
         {/* Page-owned slot — e.g. the Card doc's Playground controls. */}
         <RightRailTarget />
       </div>
       </ScrollArea>
       </div>
-    </motion.div>
+      </div>
+    </div>
     </>
   );
 }

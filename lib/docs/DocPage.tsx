@@ -14,7 +14,10 @@ interface DocPageProps {
    *  `componentList`, so the name is written once and spaced automatically.
    *  Pass this only for a page that has no entry. */
   title?: string;
-  description: ReactNode;
+  /** Optional with a `slug`: the entry's own description is used, so the page
+   *  can't drift from the sidebar, the showcase card and the registry. Pass it
+   *  only on a page that has no `componentList` entry. */
+  description?: ReactNode;
   /** Slug used for prev/next navigation (must match a `componentList` entry). */
   slug?: string;
   /** Registry slug used for the auto-injected Installation snippet. Defaults to `slug`.
@@ -39,12 +42,13 @@ export function DocPage({
 }: DocPageProps) {
   const entry = slug ? componentList.find((c) => c.slug === slug) : undefined;
   const heading = title ? toLabel(title) : entry ? labelOf(entry) : "";
+  const blurb = description ?? entry?.description ?? "";
 
   const { prev, next } = neighbours(slug ? `/docs/${slug}` : "");
 
   return (
     <div className="flex flex-col gap-8 px-6">
-      <DocHeader title={heading} description={description} prev={prev} next={next} />
+      <DocHeader title={heading} description={blurb} prev={prev} next={next} />
 
       {slug && showInstall && (
         <div className="flex flex-col gap-3">
@@ -142,6 +146,35 @@ export function DocSection({ title, id, children }: DocSectionProps) {
       <AnchoredHeading
         id={anchorId}
         className="-mb-1 py-2 text-title text-foreground leading-none"
+      >
+        {title}
+      </AnchoredHeading>
+      {children}
+    </div>
+  );
+}
+
+interface DocSubSectionProps {
+  title: string;
+  /** Overrides the slug derived from `title` — for a heading whose text would
+   *  collide with another on the page, or whose link is already published. */
+  id?: string;
+  children: ReactNode;
+}
+
+/** One step under a DocSection: an example inside "Examples", a sub-component's
+ *  props inside "API Reference". Smaller than a section heading and set closer
+ *  to what follows it, so a page of six examples reads as one list rather than
+ *  six pages stacked. */
+export function DocSubSection({ title, id, children }: DocSubSectionProps) {
+  const anchorId = id ?? headingId(title);
+
+  return (
+    <div className="flex flex-col gap-3 pt-4">
+      <AnchoredHeading
+        as="h3"
+        id={anchorId}
+        className="-mb-1 py-1 text-subtitle text-foreground leading-none"
       >
         {title}
       </AnchoredHeading>

@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
-import { spring } from "@/lib/springs";
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
+import { cn } from "@/lib/utils";
+import { motionMs } from "@/lib/motion";
 import type { ItemRect } from "@/hooks/use-proximity-hover";
 
 // Run the layout effect on the client (where it must fire before paint, so a
@@ -10,18 +10,23 @@ import type { ItemRect } from "@/hooks/use-proximity-hover";
 const useIsoLayoutEffect =
   typeof window !== "undefined" ? useLayoutEffect : useEffect;
 
-// Edge spring for the selected-bg merge/split: spring.moderate (critically
-// damped) so converging edges meet exactly instead of overshooting. On a merge
-// the inner corners trail by `cornerDelay`, staying rounded until the halves meet.
-const mergeSpring = spring.moderate;
+// Edge transition for the selected-bg merge/split: the moderate motion tier
+// (critically damped) so converging edges meet exactly instead of
+// overshooting. On a merge the inner corners trail by `cornerDelay`, staying
+// rounded until the halves meet.
 const cornerDelay = 0.07;
+
 // A boundary resolves after its motion finishes (merge → swap to one block;
-// split → drop), driven by a duration timer rather than onAnimationComplete —
-// framer skips that callback when an animation's target equals its current value
-// (which spam-toggling produces), which would otherwise strand a half. The
-// buffer biases late, by which point the halves have met/parted, so it's unseen.
-const convergeMs = (mergeSpring.duration + cornerDelay) * 1000 + 80;
-const splitMs = mergeSpring.duration * 1000 + 80;
+// split → drop), driven by a duration timer rather than a transitionend
+// listener — this hook never touches the DOM nodes that end up animating
+// (SelectionBackgrounds, or any other consumer, renders those). The buffer
+// biases late, by which point the halves have met/parted, so it's unseen.
+function convergeMs() {
+  return motionMs("--motion-moderate", 160) + cornerDelay * 1000 + 80;
+}
+function splitMs() {
+  return motionMs("--motion-moderate", 160) + 80;
+}
 
 // A selected-background block for one render. A run is normally one block; mid
 // merge/split it is drawn as two abutting halves with sharp inner corners.
@@ -40,8 +45,8 @@ export interface SelBlock extends Rect {
   enterFrom?: { top: number; height: number; radii: [number, number, number, number] };
 }
 
-// A contiguous run of selected/checked rows, with a stable id so framer-motion
-// can morph it across renders rather than exit+re-enter.
+// A contiguous run of selected/checked rows, with a stable id so its
+// background can transition across renders rather than exit+re-enter.
 export type Run = { start: number; end: number; id: number };
 
 // One in-flight merge or split; geometry is recomputed from the live runs each
@@ -138,7 +143,7 @@ export function useMergeSplitBlocks(
                 )
               : bs
           );
-        }, b.kind === "merge" ? convergeMs : splitMs)
+        }, b.kind === "merge" ? convergeMs() : splitMs())
       );
     }
     const stillValid = (b: Boundary) =>
@@ -314,6 +319,34 @@ export function useMergeSplitBlocks(
   return blocks;
 }
 
+// A block being removed (a run fully deselected) is held here, wearing its
+// exit style, until its own opacity transition finishes — CSS can't animate
+// an element's removal the way AnimatePresence deferred it.
+type DisplayBlock = SelBlock & { exiting?: boolean };
+
+// The transition every block declares for itself, so an ordinary style
+// recomputation on an already-mounted div (attribute/prop change) is what
+// actually plays it — no JS drives the motion, this just picks the CSS.
+function transitionFor(b: DisplayBlock): string {
+  if (b.exiting)
+    return b.exitInstant ? "none" : "opacity var(--motion-moderate-exit) var(--motion-ease)";
+  if (b.instant) return "none";
+  const corner = b.delayCorners
+    ? `var(--motion-moderate) var(--motion-ease) ${b.cornerDelay ?? cornerDelay}s`
+    : "var(--motion-moderate) var(--motion-ease)";
+  return [
+    "top var(--motion-moderate) var(--motion-ease)",
+    "left var(--motion-moderate) var(--motion-ease)",
+    "width var(--motion-moderate) var(--motion-ease)",
+    "height var(--motion-moderate) var(--motion-ease)",
+    `border-top-left-radius ${corner}`,
+    `border-top-right-radius ${corner}`,
+    `border-bottom-right-radius ${corner}`,
+    `border-bottom-left-radius ${corner}`,
+    "opacity var(--motion-fast) var(--motion-ease)",
+  ].join(", ");
+}
+
 // Renders the selected-background blocks produced by useMergeSplitBlocks — one
 // per run, or two abutting halves mid merge/split. A block's own `opacity`
 // override (e.g. the commit ghost) applies; otherwise blocks render fully
@@ -324,34 +357,59 @@ export function SelectionBackgrounds({
 }: {
   blocks: SelBlock[];
 }) {
+  // `blocks` only ever holds what should be on screen *now* — a removed run's
+  // block just disappears from it. Diff against what was last rendered so a
+  // departing block lingers, fading, instead of vanishing on the same frame.
+  const [displayed, setDisplayed] = useState<DisplayBlock[]>(blocks);
+  const displayedRef = useRef(displayed);
+  displayedRef.current = displayed;
+
+  useIsoLayoutEffect(() => {
+    const remaining = new Map(blocks.map((b) => [b.key, b]));
+    const next: DisplayBlock[] = [];
+    for (const prev of displayedRef.current) {
+      const fresh = remaining.get(prev.key);
+      if (fresh) {
+        next.push(fresh);
+        remaining.delete(prev.key);
+        continue;
+      }
+      if (prev.exiting) {
+        next.push(prev); // still fading out
+        continue;
+      }
+      if (prev.exitInstant) continue; // no fade to wait for — drop now
+      next.push({ ...prev, exiting: true, opacity: 0 });
+    }
+    for (const b of remaining.values()) next.push(b); // newly appeared
+    setDisplayed(next);
+  }, [blocks]);
+
+  const dropExited = (key: string) =>
+    setDisplayed((ds) => ds.filter((b) => b.key !== key || !b.exiting));
+
   return (
-    <AnimatePresence>
-      {blocks.map((b) => {
-        const corner = b.delayCorners
-          ? { ...mergeSpring, delay: b.cornerDelay ?? cornerDelay }
-          : mergeSpring;
+    <>
+      {displayed.map((b) => {
         const opacity = b.opacity ?? 1;
         return (
-          <motion.div
+          <div
             key={b.key}
             aria-hidden
-            className="absolute bg-active pointer-events-none"
-            initial={
-              b.enterFrom
-                ? {
-                    opacity,
-                    top: b.enterFrom.top,
-                    left: b.left,
-                    width: b.width,
-                    height: b.enterFrom.height,
-                    borderTopLeftRadius: b.enterFrom.radii[0],
-                    borderTopRightRadius: b.enterFrom.radii[1],
-                    borderBottomRightRadius: b.enterFrom.radii[2],
-                    borderBottomLeftRadius: b.enterFrom.radii[3],
-                  }
-                : false
-            }
-            animate={{
+            onTransitionEnd={(e) => {
+              if (b.exiting && e.propertyName === "opacity") dropExited(b.key);
+            }}
+            // A fresh ghost half (enterFrom) needs a genuine "before" pose to
+            // animate from — inline style can't declare @starting-style, so
+            // that pose rides on custom properties a fixed Tailwind class
+            // list reads via the `starting:` variant (only meaningful for a
+            // block that is newly mounting; harmless on any other).
+            className={cn(
+              "absolute bg-active pointer-events-none",
+              b.enterFrom &&
+                "starting:top-(--msb-enter-top) starting:h-(--msb-enter-height) starting:rounded-tl-(--msb-enter-r0) starting:rounded-tr-(--msb-enter-r1) starting:rounded-br-(--msb-enter-r2) starting:rounded-bl-(--msb-enter-r3)"
+            )}
+            style={{
               top: b.top,
               left: b.left,
               width: b.width,
@@ -361,23 +419,19 @@ export function SelectionBackgrounds({
               borderBottomRightRadius: b.radii[2],
               borderBottomLeftRadius: b.radii[3],
               opacity,
+              transition: transitionFor(b),
+              ...(b.enterFrom && {
+                "--msb-enter-top": `${b.enterFrom.top}px`,
+                "--msb-enter-height": `${b.enterFrom.height}px`,
+                "--msb-enter-r0": `${b.enterFrom.radii[0]}px`,
+                "--msb-enter-r1": `${b.enterFrom.radii[1]}px`,
+                "--msb-enter-r2": `${b.enterFrom.radii[2]}px`,
+                "--msb-enter-r3": `${b.enterFrom.radii[3]}px`,
+              } as CSSProperties),
             }}
-            exit={{ opacity: 0, transition: b.exitInstant ? { duration: 0 } : mergeSpring.exit }}
-            transition={
-              b.instant
-                ? { duration: 0 }
-                : {
-                    ...mergeSpring,
-                    borderTopLeftRadius: corner,
-                    borderTopRightRadius: corner,
-                    borderBottomRightRadius: corner,
-                    borderBottomLeftRadius: corner,
-                    opacity: { duration: 0.08 },
-                  }
-            }
           />
         );
       })}
-    </AnimatePresence>
+    </>
   );
 }

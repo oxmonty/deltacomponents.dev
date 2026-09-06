@@ -13,7 +13,7 @@ import {
 } from "@/registry/default/product-card";
 import { ComponentPreview } from "@/lib/docs/ComponentPreview";
 import { PropsTable, type PropDef } from "@/lib/docs/PropsTable";
-import { DocPage, DocSection } from "@/lib/docs/DocPage";
+import { DocPage, DocSection, DocSubSection } from "@/lib/docs/DocPage";
 
 const CLOCK = "/images/products/twemco-clock.png";
 const POCKET = "/images/products/analogue-pocket.webp";
@@ -28,6 +28,25 @@ const ESSAYS = [
   { title: "The Bear Manifesto", author: "Herman", image: "/images/essays/the-bear-manifesto.jpg", url: "https://herman.bearblog.dev/manifesto/" },
   { title: "Write Like You Talk", author: "Paul Graham", image: "/images/essays/write-like-you-talk.jpg", url: "https://paulgraham.com/talk.html" },
 ];
+
+const usageCode = `import {
+  ProductCard,
+  ProductCardContent,
+  ProductCardHeader,
+  ProductCardMetric,
+  ProductCardSubtitle,
+  ProductCardTitle,
+} from "./components";
+
+<ProductCard>
+  <ProductCardContent>
+    <ProductCardHeader>
+      <ProductCardTitle>Twemco Clock</ProductCardTitle>
+      <ProductCardSubtitle>Clock</ProductCardSubtitle>
+    </ProductCardHeader>
+    <ProductCardMetric>$219</ProductCardMetric>
+  </ProductCardContent>
+</ProductCard>`;
 
 const basicCode = `import {
   ProductCard,
@@ -251,46 +270,78 @@ function Sizes() {
 
 export default function ProductCardDoc() {
   return (
-    <DocPage
-      slug="product-card"
-      description="Compound card for commerce rows — an image well, an overlaid badge, and a title/subtitle/metric footer."
-    >
-      <DocSection title="Basic">
-        <ComponentPreview code={basicCode} padding="compact">
-          <Basic />
+    <DocPage slug="product-card">
+      <DocSection title="Usage">
+        <ComponentPreview code={usageCode} padding="compact">
+          <ProductCard>
+            <ProductCardContent>
+              <ProductCardHeader>
+                <ProductCardTitle>Twemco Clock</ProductCardTitle>
+                <ProductCardSubtitle>Clock</ProductCardSubtitle>
+              </ProductCardHeader>
+              <ProductCardMetric>$219</ProductCardMetric>
+            </ProductCardContent>
+          </ProductCard>
         </ComponentPreview>
       </DocSection>
 
-      <DocSection title="Inner layout">
-        <ComponentPreview code={innerCode} padding="compact">
-          <Inner />
-        </ComponentPreview>
-      </DocSection>
+      <DocSection title="Examples">
+        <DocSubSection title="Basic">
+          <ComponentPreview code={basicCode} padding="compact">
+            <Basic />
+          </ComponentPreview>
+        </DocSubSection>
 
-      <DocSection title="Badge">
-        <ComponentPreview code={badgeCode} padding="compact">
-          <WithBadge />
-        </ComponentPreview>
-      </DocSection>
+        <DocSubSection title="Inner layout">
+          <ComponentPreview code={innerCode} padding="compact">
+            <Inner />
+          </ComponentPreview>
+        </DocSubSection>
 
-      <DocSection title="Grid">
-        <ComponentPreview code={gridCode} padding="compact">
-          <Grid />
-        </ComponentPreview>
-      </DocSection>
+        <DocSubSection title="Sizes">
+          <ComponentPreview code={sizeCode} padding="compact">
+            <Sizes />
+          </ComponentPreview>
+        </DocSubSection>
 
-      <DocSection title="Sizes">
-        <ComponentPreview code={sizeCode} padding="compact">
-          <Sizes />
-        </ComponentPreview>
+        <DocSubSection title="Badge">
+          <ComponentPreview code={badgeCode} padding="compact">
+            <WithBadge />
+          </ComponentPreview>
+        </DocSubSection>
+
+        <DocSubSection title="Grid">
+          <ComponentPreview code={gridCode} padding="compact">
+            <Grid />
+          </ComponentPreview>
+        </DocSubSection>
       </DocSection>
 
       <DocSection title="API Reference">
-        <PropsTable props={rootProps} />
-      </DocSection>
-
-      <DocSection title="Parts">
-        <PropsTable props={partProps} />
+        <DocSubSection title="ProductCard">
+          <PropsTable props={rootProps} />
+        </DocSubSection>
+        <DocSubSection title="ProductCardImage">
+          <PropsTable props={[partProps[0]]} />
+        </DocSubSection>
+        <DocSubSection title="ProductCardBadge">
+          <PropsTable props={[partProps[1]]} />
+        </DocSubSection>
+        <DocSubSection title="ProductCardContent">
+          <PropsTable props={[partProps[2]]} />
+        </DocSubSection>
+        <DocSubSection title="ProductCardHeader">
+          <PropsTable props={[partProps[3]]} />
+        </DocSubSection>
+        <DocSubSection title="ProductCardTitle">
+          <PropsTable props={[partProps[4]]} />
+        </DocSubSection>
+        <DocSubSection title="ProductCardSubtitle">
+          <PropsTable props={[partProps[5]]} />
+        </DocSubSection>
+        <DocSubSection title="ProductCardMetric">
+          <PropsTable props={[partProps[6]]} />
+        </DocSubSection>
       </DocSection>
     </DocPage>
   );

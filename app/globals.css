@@ -180,6 +180,25 @@
   --shadow-8: var(--shadow-light-8);
   --shadow-2-inset: var(--shadow-light-2-inset);
   --shadow-3-inset: var(--shadow-light-3-inset);
+
+  /* ── Motion tiers ──
+     Three durations, one easing. The bigger the thing that moves, the slower
+     the tier; a dismissal runs one tier quicker than its entrance so it reads
+     as crisp rather than as the entrance replayed backwards. Never hand-write
+     a duration — reach for a tier:
+
+       transition-[opacity] duration-(--motion-moderate) ease-(--motion-ease)
+
+     The easing is the settle curve of a critically damped spring, which is
+     what these tiers used to be. Reduced motion zeroes every tier at the
+     bottom of this file, so no component needs its own guard. */
+  --motion-ease: cubic-bezier(0.32, 0.72, 0, 1);
+  --motion-fast: 80ms;
+  --motion-fast-exit: 60ms;
+  --motion-moderate: 160ms;
+  --motion-moderate-exit: 120ms;
+  --motion-slow: 240ms;
+  --motion-slow-exit: 160ms;
 }
 
 .dark {
@@ -314,6 +333,7 @@
   --color-sidebar-ring: var(--sidebar-ring);
 
   /* Ours */
+  --ease-spring: var(--motion-ease);
   --color-selected: var(--selected);
   --color-destructive-light: var(--destructive-light);
   --color-hover: var(--hover);
@@ -942,6 +962,20 @@ html.transitioning *::after {
   }
 }
 
+/* The settings toast's press feedback: a dip and a recovery in one keyframe,
+   so a repeat press replays both halves. The element is remounted to restart
+   it — see lib/docs/settings-toast.tsx. Duration is two `fast` tiers, one per
+   half, so it follows the tier when that moves. */
+@theme {
+  --animate-toast-press: toast-press calc(var(--motion-fast) * 2) var(--motion-ease);
+
+  @keyframes toast-press {
+    0% { scale: 1; }
+    50% { scale: 0.95; }
+    100% { scale: 1; }
+  }
+}
+
 /* ============================================================================
    6. SITE-SPECIFIC (home page bento grid)
 ============================================================================ */
@@ -979,4 +1013,127 @@ html.transitioning *::after {
     grid-auto-flow: dense;
     grid-auto-rows: 300px;
   }
+}
+
+/* ============================================================================
+   7. REDUCED MOTION
+   ----------------------------------------------------------------------------
+   One place to honour the OS setting, replacing the MotionConfig wrapper the
+   site used to render. Zeroing the tiers leaves every transition in place —
+   state still lands, transitionend still fires — it just lands instantly.
+   Long-running decorative animations are stopped outright.
+============================================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-fast: 0ms;
+    --motion-fast-exit: 0ms;
+    --motion-moderate: 0ms;
+    --motion-moderate-exit: 0ms;
+    --motion-slow: 0ms;
+    --motion-slow-exit: 0ms;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ============================================================================
+   8. CODE SYNTAX PALETTE
+   ----------------------------------------------------------------------------
+   Lives here, not in React state, so a Code block (registry/default/code.tsx)
+   paints the right colours on its very first frame — server render,
+   hydration, and a fresh mount alike. Picking the palette in JS (a `mounted`
+   flag flipped after paint, since SSR has no OS preference) guaranteed one
+   light-palette frame on every mount: visible on a hard refresh in dark mode,
+   and on every Installation-tab switch that remounts a block mid-session.
+
+   --code-token-* is the union of the two built-in Prism palettes' token
+   groups (see `tokenGroups` in code.tsx) — light values on :root, dark
+   overrides on .dark, the schema this file already uses.
+
+   A consumer's `adaptiveTheme` prop reuses the same variables. Since an
+   inline style can't carry a `.dark` descendant rule, code.tsx instead sets
+   *both* halves of every pair inline on the block's own wrapper
+   (`--code-token-keyword-l` / `-d`, etc.) and `.code-adaptive-theme` below
+   picks between them — the block still resolves its palette from the
+   ancestor `.dark` class, not from a JS boolean.
+============================================================================ */
+
+:root {
+  --code-token-comment: #8b949e;
+  --code-token-keyword: #d73a49;
+  --code-token-property: #005cc5;
+  --code-token-tag: #22863a;
+  --code-token-punctuation: #24292e;
+  --code-token-definition: #24292e;
+  --code-token-function: #6f42c1;
+  --code-token-string: #032f62;
+  --code-token-static: #005cc5;
+  --code-token-variable: #e36209;
+  --code-token-builtin: #d73a49;
+  --code-token-class-name: #6f42c1;
+}
+
+.dark {
+  --code-token-comment: #757575;
+  --code-token-keyword: #77b7d7;
+  --code-token-property: #77b7d7;
+  --code-token-tag: #dfab5c;
+  --code-token-punctuation: #ffffff;
+  --code-token-definition: #86d9ca;
+  --code-token-function: #86d9ca;
+  --code-token-string: #977cdc;
+  --code-token-static: #ff6658;
+  --code-token-variable: #ffffff;
+  --code-token-builtin: #ffffff;
+  --code-token-class-name: #ffffff;
+}
+
+.code-adaptive-theme {
+  --code-fg: var(--code-fg-l);
+  --code-bg: var(--code-bg-l);
+  --code-token-comment: var(--code-token-comment-l);
+  --code-token-keyword: var(--code-token-keyword-l);
+  --code-token-property: var(--code-token-property-l);
+  --code-token-tag: var(--code-token-tag-l);
+  --code-token-punctuation: var(--code-token-punctuation-l);
+  --code-token-definition: var(--code-token-definition-l);
+  --code-token-function: var(--code-token-function-l);
+  --code-token-string: var(--code-token-string-l);
+  --code-token-static: var(--code-token-static-l);
+  --code-token-variable: var(--code-token-variable-l);
+  --code-token-builtin: var(--code-token-builtin-l);
+  --code-token-class-name: var(--code-token-class-name-l);
+}
+
+.dark .code-adaptive-theme {
+  --code-fg: var(--code-fg-d);
+  --code-bg: var(--code-bg-d);
+  --code-token-comment: var(--code-token-comment-d);
+  --code-token-keyword: var(--code-token-keyword-d);
+  --code-token-property: var(--code-token-property-d);
+  --code-token-tag: var(--code-token-tag-d);
+  --code-token-punctuation: var(--code-token-punctuation-d);
+  --code-token-definition: var(--code-token-definition-d);
+  --code-token-function: var(--code-token-function-d);
+  --code-token-string: var(--code-token-string-d);
+  --code-token-static: var(--code-token-static-d);
+  --code-token-variable: var(--code-token-variable-d);
+  --code-token-builtin: var(--code-token-builtin-d);
+  --code-token-class-name: var(--code-token-class-name-d);
+}
+
+/* Copy button ground, both states solid so the code doesn't show through:
+   mixed against the block's own --code-fg/--code-bg (set by code.tsx on the
+   block's wrapper) rather than against transparent, so a chip reads as a
+   shade of that block's surface regardless of which palette it's using. */
+:root {
+  --copy-button-hover-bg: color-mix(in oklab, var(--code-fg) 7%, var(--code-bg));
+  --copy-button-rest-bg: color-mix(in oklab, var(--code-fg) 10%, var(--code-bg));
 }

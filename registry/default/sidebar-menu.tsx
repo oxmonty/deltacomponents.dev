@@ -22,10 +22,8 @@ import {
   type Ref,
   type RefObject,
 } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
-import { spring } from "@/lib/springs";
 import { fontWeights } from "@/lib/font-weight";
 import { useShape } from "@/lib/shape-context";
 import { useSize, SizeProvider, type SizeVariant } from "@/lib/size-context";
@@ -36,6 +34,86 @@ import { resolveSlotTemplate, slotElement } from "@/components/ui/sidebar-core";
 // SSR-safe layout effect (client components still server-render in Next).
 const useIsoLayoutEffect =
   typeof window !== "undefined" ? useLayoutEffect : useEffect;
+
+// Keeps a departing item rendered until it has finished its own CSS exit
+// transition — AnimatePresence's job, done by hand. Used by the three
+// traveling overlays below (active row backgrounds, hover, focus ring).
+//
+// Only the *keys* are state. The live items are rendered straight through, so
+// their measured rects stay current every commit without a state write; the
+// component re-renders only when a key actually joins or leaves. Holding the
+// items themselves in state is what made this loop: the callers rebuild
+// `items` every render, so an effect that stored them set state on every
+// commit, which caused another render, forever.
+function useCssPresence<T extends { key: string }>(items: T[]) {
+  // The last value seen for each key, so an item that has left can go on
+  // rendering the rect it had when it did.
+  const lastRef = useRef(new Map<string, T>());
+  const [exitingKeys, setExitingKeys] = useState<string[]>([]);
+
+  // A string, not the array: `items` is a fresh array on every render, so
+  // depending on its identity would run this every commit again.
+  const liveKeys = items.map((it) => it.key).join("\u0000");
+
+  useIsoLayoutEffect(() => {
+    for (const it of items) lastRef.current.set(it.key, it);
+  });
+
+  useIsoLayoutEffect(() => {
+    const live = new Set(items.map((it) => it.key));
+    setExitingKeys((prev) => {
+      const next = prev.filter((key) => !live.has(key));
+      for (const key of lastRef.current.keys()) {
+        if (!live.has(key) && !next.includes(key)) next.push(key);
+      }
+      const same =
+        next.length === prev.length && next.every((key, i) => key === prev[i]);
+      return same ? prev : next;
+    });
+    // `items` is intentionally not a dependency — see `liveKeys` above.
+  }, [liveKeys]);
+
+  const dismiss = useCallback((key: string) => {
+    lastRef.current.delete(key);
+    setExitingKeys((prev) =>
+      prev.includes(key) ? prev.filter((k) => k !== key) : prev
+    );
+  }, []);
+
+  const shown: (T & { exiting?: boolean })[] = [
+    ...items,
+    ...exitingKeys
+      .map((key) => lastRef.current.get(key))
+      .filter((it): it is T => it !== undefined)
+      .map((it) => ({ ...it, exiting: true })),
+  ];
+
+  return [shown, dismiss] as const;
+}
+
+// The transition string an overlay declares for itself: exiting fades out on
+// its tier's exit tempo; a genuine target change (`changed`) glides on the
+// enter tempo; otherwise (the same target merely re-measured, e.g. a sibling
+// row collapsing above it) it snaps, so the overlay doesn't chase a moving
+// row with a second, trailing transition.
+function overlayTransition(
+  exiting: boolean,
+  changed: boolean,
+  tier: string,
+  exitTier: string,
+  opacityTier: string = tier
+) {
+  if (exiting) return `opacity var(${exitTier}) var(--motion-ease)`;
+  if (!changed) return "none";
+  return [
+    `top var(${tier}) var(--motion-ease)`,
+    `left var(${tier}) var(--motion-ease)`,
+    `width var(${tier}) var(--motion-ease)`,
+    `height var(${tier}) var(--motion-ease)`,
+    `opacity var(${opacityTier}) var(--motion-ease)`,
+  ].join(", ");
+}
+
 
 // ─── Menu scope ──────────────────────────────────────────────────────────────
 //
@@ -423,83 +501,95 @@ function useMenuScope(containerRef: RefObject<HTMLElement | null>): MenuScope {
     levelFirstActive.values().next().value;
   const hoverAnchorRect = hoverAnchorRow ? overlayRect(hoverAnchorRow) : null;
 
+  // Hover and focus are single traveling overlays, not lists — wrapped as
+  // 0-or-1-item arrays so they can share the same presence bookkeeping as
+  // the active backgrounds below.
+  const hoverItems = hoverRect
+    ? [{ key: String(sessionRef.current), rect: hoverRect, anchor: hoverAnchorRect, changed: hoverRowChanged }]
+    : [];
+  const focusItems = focusRect ? [{ key: "focus", rect: focusRect, changed: focusRowChanged }] : [];
+
+  const [activeShown, dismissActive] = useCssPresence(activeRects);
+  const [hoverShown, dismissHover] = useCssPresence(hoverItems);
+  const [focusShown, dismissFocus] = useCssPresence(focusItems);
+
   const overlays = isMeasured ? (
     <>
       {/* Active row backgrounds — one per active row (see activeRects above) */}
-      <AnimatePresence>
-        {activeRects.map(({ key, rect, rowChanged }) => (
-          <motion.div
-            key={key}
-            className={`absolute ${shape.bg} bg-active pointer-events-none`}
-            initial={false}
-            animate={{
-              top: rect.top,
-              left: rect.left,
-              width: rect.width,
-              height: rect.height,
-              opacity: 1,
-            }}
-            exit={{ opacity: 0, transition: spring.moderate.exit }}
-            transition={
-              rowChanged
-                ? { ...spring.moderate, opacity: { duration: 0.08 } }
-                : { duration: 0 }
-            }
-          />
-        ))}
-      </AnimatePresence>
+      {activeShown.map((b) => (
+        <div
+          key={b.key}
+          onTransitionEnd={(e) => {
+            if (b.exiting && e.propertyName === "opacity") dismissActive(b.key);
+          }}
+          className={`absolute ${shape.bg} bg-active pointer-events-none`}
+          style={{
+            top: b.rect.top,
+            left: b.rect.left,
+            width: b.rect.width,
+            height: b.rect.height,
+            opacity: b.exiting ? 0 : 1,
+            transition: overlayTransition(
+              !!b.exiting,
+              b.rowChanged,
+              "--motion-moderate",
+              "--motion-moderate-exit",
+              "--motion-fast"
+            ),
+          }}
+        />
+      ))}
 
       {/* Hover background */}
-      <AnimatePresence>
-        {hoverRect && (
-          <motion.div
-            key={sessionRef.current}
-            className={`absolute ${shape.bg} bg-hover pointer-events-none`}
-            initial={{
-              opacity: 0,
-              top: hoverAnchorRect?.top ?? hoverRect.top,
-              left: hoverAnchorRect?.left ?? hoverRect.left,
-              width: hoverAnchorRect?.width ?? hoverRect.width,
-              height: hoverAnchorRect?.height ?? hoverRect.height,
-            }}
-            animate={{
-              opacity: 1,
-              top: hoverRect.top,
-              left: hoverRect.left,
-              width: hoverRect.width,
-              height: hoverRect.height,
-            }}
-            exit={{ opacity: 0, transition: spring.fast.exit }}
-            transition={
-              hoverRowChanged
-                ? { ...spring.fast, opacity: { duration: 0.08 } }
-                : { duration: 0 }
-            }
-          />
-        )}
-      </AnimatePresence>
+      {hoverShown.map((b) => (
+        <div
+          key={b.key}
+          onTransitionEnd={(e) => {
+            if (b.exiting && e.propertyName === "opacity") dismissHover(b.key);
+          }}
+          className={cn(
+            `absolute ${shape.bg} bg-hover pointer-events-none`,
+            // A fresh hover session fades in anchored on hoverAnchorRect — a
+            // real @starting-style pose, which inline style can't declare on
+            // its own (see the merge/split hook for the same technique).
+            !b.exiting &&
+              "starting:opacity-0 starting:top-(--hov-anchor-top) starting:left-(--hov-anchor-left) starting:w-(--hov-anchor-width) starting:h-(--hov-anchor-height)"
+          )}
+          style={{
+            top: b.rect.top,
+            left: b.rect.left,
+            width: b.rect.width,
+            height: b.rect.height,
+            opacity: b.exiting ? 0 : 1,
+            transition: overlayTransition(!!b.exiting, b.changed, "--motion-fast", "--motion-fast-exit"),
+            ...(b.anchor && {
+              "--hov-anchor-top": `${b.anchor.top}px`,
+              "--hov-anchor-left": `${b.anchor.left}px`,
+              "--hov-anchor-width": `${b.anchor.width}px`,
+              "--hov-anchor-height": `${b.anchor.height}px`,
+            } as CSSProperties),
+          }}
+        />
+      ))}
 
       {/* Focus ring */}
-      <AnimatePresence>
-        {focusRect && (
-          <motion.div
-            className={`absolute ${shape.focusRing} pointer-events-none z-20 border border-[color:var(--focus-ring,#6B97FF)]`}
-            initial={false}
-            animate={{
-              left: focusRect.left - 2,
-              top: focusRect.top - 2,
-              width: focusRect.width + 4,
-              height: focusRect.height + 4,
-            }}
-            exit={{ opacity: 0, transition: spring.fast.exit }}
-            transition={
-              focusRowChanged
-                ? { ...spring.fast, opacity: { duration: 0.08 } }
-                : { duration: 0 }
-            }
-          />
-        )}
-      </AnimatePresence>
+      {focusShown.map((b) => (
+        <div
+          key={b.key}
+          onTransitionEnd={(e) => {
+            if (b.exiting && e.propertyName === "opacity") dismissFocus(b.key);
+          }}
+          className={`absolute ${shape.focusRing} pointer-events-none z-20 border border-[color:var(--focus-ring,#6B97FF)]`}
+          style={{
+            left: b.rect.left - 2,
+            top: b.rect.top - 2,
+            width: b.rect.width + 4,
+            height: b.rect.height + 4,
+            opacity: b.exiting ? 0 : 1,
+            transition: overlayTransition(!!b.exiting, b.changed, "--motion-fast", "--motion-fast-exit"),
+          }}
+        />
+      ))}
     </>
   ) : null;
 
@@ -1272,31 +1362,25 @@ const SidebarMenuSub = forwardRef<HTMLUListElement, SidebarMenuSubProps>(
       togglingRef.current = true;
     }
 
+    // Do NOT simplify this to `open ? "--motion-moderate" : …` unconditionally
+    // — see the togglingRef note above. Transitioning on a re-measure stacks
+    // a second glide on a nested sub's own collapse.
+    const subTier = open ? "--motion-moderate" : "--motion-moderate-exit";
+
     return (
-      <motion.div
+      <div
         data-slot="sidebar-menu-sub-wrapper"
-        // `animate` stays defined from the first render — framer ignores an
-        // animate prop that appears later in the element's life. Until the
-        // content is measured, a closed sub collapses via the h-0 class and
-        // an open one keeps its natural height.
+        // Until the content is measured, a closed sub collapses via the h-0
+        // class and an open one keeps its natural height.
         className={cn("overflow-hidden", !measured && !open && "h-0")}
-        initial={false}
-        animate={
-          measured
-            ? { height: open ? contentHeight : 0, opacity: open ? 1 : 0 }
-            : { opacity: open ? 1 : 0 }
-        }
-        // Do NOT simplify this to `open ? spring.moderate : …` — see the
-        // togglingRef note above. Springing on a re-measure stacks a second
-        // spring on a nested sub's own collapse.
-        transition={
-          togglingRef.current
-            ? open
-              ? spring.moderate
-              : spring.moderate.exit
-            : { duration: 0 }
-        }
-        onAnimationComplete={() => {
+        style={{
+          height: measured ? (open ? contentHeight : 0) : undefined,
+          opacity: open ? 1 : 0,
+          transition: togglingRef.current
+            ? `height var(${subTier}) var(--motion-ease), opacity var(${subTier}) var(--motion-ease)`
+            : "none",
+        }}
+        onTransitionEnd={() => {
           togglingRef.current = false;
         }}
       >
@@ -1321,7 +1405,7 @@ const SidebarMenuSub = forwardRef<HTMLUListElement, SidebarMenuSubProps>(
         >
           {children}
         </ul>
-      </motion.div>
+      </div>
     );
   }
 );

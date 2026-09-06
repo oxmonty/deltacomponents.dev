@@ -1,8 +1,6 @@
 "use client";
 
-import { useState } from "react";
 import { Button } from "@/registry/base/button";
-import { Switch } from "@/registry/base/switch";
 import { Tooltip } from "@/registry/base/tooltip";
 import { Code } from "@/registry/default/code";
 import { PATRICK_DARK } from "@/lib/docs/code-themes";
@@ -21,7 +19,7 @@ import {
   ProductCardSubtitle,
   ProductCardTitle,
 } from "@/registry/default/product-card";
-import { BUTTON_ITEMS, SWITCH_ITEMS, TOOLTIP_COPY } from "@/app/components/demo-data";
+import { BUTTON_ITEMS, TOOLTIP_COPY, TABS_ITEMS } from "@/app/components/demo-data";
 
 function ButtonPreview() {
   return (
@@ -35,30 +33,6 @@ function ButtonPreview() {
   );
 }
 
-function SwitchPreview() {
-  const [on, setOn] = useState<Set<string>>(
-    () => new Set(SWITCH_ITEMS.filter((item) => item.initial).map((item) => item.id))
-  );
-  return (
-    <div className="flex flex-col gap-3">
-      {SWITCH_ITEMS.map((item) => (
-        <Switch
-          key={item.id}
-          label={item.label}
-          checked={on.has(item.id)}
-          onToggle={() =>
-            setOn((prev) => {
-              const next = new Set(prev);
-              if (next.has(item.id)) next.delete(item.id);
-              else next.add(item.id);
-              return next;
-            })
-          }
-        />
-      ))}
-    </div>
-  );
-}
 
 function TooltipPreview() {
   return (
@@ -117,25 +91,28 @@ function TabsPreview() {
     // copy share a left edge, centred as one unit by the card's stage. Needs
     // the two-column card — in one column the stage is 213px against the
     // strip's 232, and a `w-fit` block that cannot shrink pins left instead.
-    <Tabs defaultValue="account" className="w-fit max-w-full">
+    <Tabs defaultValue="published" className="w-fit max-w-full">
       <TabsList>
-        <TabsTrigger value="account">Account</TabsTrigger>
-        <TabsTrigger value="password">Password</TabsTrigger>
-        <TabsTrigger value="settings">Settings</TabsTrigger>
+        {TABS_ITEMS.map((tab) => (
+          <TabsTrigger key={tab.value} value={tab.value}>
+            {tab.label}
+          </TabsTrigger>
+        ))}
       </TabsList>
       {/* The panels differ only in one line, so the stage is pinned to a
           single row's height and they cross-fade in the same spot rather than
           resizing the card as the reader clicks through. */}
       <div className="relative min-h-[24px]">
-        <TabsContent value="account" className="absolute inset-x-0 top-0" animate>
-          <p className="text-caption text-muted-foreground">Manage your account settings.</p>
-        </TabsContent>
-        <TabsContent value="password" className="absolute inset-x-0 top-0" animate>
-          <p className="text-caption text-muted-foreground">Change your password here.</p>
-        </TabsContent>
-        <TabsContent value="settings" className="absolute inset-x-0 top-0" animate>
-          <p className="text-caption text-muted-foreground">Configure your preferences.</p>
-        </TabsContent>
+        {TABS_ITEMS.map((tab) => (
+          <TabsContent
+            key={tab.value}
+            value={tab.value}
+            className="absolute inset-x-0 top-0"
+            fadeIn
+          >
+            <p className="text-caption text-muted-foreground">{tab.copy}</p>
+          </TabsContent>
+        ))}
       </div>
     </Tabs>
   );
@@ -146,6 +123,5 @@ export const previewMap: Record<string, React.FC> = {
   "product-card": ProductCardPreview,
   "code": CodePreview,
   button: ButtonPreview,
-  switch: SwitchPreview,
   tooltip: TooltipPreview,
 };

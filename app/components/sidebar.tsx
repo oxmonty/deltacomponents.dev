@@ -5,16 +5,13 @@ import { usePathname } from "next/navigation";
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarGroup,
   SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-  useSidebar,
 } from "@/registry/base/sidebar";
 import { componentList, labelOf, sectionList } from "@/lib/docs/components";
-import { GitHubStarButton, SettingsContent } from "@/app/components/right-panel";
 
 interface NavEntry {
   slug: string;
@@ -26,8 +23,9 @@ interface NavEntry {
 }
 
 /** The isNew/isUpdated dot, rendered as a trailing child inside the row's
- *  weight-animated label span (same markup the old NavItem used). */
-function StatusDot({ entry }: { entry: NavEntry }) {
+ *  weight-animated label span (same markup the old NavItem used). Exported
+ *  for the mobile header's nav popover, which lists the same components. */
+export function StatusDot({ entry }: { entry: NavEntry }) {
   // Rendered as a flex sibling of the weight-animated label (the row's gap
   // provides the spacing), matching the old NavItem dot's visual position.
   if (entry.isUpdated) {
@@ -82,7 +80,6 @@ function NavGroup({
 /** The site's own navigation rail — the Sidebar component, dogfooded. */
 export function SiteSidebar() {
   const pathname = usePathname();
-  const { isMobile } = useSidebar();
 
   return (
     <Sidebar collapsible="offcanvas" bordered={false} rail={false} className="ml-2">
@@ -116,23 +113,6 @@ export function SiteSidebar() {
           ariaLabel="Component navigation"
         />
       </SidebarContent>
-
-      {/* The settings block only ships in the mobile sheet — on desktop it
-          lives in the right panel. */}
-      {isMobile && (
-        <SidebarFooter className="p-4 pt-2">
-          <div className="flex items-center justify-between pt-2">
-            <h2
-              className="text-title text-foreground leading-none"
-              style={{ fontVariationSettings: "'wght' 600" }}
-            >
-              Customise
-            </h2>
-            <GitHubStarButton />
-          </div>
-          <SettingsContent tooltipSide="right" />
-        </SidebarFooter>
-      )}
     </Sidebar>
   );
 }

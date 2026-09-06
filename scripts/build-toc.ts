@@ -10,9 +10,9 @@
  *
  * MDX gets this for free because the headings are content. Our pages are TSX,
  * so the headings live in JSX and this walks the syntax tree for them. It reads
- * exactly the two components that render an anchored heading — DocSection and
- * AnchoredHeading — plus the Installation heading DocPage injects ahead of a
- * page's own children.
+ * exactly the three components that render an anchored heading — DocSection,
+ * DocSubSection and AnchoredHeading — plus the Installation heading DocPage
+ * injects ahead of a page's own children.
  *
  * Anything it cannot resolve to a literal is a hard error rather than a
  * silently missing entry, so a heading built from a variable fails the build
@@ -146,16 +146,16 @@ function tocForPage(file: string): TocEntry[] {
         }
       }
 
-      if (tag === "DocSection") {
+      if (tag === "DocSection" || tag === "DocSubSection") {
         const title = stringAttribute(node, "title");
         if (!title) {
           const { line } = source.getLineAndCharacterOfPosition(node.getStart());
           throw new Error(
-            `${relative(ROOT, file)}:${line + 1} — <DocSection> needs a literal ` +
+            `${relative(ROOT, file)}:${line + 1} — <${tag}> needs a literal ` +
               `\`title\` for the table of contents to be built from source.`
           );
         }
-        const entry = entryFor(node, title, 2);
+        const entry = entryFor(node, title, tag === "DocSection" ? 2 : 3);
         if (entry) entries.push(entry);
       }
     }

@@ -2,8 +2,7 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "product-card",
   "title": "Product Card",
-  "description": "Compound card for commerce interfaces: a square image well with an optional overlaid badge, and a title/subtitle/metric footer. Ships default and inner layouts and a three-step size scale.",
-  "dependencies": [],
+  "description": "Compound card for commerce rows — image well, overlaid badge, and a title/subtitle/metric footer.",
   "registryDependencies": [
     "utils",
     "shape-context",

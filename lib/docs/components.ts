@@ -37,10 +37,9 @@ export function labelOf(entry: Pick<ComponentEntry, "name" | "label">): string {
 export const componentList: ComponentEntry[] = [
   { slug: "code", name: "Code", description: "Syntax-highlighted code with a copy button, a filename bar, and a package-manager tab strip.", isNew: true, gridSize: "large" },
   { slug: "product-card", name: "ProductCard", description: "Compound card for commerce rows — image well, overlaid badge, and a title/subtitle/metric footer.", isNew: true, gridSize: "large" },
-  { slug: "tabs", name: "Tabs", description: "Tab navigation with underline, background, and ghost variants, and a spring-driven indicator that follows the shape system.", isNew: true, gridSize: "medium" },
+  { slug: "tabs", name: "Tabs", description: "Tab navigation with underline, background, and ghost variants, and an indicator that follows the shape system.", isNew: true, gridSize: "medium" },
   { slug: "button", name: "Button", description: "Versatile button with variants, sizes, loading state, and icon support.", gridSize: "small" },
-  { slug: "switch", name: "Switch", description: "Toggle switch with animated thumb and label.", gridSize: "small" },
-  { slug: "tooltip", name: "Tooltip", description: "Floating tooltip with spring-based animations and configurable placement.", gridSize: "small" },
+  { slug: "tooltip", name: "Tooltip", description: "Floating tooltip with configurable placement, a follow-cursor mode, and rich content support.", gridSize: "small" },
 ];
 
 export interface PageLink {

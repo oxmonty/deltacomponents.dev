@@ -21,9 +21,8 @@ import {
   type HTMLAttributes,
   type Ref,
 } from "react";
-import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { spring, exitFallbackMs } from "@/lib/springs";
+import { motionHoldMs } from "@/lib/motion";
 import { fontWeights } from "@/lib/font-weight";
 import { useShape } from "@/lib/shape-context";
 import { useSize, useSizeVariant } from "@/lib/size-context";
@@ -484,28 +483,27 @@ export function slotElement(
 // with allow-discrete, so none applies only once the fade lands (and
 // @starting-style fades it back in when the window grows). Literal classes
 // per breakpoint — Tailwind's scanner can't see composed strings.
+//
+// This element also owns the width-collapse transition below (SidebarShell's
+// `--width-duration`): transition-property/duration/timing-function are each
+// a single CSS value, so the breakpoint fade and the width collapse can't be
+// two separate `transition-[...]` utilities — the second one would replace
+// the first's property list outright instead of adding to it. They're
+// combined into one list here, with duration and easing supplied per-property
+// through CSS's positional (comma-list) transition-duration/timing-function,
+// fed by custom properties so the two transitions can still run at different
+// speeds: `--fade-duration` set responsively below, `--width-duration` set
+// inline by SidebarShell from its drag/open state.
 const BREAKPOINT_FADE_BASE =
-  "transition-[opacity,display] ease-out [transition-behavior:allow-discrete] motion-reduce:transition-none";
+  "transition-[opacity,display,width,margin] [transition-timing-function:ease-out,ease-out,var(--ease-spring),var(--ease-spring)] [transition-duration:var(--fade-duration),var(--fade-duration),var(--width-duration),var(--width-duration)] [transition-behavior:allow-discrete]";
 const BREAKPOINT_HIDDEN: Record<number, string> = {
-  640: "max-sm:hidden max-sm:opacity-0 max-sm:duration-160 sm:duration-240 sm:starting:opacity-0",
-  768: "max-md:hidden max-md:opacity-0 max-md:duration-160 md:duration-240 md:starting:opacity-0",
-  1024: "max-lg:hidden max-lg:opacity-0 max-lg:duration-160 lg:duration-240 lg:starting:opacity-0",
-  1280: "max-xl:hidden max-xl:opacity-0 max-xl:duration-160 xl:duration-240 xl:starting:opacity-0",
+  640: "max-sm:hidden max-sm:opacity-0 max-sm:[--fade-duration:var(--motion-moderate)] sm:[--fade-duration:var(--motion-slow)] sm:starting:opacity-0",
+  768: "max-md:hidden max-md:opacity-0 max-md:[--fade-duration:var(--motion-moderate)] md:[--fade-duration:var(--motion-slow)] md:starting:opacity-0",
+  1024: "max-lg:hidden max-lg:opacity-0 max-lg:[--fade-duration:var(--motion-moderate)] lg:[--fade-duration:var(--motion-slow)] lg:starting:opacity-0",
+  1280: "max-xl:hidden max-xl:opacity-0 max-xl:[--fade-duration:var(--motion-moderate)] xl:[--fade-duration:var(--motion-slow)] xl:starting:opacity-0",
 };
 
-// Props framer-motion redefines with incompatible signatures; they must not
-// be forwarded onto a motion.div.
-type MotionSafeDivProps = Omit<
-  HTMLAttributes<HTMLDivElement>,
-  | "onDrag"
-  | "onDragStart"
-  | "onDragEnd"
-  | "onAnimationStart"
-  | "onAnimationEnd"
-  | "onAnimationIteration"
->;
-
-export interface SidebarShellProps extends MotionSafeDivProps {
+export interface SidebarShellProps extends HTMLAttributes<HTMLDivElement> {
   side: SidebarSide;
   variant: SidebarVariant;
   /** The `sidebar` variant's inner-edge border. Default true. */
@@ -524,7 +522,7 @@ export interface SidebarShellProps extends MotionSafeDivProps {
  *  the whole sidebar works inside any bounded frame, not just the viewport.
  *  Ships the resize/collapse rail handle on its inner edge by default. */
 const SidebarShell = forwardRef<HTMLDivElement, SidebarShellProps>(
-  ({ side, variant, bordered = true, rail = true, railTooltipOpen, className, children, ...props }, ref) => {
+  ({ side, variant, bordered = true, rail = true, railTooltipOpen, className, children, style, ...props }, ref) => {
     const {
       open,
       width,
@@ -595,33 +593,34 @@ const SidebarShell = forwardRef<HTMLDivElement, SidebarShellProps>(
     }, [peekEnabled, isPeeking, setIsPeeking, peek, cancelPeekTimer, scheduleDismissPeek]);
     const substrate = useSurface();
     const floatingLevel = Math.min(substrate + 1, 8);
-    // Drag-resize needs the panel glued to the pointer; the spring resumes
-    // for open/close. Reduced motion snaps instead of sliding — the state
-    // change stays legible without the 256px of travel. The open/close ride
-    // the SLOW tier: a whole column moving is the largest thing this
-    // component animates (the sheet and peek stay on moderate — drawers
-    // settle precisely, per the tier notes).
-    const reduceMotion = useReducedMotion() ?? false;
+    // Drag-resize needs the panel glued to the pointer; the transition
+    // resumes for open/close. Reduced motion needs no branch here — the
+    // tiers below read from CSS custom properties that are zeroed under
+    // prefers-reduced-motion, so the state change lands instantly on its
+    // own. The open/close ride the SLOW tier: a whole column moving is the
+    // largest thing this component animates (the sheet and peek stay on
+    // moderate — drawers settle precisely, per the tier notes).
     // Mid-drag open flips — the collapse preview and its drag-back rescue —
     // ride the moderate tier instead of the drag's glued duration-0 tracking.
-    // The flip is detected synchronously (transition must be right on the
-    // very commit whose animate target changes; effects run too late), then
-    // `dragFlip` holds the spring through its settle so pointer moves landing
-    // right after a flip retarget the spring instead of snapping.
+    // The flip is detected synchronously (the duration must be right on the
+    // very commit whose width target changes; effects run too late), then
+    // `dragFlip` holds the transition through its settle so pointer moves
+    // landing right after a flip retarget it instead of snapping.
     const [dragFlip, setDragFlip] = useState(false);
     const prevOpenRef = useRef(open);
     const openFlipped = prevOpenRef.current !== open;
     // Pinning open from an active peek: the panel is already fully on screen
-    // as the overlay card, so while the width spring makes room the shell
-    // must not clip — otherwise the visible sidebar wipes in from a mask it
-    // never left. Detected synchronously (the provider clears isPeeking an
-    // effect later); the state hold keeps the clip off through the spring.
+    // as the overlay card, so while the width transition makes room the
+    // shell must not clip — otherwise the visible sidebar wipes in from a
+    // mask it never left. Detected synchronously (the provider clears
+    // isPeeking an effect later); the state hold keeps the clip off through
+    // the transition.
     const [pinFromPeekHold, setPinFromPeekHold] = useState(false);
     const pinnedFromPeek = (openFlipped && open && isPeeking) || pinFromPeekHold;
     useEffect(() => {
       if (!(open && isPeeking)) return;
       setPinFromPeekHold(true);
-      const id = setTimeout(() => setPinFromPeekHold(false), exitFallbackMs(spring.slow));
+      const id = setTimeout(() => setPinFromPeekHold(false), motionHoldMs("--motion-slow-exit", 160));
       return () => clearTimeout(id);
     }, [open, isPeeking]);
     useEffect(() => {
@@ -633,23 +632,36 @@ const SidebarShell = forwardRef<HTMLDivElement, SidebarShellProps>(
       }
       if (!flipped) return;
       setDragFlip(true);
-      const id = setTimeout(() => setDragFlip(false), exitFallbackMs(spring.moderate));
+      const id = setTimeout(() => setDragFlip(false), motionHoldMs("--motion-moderate-exit", 120));
       return () => clearTimeout(id);
     }, [open, isResizing]);
-    const widthTransition = reduceMotion
-      ? { duration: 0 }
-      : isResizing
-        ? openFlipped || dragFlip
-          ? open
-            ? spring.moderate
-            : spring.moderate.exit
-          : { duration: 0 }
-        : open
-          ? spring.slow
-          : spring.slow.exit;
+    const isFlipping = isResizing && (openFlipped || dragFlip);
+    // Drives both the shell's width transition (as the `--width-duration`
+    // custom property — the shell also carries the breakpoint-crossing fade,
+    // which needs the same transition-duration longhand, so it can't own a
+    // second `duration-*` utility of its own) and the inner panel's slide
+    // (as a plain utility, since nothing else on that element sets one).
+    const widthDurationVar = isResizing
+      ? isFlipping
+        ? open
+          ? "var(--motion-moderate)"
+          : "var(--motion-moderate-exit)"
+        : "0ms"
+      : open
+        ? "var(--motion-slow)"
+        : "var(--motion-slow-exit)";
+    const widthDurationClass = isResizing
+      ? isFlipping
+        ? open
+          ? "duration-(--motion-moderate) ease-spring"
+          : "duration-(--motion-moderate-exit) ease-spring"
+        : "duration-0"
+      : open
+        ? "duration-(--motion-slow) ease-spring"
+        : "duration-(--motion-slow-exit) ease-spring";
 
     return (
-      <motion.div
+      <div
         ref={(node: HTMLDivElement | null) => {
           shellRef.current = node;
           if (typeof ref === "function") ref(node);
@@ -668,7 +680,8 @@ const SidebarShell = forwardRef<HTMLDivElement, SidebarShellProps>(
           // While peek is armed the 0-width shell must not clip the edge
           // strip or the overlay card — and the shell must rise above the
           // inset (a later sibling) so the card paints over it. Pinning from
-          // a peek keeps both through the width spring for the same reason.
+          // a peek keeps both through the width transition for the same
+          // reason.
           peekEnabled || pinnedFromPeek ? "z-40" : "overflow-hidden",
           // Flex order (not DOM order) decides the side, so consumers can
           // keep Sidebar before SidebarInset regardless of `side`.
@@ -683,9 +696,18 @@ const SidebarShell = forwardRef<HTMLDivElement, SidebarShellProps>(
           !BREAKPOINT_HIDDEN[mobileBreakpoint] && isMobile && "hidden",
           className
         )}
-        initial={false}
-        animate={{ width: open ? width : "0rem" }}
-        transition={widthTransition}
+        // A caller's `style` is merged, never spread over this one by
+        // `{...props}` below: the width lives here now (it used to ride
+        // framer's `animate` prop, out of `style`'s reach), and a wrapper
+        // forwarding `style={undefined}` would otherwise erase it and collapse
+        // the rail to zero width.
+        style={
+          {
+            width: open ? width : "0rem",
+            "--width-duration": widthDurationVar,
+            ...style,
+          } as CSSProperties
+        }
         // Hover-mode dismissal lives on the shell root: the pointer can land
         // on the overlay without ever crossing it (the card slides in under
         // a stationary cursor), so per-element leave events are unreliable —
@@ -737,56 +759,56 @@ const SidebarShell = forwardRef<HTMLDivElement, SidebarShellProps>(
                 )}
               />
             </button>
-            <AnimatePresence>
-              {isPeeking && (
-                <motion.div
-                  data-sidebar="peek"
-                  className={cn(
-                    "absolute inset-y-2 z-50 flex flex-col overflow-hidden",
-                    // The card's edge inset matches where the PINNED rail's
-                    // content sits, so pinning from a peek never shifts the
-                    // rows sideways: floating pins into a card inset by the
-                    // same gutter; inset/sidebar pin flush to the edge.
-                    side === "left"
-                      ? variant === "floating"
-                        ? "left-2"
-                        : "left-0"
-                      : variant === "floating"
-                        ? "right-2"
-                        : "right-0",
-                    shape.container,
-                    surfaceClasses(floatingLevel, 3)
-                  )}
-                  style={{
-                    width: `calc(${width} - ${variant === "floating" ? "1rem" : "0.5rem"})`,
-                  }}
-                  initial={reduceMotion ? false : { x: side === "left" ? "-108%" : "108%" }}
-                  animate={{ x: 0 }}
-                  exit={{
-                    x: side === "left" ? "-108%" : "108%",
-                    transition: reduceMotion ? { duration: 0 } : spring.moderate.exit,
-                  }}
-                  transition={reduceMotion ? { duration: 0 } : spring.moderate}
-                >
-                  <SurfaceProvider value={floatingLevel}>{children}</SurfaceProvider>
-                </motion.div>
+            {/* Permanently rendered (rather than mounted only while peeking)
+                so the slide is a CSS transition: inert + translated offscreen
+                at rest, translated in on data-open. */}
+            <div
+              data-sidebar="peek"
+              data-open={isPeeking}
+              inert={!isPeeking || undefined}
+              className={cn(
+                "absolute inset-y-2 z-50 flex flex-col overflow-hidden",
+                "transition-transform ease-spring",
+                isPeeking
+                  ? "duration-(--motion-moderate)"
+                  : "duration-(--motion-moderate-exit)",
+                side === "left" ? "-translate-x-[108%]" : "translate-x-[108%]",
+                "data-[open=true]:translate-x-0",
+                // The card's edge inset matches where the PINNED rail's
+                // content sits, so pinning from a peek never shifts the
+                // rows sideways: floating pins into a card inset by the
+                // same gutter; inset/sidebar pin flush to the edge.
+                side === "left"
+                  ? variant === "floating"
+                    ? "left-2"
+                    : "left-0"
+                  : variant === "floating"
+                    ? "right-2"
+                    : "right-0",
+                shape.container,
+                surfaceClasses(floatingLevel, 3)
               )}
-            </AnimatePresence>
+              style={{
+                width: `calc(${width} - ${variant === "floating" ? "1rem" : "0.5rem"})`,
+              }}
+            >
+              <SurfaceProvider value={floatingLevel}>{children}</SurfaceProvider>
+            </div>
           </>
         ) : (
-        <motion.div
+        <div
           className={cn(
             "absolute inset-y-0 flex h-full flex-col",
             side === "left" ? "left-0" : "right-0",
             // Floating floats its card inside a full gutter; inset only needs
             // the vertical inset (horizontal room belongs to the nav rows).
             variant === "floating" && "p-2",
-            variant === "inset" && "py-2"
+            variant === "inset" && "py-2",
+            "transition-transform",
+            widthDurationClass,
+            open ? "translate-x-0" : side === "left" ? "-translate-x-full" : "translate-x-full"
           )}
           style={{ width }}
-          initial={false}
-          animate={{ x: open ? "0%" : side === "left" ? "-100%" : "100%" }}
-          transition={widthTransition}
         >
           {variant === "floating" ? (
             <div
@@ -838,9 +860,9 @@ const SidebarShell = forwardRef<HTMLDivElement, SidebarShellProps>(
             }
           />
           )}
-        </motion.div>
+        </div>
         )}
-      </motion.div>
+      </div>
     );
   }
 );
@@ -1322,31 +1344,31 @@ const SidebarGroup = forwardRef<HTMLDivElement, SidebarGroupProps>(
               {kids[labelIdx]}
               {headerActions}
             </div>
-            <motion.div
+            <div
               id={contentId}
               aria-hidden={open ? undefined : true}
               className={cn(
                 open && settled ? "overflow-visible" : "overflow-hidden",
-                !measured && !open && "h-0"
+                !measured && !open && "h-0",
+                "transition-[height,opacity] ease-spring",
+                // Do NOT simplify this to `open ? duration-(--motion-moderate)
+                // : …`. The togglingRef arm is what stops a re-measure from
+                // transitioning — without it a nested collapse makes this
+                // wrapper chase its own child and everything below the group
+                // moves late.
+                togglingRef.current
+                  ? open
+                    ? "duration-(--motion-moderate)"
+                    : "duration-(--motion-moderate-exit)"
+                  : "duration-0"
               )}
-              initial={false}
-              animate={
+              style={
                 measured
                   ? { height: open ? contentHeight : 0, opacity: open ? 1 : 0 }
                   : { opacity: open ? 1 : 0 }
               }
-              // Do NOT simplify this to `open ? spring.moderate : …`. The
-              // togglingRef arm is what stops a re-measure from springing —
-              // without it a nested collapse makes this wrapper chase its own
-              // child and everything below the group moves late.
-              transition={
-                togglingRef.current
-                  ? open
-                    ? spring.moderate
-                    : spring.moderate.exit
-                  : { duration: 0 }
-              }
-              onAnimationComplete={() => {
+              onTransitionEnd={(event) => {
+                if (event.target !== event.currentTarget) return;
                 togglingRef.current = false;
                 if (open) setSettled(true);
               }}
@@ -1354,7 +1376,7 @@ const SidebarGroup = forwardRef<HTMLDivElement, SidebarGroupProps>(
               <div ref={contentRef} className="flex w-full min-w-0 flex-col">
                 {rest}
               </div>
-            </motion.div>
+            </div>
           </>
         );
       }
@@ -1458,12 +1480,10 @@ const SidebarGroupLabel = forwardRef<HTMLDivElement, SidebarGroupLabelProps>(
           {/* The chevron occupies an action-sized box, so it reads as one more
               icon in the row rather than a smaller glyph tacked on the end.
               One chevron-right glyph for both states, sprung 90° to point
-              down while the group is open — the motion wrapper is what
-              animates: Tailwind's rotate-* sets the standalone CSS `rotate`
-              property, which transition-transform never covers. While open
-              the whole box collapses to zero width at rest so the label text
-              keeps the full row; hover/focus (or an open action popup)
-              reveals it. Collapsed keeps it visible as the reopen cue. */}
+              down while the group is open. While open the whole box collapses
+              to zero width at rest so the label text keeps the full row;
+              hover/focus (or an open action popup) reveals it. Collapsed
+              keeps it visible as the reopen cue. */}
           {/* No width/opacity transition: animating the box's width slides
               the glyph in from the side — the chevron should simply be
               there once the header is hovered. */}
@@ -1475,17 +1495,18 @@ const SidebarGroupLabel = forwardRef<HTMLDivElement, SidebarGroupLabelProps>(
                 : "w-6 opacity-100"
             )}
           >
-            <motion.span
-              className="inline-flex"
-              animate={{ rotate: group.open ? 90 : 0 }}
-              transition={spring.fast}
+            <span
+              className={cn(
+                "inline-flex transition-transform duration-(--motion-fast) ease-spring",
+                group.open ? "rotate-90" : "rotate-0"
+              )}
             >
               <ChevronRightIcon
                 size={sizeClasses.icon}
                 strokeWidth={1.5}
                 className="shrink-0"
               />
-            </motion.span>
+            </span>
           </span>
         </>
       );

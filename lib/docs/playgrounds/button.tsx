@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useIcon } from "@/lib/icon-context";
 import { useSizeVariant } from "@/lib/size-context";
 import { Button } from "@/registry/base/button";
-import { Switch } from "@/registry/base/switch";
+import { Switch } from "@/components/ui/switch";
 import {
   PLAY_SWITCH,
   PlayField,

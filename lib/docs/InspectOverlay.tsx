@@ -9,8 +9,7 @@ import {
   type ReactNode,
   type RefObject,
 } from "react";
-import { motion } from "framer-motion";
-import { spring } from "@/lib/springs";
+import { cn } from "@/lib/utils";
 import { useSizeVariant } from "@/lib/size-context";
 import { Tooltip } from "@/registry/base/tooltip";
 
@@ -113,11 +112,16 @@ function boxShorthand(t: number, r: number, b: number, l: number): string {
 }
 
 export function InspectOverlay({
+  active,
   frameRef,
   contentRef,
   renderTooltip,
   rulers = true,
 }: {
+  /** Whether Inspect is currently toggled on. The overlay stays mounted
+   *  either way (so its fade is a plain CSS transition) but only captures the
+   *  pointer, measures, and shows its layers while true. */
+  active: boolean;
   frameRef: RefObject<HTMLElement | null>;
   contentRef: RefObject<HTMLElement | null>;
   /** Replaces the default tag/box/font tooltip with custom content built
@@ -136,7 +140,12 @@ export function InspectOverlay({
 
   // Track the frame's interior size (for the ruler span) and where the content
   // region sits within it (so only that region captures the pointer).
+  // Gated on `active`: the overlay now stays mounted so it can fade out in CSS,
+  // and a docs page carries one per preview. Observing three elements and
+  // holding measurements for every one of them while Inspect is off is work
+  // nobody asked for — the numbers are only ever read while it is on.
   useEffect(() => {
+    if (!active) return;
     const frame = frameRef.current;
     const content = contentRef.current;
     if (!frame || !content) return;
@@ -170,7 +179,7 @@ export function InspectOverlay({
     const compEl = content.firstElementChild;
     if (compEl) ro.observe(compEl);
     return () => ro.disconnect();
-  }, [frameRef, contentRef]);
+  }, [active, frameRef, contentRef]);
 
   // The element currently being measured, so a re-layout (e.g. the S size
   // toggle) can refresh its numbers in place even if it slid out from under
@@ -424,6 +433,14 @@ export function InspectOverlay({
     setTarget(null);
   }, []);
 
+  // The overlay now stays mounted across the Inspect toggle (its fade is CSS,
+  // not an unmount), so a hover from before the last toggle-off has to be
+  // cleared by hand — it would otherwise linger, measuring an element the
+  // pointer capture region no longer renders under.
+  useEffect(() => {
+    if (!active) clear();
+  }, [active, clear]);
+
   useEffect(
     () => () => {
       cancelAnimationFrame(rafRef.current);
@@ -495,24 +512,25 @@ export function InspectOverlay({
         crosshair layer below rides above those. Full-bleed previews opt out
         of rulers entirely with `rulers={false}`. */}
     {rulers && (
-    <motion.div
+    <div
       data-inspect-ui
-      className="absolute inset-0 z-10 pointer-events-none overflow-hidden"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0, transition: spring.moderate.exit }}
-      transition={spring.moderate}
+      data-active={active || undefined}
+      className={cn(
+        "absolute inset-0 z-10 pointer-events-none overflow-hidden",
+        "opacity-0 transition-opacity duration-(--motion-moderate-exit) ease-spring",
+        "data-[active=true]:opacity-100 data-[active=true]:duration-(--motion-moderate)",
+      )}
     >
       {/* Top ruler — sits in the gutter just below the header. The ticks run up
           past the top of the gutter (negative y) so they tuck under the opaque
           header (z-40); the numbers sit below the ticks with ~2px of breathing
           room above them. overflow:visible lets the ticks bleed under. */}
-      <motion.div
-        className="absolute inset-0"
-        initial={{ y: -4 }}
-        animate={{ y: 0 }}
-        exit={{ y: -4, transition: spring.moderate.exit }}
-        transition={spring.moderate}
+      <div
+        data-active={active || undefined}
+        className={cn(
+          "absolute inset-0 -translate-y-1 transition-transform duration-(--motion-moderate-exit) ease-spring",
+          "data-[active=true]:translate-y-0 data-[active=true]:duration-(--motion-moderate)",
+        )}
       >
         <svg width={w} height={RULER_TOP} className="absolute left-0" style={{ top: capTop, overflow: "visible" }}>
           {target && <rect x={Math.max(target.left, leftStripEnd)} y={0} width={target.width - Math.max(0, leftStripEnd - target.left)} height={RULER_TOP} fill={BAND} />}
@@ -525,17 +543,17 @@ export function InspectOverlay({
             </text>
           ))}
         </svg>
-      </motion.div>
+      </div>
 
       {/* Left ruler — ticks sit on the outer (left) edge; the rotated numbers
           sit on the inner (right) edge next to the content, mirroring the top
           ruler where the numbers face the content. */}
-      <motion.div
-        className="absolute inset-0"
-        initial={{ x: -4 }}
-        animate={{ x: 0 }}
-        exit={{ x: -4, transition: spring.moderate.exit }}
-        transition={spring.moderate}
+      <div
+        data-active={active || undefined}
+        className={cn(
+          "absolute inset-0 -translate-x-1 transition-transform duration-(--motion-moderate-exit) ease-spring",
+          "data-[active=true]:translate-x-0 data-[active=true]:duration-(--motion-moderate)",
+        )}
       >
         <svg width={RULER_LEFT} height={h} className="absolute top-0" style={{ left: capLeft, overflow: "visible" }}>
           {target && <rect x={0} y={Math.max(target.top, topStripEnd)} width={RULER_LEFT} height={target.height - Math.max(0, topStripEnd - target.top)} fill={BAND} />}
@@ -558,8 +576,8 @@ export function InspectOverlay({
             </text>
           ))}
         </svg>
-      </motion.div>
-    </motion.div>
+      </div>
+    </div>
     )}
 
     {/* Crosshair layer — ABOVE portalled popups (z-[60] vs their z-50): a
@@ -567,17 +585,22 @@ export function InspectOverlay({
         and box-model strips drawn over it, not clipped under it. The preview
         header sits higher (z-[70]) so guides still tuck under its opaque
         background, and the info tooltip clears the header at z-[80]. */}
-    <motion.div
+    <div
       data-inspect-ui
-      className="absolute inset-0 z-[60] pointer-events-none overflow-hidden"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0, transition: spring.moderate.exit }}
-      transition={spring.moderate}
+      data-active={active || undefined}
+      className={cn(
+        "absolute inset-0 z-[60] pointer-events-none overflow-hidden",
+        "opacity-0 transition-opacity duration-(--motion-moderate-exit) ease-spring",
+        "data-[active=true]:opacity-100 data-[active=true]:duration-(--motion-moderate)",
+      )}
     >
       {/* Pointer-capturing region — only over the content, so the header
-          toggles stay clickable and the component underneath is frozen. */}
-      {capture && (
+          toggles stay clickable and the component underneath is frozen.
+          Rendered only while active: the wrapper above merely fades the
+          layer, and pointer-events isn't affected by opacity, so the capture
+          region itself has to be gated or it would keep stealing hover off
+          the demo underneath while Inspect is off. */}
+      {active && capture && (
         <div
           className="absolute pointer-events-auto cursor-crosshair"
           style={{ left: capture.left, top: capture.top, width: capture.width, height: capture.height }}
@@ -674,7 +697,7 @@ export function InspectOverlay({
           />
         </Tooltip>
       )}
-    </motion.div>
+    </div>
     </>
   );
 }

@@ -2,8 +2,7 @@
 
 import { useEffect, useRef, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { spring } from "@/registry/default/lib/springs";
+import { cn } from "@/registry/default/lib/utils";
 import {
   SidebarProvider,
   SidebarTrigger,
@@ -11,6 +10,7 @@ import {
   useSidebar,
 } from "@/registry/base/sidebar";
 import { SiteSidebar } from "@/app/components/sidebar";
+import { SiteHeader } from "@/app/components/site-header";
 import { RightPanel } from "@/app/components/right-panel";
 import { SiteFooter } from "@/app/components/site-footer";
 import { RightRailProvider } from "@/lib/right-rail";
@@ -64,24 +64,23 @@ function SidebarShortcutToast() {
  *  "Properties panel" reopen button. */
 function DesktopReopenTrigger() {
   const { open } = useSidebar();
-  const reduceMotion = useReducedMotion() ?? false;
   return (
-    <AnimatePresence>
-      {!open && (
-        <motion.div
-          className="max-xl:hidden fixed top-4 left-4 z-50"
-          initial={reduceMotion ? false : { opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{
-            opacity: 0,
-            transition: reduceMotion ? { duration: 0 } : spring.fast.exit,
-          }}
-          transition={reduceMotion ? { duration: 0 } : spring.fast}
-        >
-          <SidebarTrigger />
-        </motion.div>
+    // Permanently rendered (rather than mounted/unmounted) so the
+    // appear/disappear is a plain CSS transition: `xl:` scopes the open state
+    // to desktop only (mirrors the old `max-xl:hidden`), and `inert` keeps it
+    // out of the tab order and off-screen readers while the rail is expanded.
+    <div
+      data-open={!open || undefined}
+      inert={open || undefined}
+      className={cn(
+        "fixed top-4 left-4 z-50 hidden opacity-0 scale-95",
+        "transition-[opacity,transform,display] duration-(--motion-fast-exit) ease-spring transition-discrete",
+        "xl:data-[open=true]:block xl:data-[open=true]:opacity-100 xl:data-[open=true]:scale-100 xl:data-[open=true]:duration-(--motion-fast)",
+        "xl:starting:data-[open=true]:opacity-0 xl:starting:data-[open=true]:scale-95",
       )}
-    </AnimatePresence>
+    >
+      <SidebarTrigger />
+    </div>
   );
 }
 
@@ -162,16 +161,14 @@ export function SidebarLayout({ children, defaultOpen = true }: SidebarLayoutPro
         <SiteSidebar />
         <CloseSheetOnNavigate />
 
-        {/* Mobile trigger for the sheet; desktop collapse uses [ or the rail */}
-        <SidebarTrigger
-          className="xl:hidden fixed top-4 left-4 z-50"
-          aria-label="Open navigation"
-        />
+        {/* Desktop collapse uses [ or the rail; mobile's own menu lives in
+            SiteHeader now, which replaces this sidebar's sheet on phones. */}
         <DesktopReopenTrigger />
         <SidebarShortcutToast />
 
         {/* Main content */}
         <SidebarInset className="min-w-0">
+          <SiteHeader />
           {children}
           <SiteFooter />
         </SidebarInset>

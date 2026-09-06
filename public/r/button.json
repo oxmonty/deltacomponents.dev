@@ -2,9 +2,8 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "button",
   "title": "Button",
-  "description": "Animated button with variants (primary, secondary, tertiary, ghost), icon support, loading spinner, and fluid font-weight transitions on hover.",
+  "description": "Versatile button with variants, sizes, loading state, and icon support.",
   "dependencies": [
-    "framer-motion",
     "@base-ui/react",
     "class-variance-authority",
     "lucide-react"

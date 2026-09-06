@@ -1,19 +1,15 @@
 "use client";
 
 import {
-  useCallback,
   useEffect,
   useRef,
-  useState,
   forwardRef,
   type ReactNode,
   type CSSProperties,
   type HTMLAttributes,
 } from "react";
 import { Dialog as DialogPrimitive } from "@base-ui/react/dialog";
-import { motion, useReducedMotion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { spring, exitFallbackMs } from "@/lib/springs";
 import { useSurface, SurfaceProvider } from "@/lib/surface-context";
 import { surfaceClasses } from "@/lib/surface-classes";
 import { ScrollArea } from "@/registry/base/scroll-area";
@@ -29,23 +25,12 @@ import {
 //
 // Built on Base UI Dialog rather than Base UI Drawer: Drawer's
 // swipe-to-dismiss writes inline `transform` + `--drawer-swipe-movement-*`
-// CSS vars onto its Popup and expects CSS-transition choreography (plus a
-// mandatory <Drawer.Viewport>), which fights framer-motion's transform
-// management on the same element. Dialog provides everything we actually
-// need — scroll lock, focus trap, focus restore, Esc + outside-click
-// dismissal — while leaving the slide animation to framer-motion.
-
-// Props framer-motion redefines with incompatible signatures; they must not
-// be forwarded from Base UI's render-prop payload onto a motion.div.
-type MotionSafeDivProps = Omit<
-  React.HTMLAttributes<HTMLDivElement>,
-  | "onDrag"
-  | "onDragStart"
-  | "onDragEnd"
-  | "onAnimationStart"
-  | "onAnimationEnd"
-  | "onAnimationIteration"
->;
+// CSS vars onto its Popup, which would fight a plain CSS slide transition on
+// the same element. Dialog provides everything we actually need — scroll
+// lock, focus trap, focus restore, Esc + outside-click dismissal, and (via
+// `data-starting-style`/`data-ending-style`) holding the popup mounted for
+// the duration of the exit transition — so the slide is a CSS transition on
+// the popup itself.
 
 interface SidebarSheetProps {
   side: SidebarSide;
@@ -56,9 +41,6 @@ interface SidebarSheetProps {
 
 function SidebarSheet({ side, open, onClose, children }: SidebarSheetProps) {
   const { widthMobile } = useSidebar();
-  // Reduced motion drops the slide (the movement) but keeps the scrim's
-  // opacity fade — the state change stays legible without the travel.
-  const reduceMotion = useReducedMotion() ?? false;
   // The panel takes initial focus itself. Left to the primitive, the focus
   // trap lands on the first focusable child — the top nav row — which reads
   // as a selected item the moment the drawer opens, and Chrome grants
@@ -67,40 +49,11 @@ function SidebarSheet({ side, open, onClose, children }: SidebarSheetProps) {
   const substrate = useSurface();
   const level = Math.min(substrate + 2, 8);
 
-  // The primitive tears its portal down the moment it closes — an outside
-  // press would snap the panel away with no exit. So the dialog is held OPEN
-  // through the exit: `closing` slides the panel offscreen first, and only
-  // when the spring lands does the real close propagate.
-  const [closing, setClosing] = useState(false);
-  const visible = open && !closing;
-
-  const finishClose = useCallback(() => {
-    setClosing(false);
-    onClose();
-  }, [onClose]);
-
-  // A parent-driven close (trigger, shortcut, route change) gets the same
-  // exit as a primitive-driven one.
-  const wasOpen = useRef(open);
-  useEffect(() => {
-    if (wasOpen.current && !open) setClosing(true);
-    wasOpen.current = open;
-  }, [open]);
-
-  // Fallback: rAF-driven animation callbacks stall in throttled tabs.
-  useEffect(() => {
-    if (!closing) return;
-    const id = setTimeout(finishClose, exitFallbackMs(spring.moderate));
-    return () => clearTimeout(id);
-  }, [closing, finishClose]);
-
-  const offscreen = side === "left" ? "-100%" : "100%";
-
   return (
     <DialogPrimitive.Root
-      open={open || closing}
+      open={open}
       onOpenChange={(nextOpen) => {
-        if (!nextOpen) setClosing(true);
+        if (!nextOpen) onClose();
       }}
     >
       <DialogPrimitive.Portal>
@@ -108,70 +61,37 @@ function SidebarSheet({ side, open, onClose, children }: SidebarSheetProps) {
             system-dark users (`dark:` only matches the explicit .dark class),
             boosted to /80 in explicit dark mode. */}
         <DialogPrimitive.Backdrop
-          render={(backdropProps) => {
-            const { style: _style, ...rest } =
-              backdropProps as React.HTMLAttributes<HTMLDivElement>;
-            return (
-              <motion.div
-                {...(rest as MotionSafeDivProps)}
-                className="fixed inset-0 bg-black/40 dark:bg-black/80 z-40"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: visible ? 1 : 0 }}
-                transition={visible ? { duration: spring.moderate.duration } : spring.moderate.exit}
-              />
-            );
-          }}
+          className={cn(
+            "fixed inset-0 z-40 bg-black/40 dark:bg-black/80",
+            "transition-opacity duration-(--motion-moderate) ease-spring",
+            "data-[ending-style]:duration-(--motion-moderate-exit)",
+            "data-[starting-style]:opacity-0 data-[ending-style]:opacity-0"
+          )}
         />
 
         <DialogPrimitive.Popup
+          ref={panelRef}
           aria-label="Sidebar"
           initialFocus={panelRef}
-          render={(popupProps) => {
-            const { style: baseStyle, ref: baseRef, ...rest } =
-              popupProps as React.HTMLAttributes<HTMLDivElement> & {
-                ref?: React.Ref<HTMLDivElement>;
-              };
-            return (
-              <motion.div
-                {...(rest as MotionSafeDivProps)}
-                // Merge, don't replace: the primitive needs its own handle on
-                // the panel as much as initialFocus needs ours.
-                ref={(node: HTMLDivElement | null) => {
-                  panelRef.current = node;
-                  if (typeof baseRef === "function") baseRef(node);
-                  else if (baseRef)
-                    (baseRef as React.MutableRefObject<HTMLDivElement | null>).current =
-                      node;
-                }}
-                tabIndex={-1}
-                data-sidebar="sidebar"
-                data-mobile="true"
-                data-side={side}
-                className={cn(
-                  "fixed inset-y-0 z-50 flex flex-col overflow-hidden outline-none",
-                  !visible && "pointer-events-none",
-                  side === "left" ? "left-0" : "right-0",
-                  surfaceClasses(level, 3)
-                )}
-                style={{
-                  ...(baseStyle as CSSProperties | undefined),
-                  width: widthMobile,
-                }}
-                initial={{ x: offscreen }}
-                // spring.moderate: critically damped, so the panel decelerates
-                // into x: 0 without overshooting and exposing the page behind
-                // its leading edge.
-                animate={{ x: visible ? 0 : offscreen }}
-                transition={reduceMotion ? { duration: 0 } : visible ? spring.moderate : spring.moderate.exit}
-                onAnimationComplete={() => {
-                  if (closing) finishClose();
-                }}
-              >
-                <SurfaceProvider value={level}>{children}</SurfaceProvider>
-              </motion.div>
-            );
-          }}
-        />
+          tabIndex={-1}
+          data-sidebar="sidebar"
+          data-mobile="true"
+          data-side={side}
+          className={cn(
+            "fixed inset-y-0 z-50 flex flex-col overflow-hidden outline-none",
+            "data-[closed]:pointer-events-none",
+            side === "left" ? "left-0" : "right-0",
+            surfaceClasses(level, 3),
+            "transition-transform duration-(--motion-moderate) ease-spring",
+            "data-[ending-style]:duration-(--motion-moderate-exit)",
+            side === "left"
+              ? "data-[starting-style]:-translate-x-full data-[ending-style]:-translate-x-full"
+              : "data-[starting-style]:translate-x-full data-[ending-style]:translate-x-full"
+          )}
+          style={{ width: widthMobile } as CSSProperties}
+        >
+          <SurfaceProvider value={level}>{children}</SurfaceProvider>
+        </DialogPrimitive.Popup>
       </DialogPrimitive.Portal>
     </DialogPrimitive.Root>
   );
@@ -179,11 +99,7 @@ function SidebarSheet({ side, open, onClose, children }: SidebarSheetProps) {
 
 // ─── Sidebar ─────────────────────────────────────────────────────────────────
 
-export interface SidebarProps
-  extends Omit<
-    HTMLAttributes<HTMLDivElement>,
-    "onDrag" | "onDragStart" | "onDragEnd" | "onAnimationStart" | "onAnimationEnd" | "onAnimationIteration"
-  > {
+export interface SidebarProps extends HTMLAttributes<HTMLDivElement> {
   side?: SidebarSide;
   variant?: SidebarVariant;
   /** `"icon"` collapse is intentionally not supported — offcanvas or none. */

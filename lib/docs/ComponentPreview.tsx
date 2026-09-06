@@ -6,8 +6,7 @@ import { fontWeights } from "@/registry/default/lib/font-weight";
 import { useShape } from "@/registry/default/lib/shape-context";
 import { useIcon } from "@/registry/default/lib/icon-context";
 import { Tooltip } from "@/registry/base/tooltip";
-import { Switch } from "@/registry/base/switch";
-import { AnimatePresence } from "framer-motion";
+import { Switch } from "@/components/ui/switch";
 import { InspectOverlay } from "./InspectOverlay";
 import { Code } from "@/registry/default/code";
 
@@ -107,10 +106,6 @@ export function ComponentPreview({
     routeKeyboardOnMouseDown(e, previewRef.current);
 
   const showButton = !!playbackButton || !!onReplay;
-  // When on, reserve a strip at the top/left of the frame for the rulers, so
-  // they sit above the toggles and fit the outer border without overlapping
-  // the header or the content.
-  const inspecting = inspectable && inspect;
   // The header only carries the extras now that the tabs are gone, so it earns
   // its 52px only when one of them is actually there.
   const showHeader = !hideHeader && (!!title || inspectable || showButton);
@@ -252,17 +247,20 @@ export function ComponentPreview({
       </div>
 
       {/* Inspector — sits over the whole frame so its rulers reach the outer
-          border and clear the header toggles. Fades in/out with the toggle. */}
-      <AnimatePresence>
-        {inspecting && (
-          <InspectOverlay
-            key="inspect"
-            frameRef={frameRef}
-            contentRef={previewRef}
-            rulers={inspectRulers}
-          />
-        )}
-      </AnimatePresence>
+          border and clear the header toggles. Mounted once for the life of
+          any inspectable preview (rather than mounted/unmounted with the
+          toggle) so the Inspect switch fades it in/out with a plain CSS
+          transition instead of framer's exit animation — previews that opt
+          out of inspecting entirely (`inspectable={false}`) still never pay
+          for it. */}
+      {inspectable && (
+        <InspectOverlay
+          active={inspect}
+          frameRef={frameRef}
+          contentRef={previewRef}
+          rulers={inspectRulers}
+        />
+      )}
     </div>
   );
 

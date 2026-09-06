@@ -12,135 +12,63 @@ import type { PrismTheme } from "prism-react-renderer"
 import "@/registry/default/lib/prism-languages"
 
 import { cn } from "@/registry/default/lib/utils"
-import { useThemeContext } from "@/registry/default/lib/theme-context"
 import { getIconForFile } from "@/registry/default/code-icons"
 import { Button } from "@/registry/base/button"
 
 type PackageManager = "npm" | "yarn" | "pnpm" | "bun"
 
-const defaultTheme: PrismTheme = {
-  plain: {
-    // Matches the dark-mode ``--card`` token from globals.css so code
-    // blocks sit flush with surrounding Card surfaces without a
-    // contrast jump.
-    color: "#FFFFFF",
-    backgroundColor: "#262626",
-  },
-  styles: [
-    {
-      types: ["comment"],
-      style: {
-        color: "#757575",
-        fontStyle: "italic",
-      },
+/** Every group the two built-in Prism palettes used to carry as hardcoded hex,
+ *  now a named slot in the CSS palette (`--code-token-<key>`, declared in
+ *  globals.css §8). One list drives two things: the built-in theme below
+ *  (each group's color is just `var(--code-token-<key>)`, resolved by the
+ *  `.dark` class with no JS), and `resolveGroupColor` — which walks a
+ *  consumer-supplied `adaptiveTheme` palette to find the color it assigns
+ *  each group, so that palette can be resolved the same CSS-only way. */
+const tokenGroups: { key: string; types: string[]; fontStyle?: "italic" }[] = [
+  { key: "comment", types: ["comment"], fontStyle: "italic" },
+  { key: "keyword", types: ["keyword"] },
+  { key: "property", types: ["property", "property-access", "attr-name"] },
+  { key: "tag", types: ["tag"] },
+  { key: "punctuation", types: ["punctuation", "symbol", "dom", "operator"] },
+  { key: "definition", types: ["definition"] },
+  { key: "function", types: ["function"] },
+  { key: "string", types: ["string", "char", "attr-value"] },
+  { key: "static", types: ["static", "number"] },
+  { key: "variable", types: ["variable", "parameter"] },
+  { key: "builtin", types: ["builtin", "function-definition"] },
+  { key: "class-name", types: ["class-name"] },
+]
+
+/** The built-in syntax palette. Every color is a CSS variable reference —
+ *  light values on `:root`, dark overrides on `.dark` (globals.css §8) — so
+ *  the right palette is already in effect before this ever renders. Merging
+ *  the old separate dark/light `PrismTheme`s into one is what makes that
+ *  possible: previously the choice of *which* theme object to use lived in
+ *  React state, guaranteeing a light-palette frame on every mount. */
+const builtinTheme: PrismTheme = {
+  plain: { color: "var(--code-fg)", backgroundColor: "var(--code-bg)" },
+  styles: tokenGroups.map(({ key, types, fontStyle }) => ({
+    types,
+    style: {
+      color: `var(--code-token-${key})`,
+      ...(fontStyle ? { fontStyle } : {}),
     },
-    {
-      types: ["keyword", "property", "property-access", "attr-name"],
-      style: {
-        color: "#77b7d7",
-      },
-    },
-    {
-      types: ["tag"],
-      style: {
-        color: "#dfab5c",
-      },
-    },
-    {
-      types: ["punctuation", "symbol", "dom"],
-      style: {
-        color: "#ffffff",
-      },
-    },
-    {
-      types: ["definition", "function"],
-      style: {
-        color: "#86d9ca",
-      },
-    },
-    {
-      types: ["string", "char", "attr-value"],
-      style: {
-        color: "#977cdc",
-      },
-    },
-    {
-      types: ["static", "number"],
-      style: {
-        color: "#ff6658",
-      },
-    },
-  ],
+  })),
 }
 
-const lightTheme: PrismTheme = {
-  plain: {
-    color: "#24292e",
-    backgroundColor: "#ffffff",
-  },
-  styles: [
-    {
-      types: ["comment"],
-      style: {
-        color: "#8b949e",
-        fontStyle: "italic",
-      },
-    },
-    {
-      types: ["variable", "parameter"],
-      style: {
-        color: "#e36209",
-      },
-    },
-    {
-      types: ["keyword", "builtin", "function-definition"],
-      style: {
-        color: "#d73a49",
-      },
-    },
-    {
-      types: ["property", "property-access", "attr-name"],
-      style: {
-        color: "#005cc5",
-      },
-    },
-    {
-      types: ["tag"],
-      style: {
-        color: "#22863a",
-      },
-    },
-    {
-      types: ["punctuation", "symbol", "dom", "operator"],
-      style: {
-        color: "#24292e",
-      },
-    },
-    {
-      types: ["function"],
-      style: {
-        color: "#6f42c1",
-      },
-    },
-    {
-      types: ["class-name"],
-      style: {
-        color: "#6f42c1",
-      },
-    },
-    {
-      types: ["string", "char", "attr-value"],
-      style: {
-        color: "#032f62",
-      },
-    },
-    {
-      types: ["static", "number"],
-      style: {
-        color: "#005cc5",
-      },
-    },
-  ],
+/** The color a `PrismTheme` assigns a token group, mirroring how
+ *  prism-react-renderer resolves overlapping style entries: the last one
+ *  naming the type wins. Falls back to the theme's own plain color for a
+ *  group it doesn't style at all — used to project a consumer's
+ *  `adaptiveTheme` onto the same `--code-token-*` slots the built-in palette
+ *  uses. */
+function resolveGroupColor(theme: PrismTheme, types: string[]): string {
+  for (let i = theme.styles.length - 1; i >= 0; i--) {
+    const entry = theme.styles[i]
+    if (types.some((t) => entry.types.includes(t)))
+      return entry.style.color ?? theme.plain?.color ?? ""
+  }
+  return theme.plain?.color ?? ""
 }
 
 interface CodeProps {
@@ -361,22 +289,27 @@ async function copyToClipboard(value: string): Promise<boolean> {
 /** Copy-to-clipboard control for a code surface.
  *
  *  Transparent at rest so it doesn't sit on the code as a visible chip; the
- *  ground arrives on hover, mixed from ``iconColor`` — the code theme's own
- *  plain colour — rather than an app token, because a block carries its own
- *  light/dark palette independent of the page.
+ *  ground arrives on hover, mixed against the block's own `--code-fg`/
+ *  `--code-bg` (globals.css §8) rather than an app token, because a block
+ *  carries its own light/dark palette independent of the page. Both vars are
+ *  set once on the block's outer wrapper and inherited here, so this needs no
+ *  colour prop of its own.
  *
- *  Trade-off of the transparent rest state: with no filename bar the button
- *  floats over the code, so a long first line can run under the glyph until
- *  you hover it. */
+ *  A floating button (no filename bar to sit in) also gets that ground at
+ *  rest on a touch device — there's no hover to reveal it otherwise, so
+ *  without a resting ground the glyph lands on top of whatever the first
+ *  line happens to be. The two in-header buttons already sit on a bar and
+ *  stay transparent until touched or hovered. */
 function CopyButton({
   value,
   className,
-  iconColor,
+  floating = false,
   onTheme = false,
 }: {
   value: string
   className?: string
-  iconColor?: string
+  /** Floats over the code with no header/figcaption underneath it. */
+  floating?: boolean
   /** The block is painting from its own palette — see `chromeTone`. */
   onTheme?: boolean
 }) {
@@ -397,26 +330,16 @@ function CopyButton({
       aria-label={hasCopied ? "Copied" : "Copy code"}
       className={cn(
         "group size-7 border-none shadow-none transition-colors",
-        "bg-transparent hover:bg-[var(--copy-button-hover-bg,var(--muted))] active:bg-[var(--copy-button-hover-bg,var(--muted))]",
-        // No hover on a phone, and the button floats over the code with no
-        // filename bar to sit in — without a resting ground the glyph lands on
-        // top of whatever the first line happens to be. Same mix as the hover
-        // ground, a touch stronger so it reads as a chip on its own.
-        "[@media(hover:none)]:bg-[var(--copy-button-rest-bg,var(--muted))]",
+        "bg-transparent hover:bg-[var(--copy-button-hover-bg)] active:bg-[var(--copy-button-hover-bg)]",
+        // No hover on a phone, so only the floating button — the one with no
+        // ground under it already — gets a resting chip there.
+        floating && "[@media(hover:none)]:bg-[var(--copy-button-rest-bg)]",
         className
       )}
       style={
-        {
-          ...(iconColor
-            ? {
-                "--copy-button-hover-bg": `color-mix(in srgb, ${iconColor} 7%, transparent)`,
-                "--copy-button-rest-bg": `color-mix(in srgb, ${iconColor} 12%, transparent)`,
-                // Only when the chrome rides the theme colour; otherwise the
-                // muted/foreground classes own it.
-                ...(onTheme ? { color: iconColor } : {}),
-              }
-            : {}),
-        } as React.CSSProperties
+        // Only when the chrome rides the theme colour; otherwise the
+        // muted/foreground classes own it.
+        onTheme ? ({ color: "var(--code-fg)" } as React.CSSProperties) : undefined
       }
       onClick={async () => {
         // Only claim success when the copy actually landed.
@@ -552,29 +475,40 @@ export function Code({
   const [packageManager, setPackageManager] = React.useState<PackageManager>(
     defaultPackageManager
   )
-  // SSR has no OS preference, so isDark must start false on both the server
-  // and the first client render — it feeds dozens of inline
-  // `selectedTheme.plain.color` styles (every prism token, the copy icon, the
-  // line numbers) that must match at hydration. The `mounted` guard flips it
-  // to the real value after mount. The token flash is barely perceptible; the
-  // *background* flicker, the loud part, is already gone because
-  // `--code-bg` routes through `var(--card)` — a string-stable value, so
-  // SSR and client agree and CSS picks the right colour before paint.
-  const { resolvedTheme } = useThemeContext()
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => setMounted(true), [])
-  const isDark = mounted && resolvedTheme === "dark"
   const [isExpanded, setIsExpanded] = useState(defaultExpanded)
 
   // A caller-supplied palette brings its own background; the built-in pair is
   // designed to sit flush with --card, so only that one defaults to the token.
   const paintFromTheme = useThemeBackground ?? Boolean(theme || adaptiveTheme)
 
-  const selectedTheme = adaptiveTheme
-    ? isDark
-      ? adaptiveTheme.dark
-      : adaptiveTheme.light
-    : theme || (isDark ? defaultTheme : lightTheme)
+  // `adaptiveTheme` is the one case that still varies by resolved theme, but
+  // the choice is made by the `.dark` class (see `wrapperVars` below), not by
+  // reading which theme is on screen — so `selectedTheme` itself never
+  // branches on light vs. dark.
+  const selectedTheme = theme || builtinTheme
+
+  // The palette's foreground/background, set once on the outer wrapper so the
+  // copy button's resting/hover ground (globals.css §8) can mix against a
+  // block's real surface instead of `transparent`. `adaptiveTheme` sets both
+  // halves of every pair here too, and `.code-adaptive-theme` (also in §8)
+  // is what lets `.dark` pick between them without JS.
+  const wrapperVars: Record<string, string> = adaptiveTheme
+    ? {
+        "--code-fg-l": adaptiveTheme.light.plain?.color ?? "",
+        "--code-fg-d": adaptiveTheme.dark.plain?.color ?? "",
+        "--code-bg-l": adaptiveTheme.light.plain?.backgroundColor ?? "",
+        "--code-bg-d": adaptiveTheme.dark.plain?.backgroundColor ?? "",
+        ...Object.fromEntries(
+          tokenGroups.flatMap(({ key, types }) => [
+            [`--code-token-${key}-l`, resolveGroupColor(adaptiveTheme.light, types)],
+            [`--code-token-${key}-d`, resolveGroupColor(adaptiveTheme.dark, types)],
+          ])
+        ),
+      }
+    : {
+        "--code-fg": theme?.plain?.color ?? "var(--foreground)",
+        "--code-bg": theme?.plain?.backgroundColor ?? "var(--card)",
+      }
 
   const packageManagerFromMarkdown = code
     ? detectPackageManagerFromMarkdown(code)
@@ -587,14 +521,6 @@ export function Code({
     : parsedMarkdown?.language
       ? resolveLanguage(parsedMarkdown.language)
       : defaultLanguage || language
-
-  // Resolve the surface colour through a CSS variable so a theme swap happens
-  // at CSS-evaluation time, not after a React state update. ThemeProvider puts
-  // `class="dark"` on <html> before paint, so `var(--card)` is already right at
-  // first paint — no flicker.
-  const codeBlockBgColor = paintFromTheme
-    ? (selectedTheme.plain?.backgroundColor ?? "var(--card)")
-    : "var(--card)"
 
   // Two ways to get a package-manager block: an explicit npm/yarn/pnpm/bun
   // prop set, or a ```npx fenced command we expand into all four. They render
@@ -629,9 +555,10 @@ export function Code({
       <div
         className={cn(
           "bg-card text-card-foreground border-border/60 overflow-hidden rounded-lg border [background-clip:padding-box]",
+          adaptiveTheme && "code-adaptive-theme",
           className
         )}
-        style={{ "--code-bg": codeBlockBgColor } as React.CSSProperties}
+        style={wrapperVars as React.CSSProperties}
       >
         <div
           className={cn(
@@ -681,7 +608,6 @@ export function Code({
           <CopyButton
             value={pmCommands[active] || ""}
             className="size-7"
-            iconColor={selectedTheme.plain?.color}
             onTheme={paintFromTheme}
           />
         </div>
@@ -766,9 +692,10 @@ export function Code({
         "pointer-events-auto w-full max-w-full overflow-hidden",
         !hasClassPrefix("border") && "border-border/60 border [background-clip:padding-box]",
         !hasClassPrefix("rounded") && "rounded-lg",
+        adaptiveTheme && "code-adaptive-theme",
         className
       )}
-      style={{ "--code-bg": codeBlockBgColor } as React.CSSProperties}
+      style={wrapperVars as React.CSSProperties}
     >
       {filename && (
         <figcaption
@@ -799,7 +726,6 @@ export function Code({
           <div className="flex items-center gap-2">
             <CopyButton
               value={actualCode}
-              iconColor={selectedTheme.plain?.color}
               onTheme={paintFromTheme}
             />
           </div>
@@ -815,7 +741,7 @@ export function Code({
             <div className="pointer-events-auto flex items-center gap-2 p-3">
               <CopyButton
                 value={actualCode}
-                iconColor={selectedTheme.plain?.color}
+                floating
                 onTheme={paintFromTheme}
               />
             </div>

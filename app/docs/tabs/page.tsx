@@ -9,7 +9,7 @@ import {
 } from "@/registry/default/tabs";
 import { ComponentPreview } from "@/lib/docs/ComponentPreview";
 import { PropsTable, type PropDef } from "@/lib/docs/PropsTable";
-import { DocPage, DocSection } from "@/lib/docs/DocPage";
+import { DocPage, DocSection, DocSubSection } from "@/lib/docs/DocPage";
 
 const PANELS = [
   { value: "account", copy: "Manage your account settings." },
@@ -27,7 +27,7 @@ const LABELS: Record<string, string> = {
  *  stage to one row's height and stacking the panels in it keeps the source
  *  under each demo about the tabs rather than about the layout, and stops the
  *  preview frame resizing as the reader clicks through. */
-function Panels({ animate = false }: { animate?: boolean }) {
+function Panels({ fadeIn = false }: { fadeIn?: boolean }) {
   return (
     <div className="relative min-h-[24px]">
       {PANELS.map((panel) => (
@@ -35,7 +35,7 @@ function Panels({ animate = false }: { animate?: boolean }) {
           key={panel.value}
           value={panel.value}
           className="absolute inset-x-0 top-0"
-          animate={animate}
+          fadeIn={fadeIn}
         >
           <p className="text-caption text-muted-foreground">{panel.copy}</p>
         </TabsContent>
@@ -60,6 +60,17 @@ function Triggers() {
     </TabsList>
   );
 }
+
+const usageCode = `import { Tabs, TabsContent, TabsList, TabsTrigger } from "./components";
+
+<Tabs defaultValue="account">
+  <TabsList>
+    <TabsTrigger value="account">Account</TabsTrigger>
+    <TabsTrigger value="password">Password</TabsTrigger>
+  </TabsList>
+  <TabsContent value="account">Manage your account settings.</TabsContent>
+  <TabsContent value="password">Change your password here.</TabsContent>
+</Tabs>`;
 
 const basicCode = `import { Tabs, TabsContent, TabsList, TabsTrigger } from "./components";
 
@@ -109,10 +120,10 @@ const iconsCode = `<TabsList>
   <TabsTrigger value="settings" icon={<SettingsIcon />}>Settings</TabsTrigger>
 </TabsList>`;
 
-const animateCode = `// Panels are static by default — for a heavy panel the fade is the thing
+const fadeInCode = `// Panels are static by default — for a heavy panel the fade is the thing
 // that makes a tab switch feel slow. Opt in per panel when the content is
 // light enough to earn it.
-<TabsContent value="account" animate animateY={4}>
+<TabsContent value="account" fadeIn>
   Manage your account settings.
 </TabsContent>`;
 
@@ -123,8 +134,13 @@ const tabsProps: PropDef[] = [
   { name: "variant", type: '"default" | "underline" | "ghost"', default: '"default"', description: "`default` fills a tray, `ghost` drops the tray, `underline` swaps the pill for a bar." },
   { name: "size", type: '"sm" | "default" | "lg"', default: '"default"', description: "Drives the list height, trigger padding, and underline thickness together." },
   { name: "concentric", type: "boolean", default: "false", description: "Nest the radii so the list's corners sit concentric with the triggers'." },
-  { name: "indicatorThickness", type: "string", description: "Overrides the underline bar's height (e.g. `2px`)." },
-  { name: "indicatorClassName", type: "string", description: "Overrides the indicator's background class." },
+  { name: "activationMode", type: '"automatic" | "manual"', default: '"automatic"', description: "`automatic` selects a tab as the arrow keys move focus onto it; `manual` only moves focus, and Enter/Space commits the selection." },
+  { name: "indicatorClassName", type: "string", description: "Extra classes merged onto the active indicator — its background, or the underline bar's thickness (e.g. `h-0.5`)." },
+];
+
+const listProps: PropDef[] = [
+  { name: "children", type: "ReactNode", description: "TabsTrigger elements to render in the strip." },
+  { name: "className", type: "string", description: "Extra classes merged onto the tab strip." },
 ];
 
 const triggerProps: PropDef[] = [
@@ -135,20 +151,28 @@ const triggerProps: PropDef[] = [
 
 const contentProps: PropDef[] = [
   { name: "value", type: "string", description: "Matches the `value` of the trigger that reveals this panel." },
-  { name: "forceMount", type: "boolean", default: "false", description: "Keep every panel mounted, so switching costs nothing and crawlers see the content." },
-  { name: "animate", type: "boolean", default: "false", description: "Fade the panel in on entry." },
-  { name: "animateY", type: "number", description: "Rise this many pixels on entry." },
-  { name: "animateOpacity", type: "boolean", description: "Overrides `animate` when set explicitly." },
+  { name: "forceMount", type: "boolean", default: "false", description: "Render this panel from the first render instead of waiting for it to become active." },
+  { name: "fadeIn", type: "boolean", default: "false", description: "Fade the panel in on entry." },
+];
+
+const fromArrayProps: PropDef[] = [
+  { name: "tabs", type: "TabItem[]", description: "Tabs to render from data instead of JSX; each item's `id` becomes both the trigger and panel value." },
+  { name: "defaultValue", type: "string", description: "Value of the tab selected on first render, when uncontrolled." },
+  { name: "value", type: "string", description: "Selected tab. Pass it with `onValueChange` to control the component." },
+  { name: "onValueChange", type: "(value: string) => void", description: "Called with the new value when a trigger is clicked." },
+  { name: "variant", type: '"default" | "underline" | "ghost"', default: '"default"', description: "`default` fills a tray, `ghost` drops the tray, `underline` swaps the pill for a bar." },
+  { name: "size", type: '"sm" | "default" | "lg"', default: '"default"', description: "Drives the list height, trigger padding, and underline thickness together." },
+  { name: "listClassName", type: "string", description: "Extra classes on the tab strip." },
+  { name: "triggerClassName", type: "string", description: "Extra classes on every trigger." },
+  { name: "contentClassName", type: "string", description: "Extra classes on every panel." },
+  { name: "children", type: "(tab: TabItem) => ReactNode", description: "Renders each tab's panel content; omit to render the triggers with panels supplied separately." },
 ];
 
 export default function TabsDoc() {
   return (
-    <DocPage
-      slug="tabs"
-      description="Tab navigation with underline, background, and ghost variants, and a spring-driven indicator that follows the shape system."
-    >
-      <DocSection title="Basic">
-        <ComponentPreview code={basicCode}>
+    <DocPage slug="tabs">
+      <DocSection title="Usage">
+        <ComponentPreview code={usageCode} padding="compact">
           <Tabs defaultValue="account" className="w-fit max-w-full">
             <Triggers />
             <Panels />
@@ -156,88 +180,119 @@ export default function TabsDoc() {
         </ComponentPreview>
       </DocSection>
 
-      <DocSection title="Underline">
-        <ComponentPreview code={underlineCode}>
-          <Tabs defaultValue="account" variant="underline" className="w-fit max-w-full">
-            <Triggers />
-            <Panels />
-          </Tabs>
-        </ComponentPreview>
-      </DocSection>
+      <DocSection title="Examples">
+        <DocSubSection title="Basic">
+          <ComponentPreview code={basicCode}>
+            <Tabs defaultValue="account" className="w-fit max-w-full">
+              <Triggers />
+              <Panels />
+            </Tabs>
+          </ComponentPreview>
+        </DocSubSection>
 
-      <DocSection title="Ghost">
-        <ComponentPreview code={ghostCode}>
-          <Tabs defaultValue="account" variant="ghost" className="w-fit max-w-full">
-            <Triggers />
-            <Panels />
-          </Tabs>
-        </ComponentPreview>
-      </DocSection>
+        <DocSubSection title="Underline">
+          <ComponentPreview code={underlineCode}>
+            <Tabs defaultValue="account" variant="underline" className="w-fit max-w-full">
+              <Triggers />
+              <Panels />
+            </Tabs>
+          </ComponentPreview>
+        </DocSubSection>
 
-      <DocSection title="Concentric">
-        <ComponentPreview code={concentricCode}>
-          <Tabs defaultValue="account" concentric className="w-fit max-w-full">
-            <Triggers />
-            <Panels />
-          </Tabs>
-        </ComponentPreview>
-      </DocSection>
+        <DocSubSection title="Ghost">
+          <ComponentPreview code={ghostCode}>
+            <Tabs defaultValue="account" variant="ghost" className="w-fit max-w-full">
+              <Triggers />
+              <Panels />
+            </Tabs>
+          </ComponentPreview>
+        </DocSubSection>
 
-      <DocSection title="Sizes">
-        <ComponentPreview code={sizesCode} align="top" minHeightClass="min-h-[280px]">
-          {/* items-start, not centre: three strips of different widths centred
-              individually would step in and out on the left edge. */}
-          <div className="flex w-fit max-w-full flex-col items-start gap-7">
-            {(["sm", "default", "lg"] as const).map((size) => (
-              <Tabs key={size} defaultValue="account" size={size}>
-                <Triggers />
-                <Panels />
-              </Tabs>
-            ))}
-          </div>
-        </ComponentPreview>
-      </DocSection>
+        <DocSubSection title="Sizes">
+          <ComponentPreview code={sizesCode} align="top" minHeightClass="min-h-[280px]">
+            {/* items-start, not centre: three strips of different widths centred
+                individually would step in and out on the left edge. */}
+            <div className="flex w-fit max-w-full flex-col items-start gap-7">
+              {(["sm", "default", "lg"] as const).map((size) => (
+                <Tabs key={size} defaultValue="account" size={size}>
+                  <Triggers />
+                  <Panels />
+                </Tabs>
+              ))}
+            </div>
+          </ComponentPreview>
+        </DocSubSection>
 
-      <DocSection title="With Icons">
-        <ComponentPreview code={iconsCode}>
-          <Tabs defaultValue="account" className="w-fit max-w-full">
-            <TabsList>
-              <TabsTrigger value="account" icon={<UserIcon />}>
-                Account
-              </TabsTrigger>
-              <TabsTrigger value="password" icon={<LockIcon />}>
-                Password
-              </TabsTrigger>
-              <TabsTrigger value="settings" icon={<SettingsIcon />}>
-                Settings
-              </TabsTrigger>
-            </TabsList>
-            <Panels />
-          </Tabs>
-        </ComponentPreview>
-      </DocSection>
+        <DocSubSection title="With Icons">
+          <ComponentPreview code={iconsCode}>
+            <Tabs defaultValue="account" className="w-fit max-w-full">
+              <TabsList>
+                <TabsTrigger value="account" icon={<UserIcon />}>
+                  Account
+                </TabsTrigger>
+                <TabsTrigger value="password" icon={<LockIcon />}>
+                  Password
+                </TabsTrigger>
+                <TabsTrigger value="settings" icon={<SettingsIcon />}>
+                  Settings
+                </TabsTrigger>
+              </TabsList>
+              <Panels />
+            </Tabs>
+          </ComponentPreview>
+        </DocSubSection>
 
-      <DocSection title="Animated panels">
-        <ComponentPreview code={animateCode}>
-          <Tabs defaultValue="account" variant="underline" className="w-fit max-w-full">
-            <Triggers />
-            <Panels animate />
-          </Tabs>
-        </ComponentPreview>
+        <DocSubSection title="Concentric">
+          <ComponentPreview code={concentricCode}>
+            <Tabs defaultValue="account" concentric className="w-fit max-w-full">
+              <Triggers />
+              <Panels />
+            </Tabs>
+          </ComponentPreview>
+        </DocSubSection>
+
+        <DocSubSection title="Animated panels">
+          <ComponentPreview code={fadeInCode}>
+            <Tabs defaultValue="account" variant="underline" className="w-fit max-w-full">
+              <Triggers />
+              <Panels fadeIn />
+            </Tabs>
+          </ComponentPreview>
+        </DocSubSection>
       </DocSection>
 
       <DocSection title="API Reference">
-        <div className="flex flex-col gap-8">
+        <DocSubSection title="Tabs">
           <PropsTable props={tabsProps} />
-          <div className="flex flex-col gap-3">
-            <p className="text-caption text-muted-foreground">TabsTrigger</p>
-            <PropsTable props={triggerProps} />
-          </div>
-          <div className="flex flex-col gap-3">
-            <p className="text-caption text-muted-foreground">TabsContent</p>
-            <PropsTable props={contentProps} />
-          </div>
-        </div>
+        </DocSubSection>
+
+        <DocSubSection title="TabsList">
+          <PropsTable props={listProps} />
+        </DocSubSection>
+
+        <DocSubSection title="TabsTrigger">
+          <PropsTable props={triggerProps} />
+        </DocSubSection>
+
+        <DocSubSection title="TabsContent">
+          <p className="text-caption text-muted-foreground">
+            A panel mounts the first time its tab becomes active, then stays
+            mounted — hidden, not unmounted, when another tab is selected —
+            so content backed by an API doesn&apos;t refetch and flash empty
+            on every revisit. <code>forceMount</code> mounts every panel up
+            front instead of waiting for a first visit.
+          </p>
+          <PropsTable props={contentProps} />
+        </DocSubSection>
+
+        <DocSubSection title="TabsFromArray">
+          <p className="text-caption text-muted-foreground">
+            The same tabs, driven by an array of <code>TabItem</code> objects
+            instead of JSX — for a list that comes from a config or an API
+            rather than being written out by hand.
+          </p>
+          <PropsTable props={fromArrayProps} />
+        </DocSubSection>
       </DocSection>
     </DocPage>
   );

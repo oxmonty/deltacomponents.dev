@@ -13,7 +13,6 @@ import {
   type HTMLAttributes,
   type ComponentProps,
 } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { Menu } from "@base-ui/react/menu";
 import type { MenuTriggerProps } from "@base-ui/react/menu";
 import {
@@ -24,8 +23,7 @@ import {
   type MenuItemRenderOptions,
 } from "@/registry/default/menu-item";
 import { cn } from "@/lib/utils";
-import { spring, exitFallbackMs } from "@/lib/springs";
-import { useProximityHover } from "@/hooks/use-proximity-hover";
+import { useProximityHover, type ItemRect } from "@/hooks/use-proximity-hover";
 import { shapeMap } from "@/lib/shape-context";
 import { SizeProvider, useSize, type SizeVariant } from "@/lib/size-context";
 import { Elevated } from "@/lib/elevated";
@@ -35,6 +33,30 @@ import { Elevated } from "@/lib/elevated";
 // the UI is shaped (the heavy pill bubbling distorts perceived padding at this
 // scale and produces the corner-shadow asymmetry).
 const shape = shapeMap.rounded;
+
+// ---------------------------------------------------------------------------
+// Overlay rect tracking — shared by the selected/hover/focus highlight divs
+// in both the inline Dropdown and the popup DropdownContent.
+//
+// Each highlight is a permanently mounted div whose position is driven by a
+// measured rect that can go null (nothing hovered/checked/focused). Freezing
+// the last rect lets the div fade out in place instead of collapsing to
+// (0,0), and `justAppeared` flags the one render where a rect goes from null
+// to non-null so the caller can suppress the transition on that update —
+// the CSS equivalent of framer-motion's `initial={false}` snap-in-place.
+// ---------------------------------------------------------------------------
+
+function useOverlayRect(rect: ItemRect | null) {
+  const lastRectRef = useRef<ItemRect | null>(null);
+  if (rect) lastRectRef.current = rect;
+  const isVisible = rect != null;
+  const wasVisibleRef = useRef(isVisible);
+  const justAppeared = isVisible && !wasVisibleRef.current;
+  useEffect(() => {
+    wasVisibleRef.current = isVisible;
+  });
+  return { rect: lastRectRef.current, isVisible, justAppeared };
+}
 
 // ---------------------------------------------------------------------------
 // Panel context — shared by the inline Dropdown and the popup DropdownContent.
@@ -75,7 +97,6 @@ const Dropdown = forwardRef<HTMLDivElement, DropdownProps>(
       activeIndex,
       setActiveIndex,
       itemRects,
-      sessionRef,
       handlers,
       registerItem,
       measureItems,
@@ -91,6 +112,9 @@ const Dropdown = forwardRef<HTMLDivElement, DropdownProps>(
     const checkedRect =
       checkedIndex != null ? itemRects[checkedIndex] : null;
     const focusRect = focusedIndex !== null ? itemRects[focusedIndex] : null;
+    const checkedOverlay = useOverlayRect(checkedRect);
+    const hoverOverlay = useOverlayRect(activeRect);
+    const focusOverlay = useOverlayRect(focusRect);
     const panel = (
       <DropdownContext.Provider value={{ registerItem, activeIndex, checkedIndex }}>
         <Elevated
@@ -152,76 +176,61 @@ const Dropdown = forwardRef<HTMLDivElement, DropdownProps>(
           {...props}
         >
           {/* Selected background */}
-          <AnimatePresence>
-            {checkedRect && (
-              <motion.div
-                className={`absolute ${shape.bg} bg-active pointer-events-none`}
-                initial={false}
-                animate={{
-                  top: checkedRect.top,
-                  left: checkedRect.left,
-                  width: checkedRect.width,
-                  height: checkedRect.height,
-                  opacity: 1,
-                }}
-                exit={{ opacity: 0, transition: spring.moderate.exit }}
-                transition={{
-                  ...spring.moderate,
-                  opacity: { duration: 0.08 },
-                }}
-              />
+          <div
+            className={cn(
+              `absolute ${shape.bg} bg-active pointer-events-none`,
+              "opacity-0 transition-[top,left,width,height,opacity] duration-(--motion-moderate-exit) ease-spring",
+              checkedOverlay.isVisible && "opacity-100 duration-(--motion-moderate)"
             )}
-          </AnimatePresence>
+            style={{
+              ...(checkedOverlay.rect && {
+                top: checkedOverlay.rect.top,
+                left: checkedOverlay.rect.left,
+                width: checkedOverlay.rect.width,
+                height: checkedOverlay.rect.height,
+              }),
+              transitionProperty: checkedOverlay.justAppeared ? "none" : undefined,
+            }}
+          />
 
           {/* Hover background */}
-          <AnimatePresence>
-            {activeRect && (
-              <motion.div
-                key={sessionRef.current}
-                className={`absolute ${shape.bg} bg-hover pointer-events-none`}
-                initial={{
-                  opacity: 0,
-                  top: checkedRect?.top ?? activeRect.top,
-                  left: checkedRect?.left ?? activeRect.left,
-                  width: checkedRect?.width ?? activeRect.width,
-                  height: checkedRect?.height ?? activeRect.height,
-                }}
-                animate={{
-                  opacity: 1,
-                  top: activeRect.top,
-                  left: activeRect.left,
-                  width: activeRect.width,
-                  height: activeRect.height,
-                }}
-                exit={{ opacity: 0, transition: spring.fast.exit }}
-                transition={{
-                  ...spring.fast,
-                  opacity: { duration: 0.08 },
-                }}
-              />
+          <div
+            className={cn(
+              `absolute ${shape.bg} bg-hover pointer-events-none`,
+              "opacity-0 transition-[top,left,width,height,opacity] duration-(--motion-fast-exit) ease-spring",
+              hoverOverlay.isVisible && "opacity-100 duration-(--motion-fast)"
             )}
-          </AnimatePresence>
+            style={{
+              ...(hoverOverlay.rect && {
+                top: hoverOverlay.rect.top,
+                left: hoverOverlay.rect.left,
+                width: hoverOverlay.rect.width,
+                height: hoverOverlay.rect.height,
+              }),
+              // Only opacity should animate on a fresh hover session — the
+              // position must land on the target row immediately, not glide
+              // there from wherever the last session left off.
+              transitionProperty: hoverOverlay.justAppeared ? "opacity" : undefined,
+            }}
+          />
 
           {/* Focus ring */}
-          <AnimatePresence>
-            {focusRect && (
-              <motion.div
-                className={`absolute ${shape.focusRing} pointer-events-none z-20 border border-[color:var(--focus-ring,#6B97FF)]`}
-                initial={false}
-                animate={{
-                  left: focusRect.left - 2,
-                  top: focusRect.top - 2,
-                  width: focusRect.width + 4,
-                  height: focusRect.height + 4,
-                }}
-                exit={{ opacity: 0, transition: spring.fast.exit }}
-                transition={{
-                  ...spring.fast,
-                  opacity: { duration: 0.08 },
-                }}
-              />
+          <div
+            className={cn(
+              `absolute ${shape.focusRing} pointer-events-none z-20 border border-[color:var(--focus-ring,#6B97FF)]`,
+              "opacity-0 transition-[top,left,width,height,opacity] duration-(--motion-fast-exit) ease-spring",
+              focusOverlay.isVisible && "opacity-100 duration-(--motion-fast)"
             )}
-          </AnimatePresence>
+            style={{
+              ...(focusOverlay.rect && {
+                left: focusOverlay.rect.left - 2,
+                top: focusOverlay.rect.top - 2,
+                width: focusOverlay.rect.width + 4,
+                height: focusOverlay.rect.height + 4,
+              }),
+              transitionProperty: focusOverlay.justAppeared ? "none" : undefined,
+            }}
+          />
 
           {children}
         </Elevated>
@@ -240,20 +249,15 @@ Dropdown.displayName = "Dropdown";
 //
 // Built on Base UI's Menu primitive, which owns the trigger wiring,
 // positioning (collision flipping, anchor tracking), dismissal (outside
-// press, focus-out, Escape), roving highlight, typeahead, and close-on-select.
-// This layer keeps the proximity-hover overlays and the
-// spring open/close animation (via actionsRef deferred unmount) — the same
-// verified pattern as select.tsx.
+// press, focus-out, Escape), roving highlight, typeahead, close-on-select,
+// and (via `data-starting-style`/`data-ending-style`) holding the popup
+// mounted for the duration of its own CSS exit transition. This layer keeps
+// the proximity-hover overlays and the open/close slide — the same verified
+// pattern as select.tsx.
 // ---------------------------------------------------------------------------
-
-interface DropdownMenuActions {
-  unmount: () => void;
-  close: () => void;
-}
 
 interface DropdownMenuContextValue {
   open: boolean;
-  actionsRef: React.RefObject<DropdownMenuActions | null>;
 }
 
 const DropdownMenuContext = createContext<DropdownMenuContextValue | null>(null);
@@ -289,7 +293,6 @@ function DropdownMenu({
 }: DropdownMenuProps) {
   const [internalOpen, setInternalOpen] = useState(defaultOpen);
   const open = openProp !== undefined ? openProp : internalOpen;
-  const actionsRef = useRef<DropdownMenuActions | null>(null);
 
   const handleOpenChange = useCallback(
     (next: boolean) => {
@@ -299,7 +302,7 @@ function DropdownMenu({
     [openProp, onOpenChange]
   );
 
-  const ctx = useMemo(() => ({ open, actionsRef }), [open]);
+  const ctx = useMemo(() => ({ open }), [open]);
 
   // A size prop pins the whole compound (trigger content + portalled popup —
   // React context crosses portals) to one ladder step.
@@ -308,7 +311,6 @@ function DropdownMenu({
       <Menu.Root
         open={open}
         onOpenChange={handleOpenChange}
-        actionsRef={actionsRef}
         disabled={disabled}
         // Non-modal: the page keeps scrolling and the Positioner tracks the
         // anchor, so the popup follows its trigger instead of detaching.
@@ -372,34 +374,19 @@ const DropdownContent = forwardRef<HTMLDivElement, DropdownContentProps>(
     },
     ref
   ) => {
-    const { open, actionsRef } = useDropdownMenuContext();
+    const { open } = useDropdownMenuContext();
     const containerRef = useRef<HTMLDivElement>(null);
 
     const {
       activeIndex,
       setActiveIndex,
       itemRects,
-      sessionRef,
       handlers,
       registerItem,
       measureItems,
     } = useProximityHover(containerRef);
 
     const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
-
-    // Release Base UI's deferred unmount once the exit tween has played.
-    // onAnimationComplete on the motion.div is the primary signal; this
-    // timeout is a fallback for throttled/background tabs where rAF-driven
-    // animation callbacks can stall. The popup exits with spring.fast, so the
-    // fallback tracks that tier's exit duration plus a safety buffer.
-    useEffect(() => {
-      if (open) return;
-      const id = setTimeout(
-        () => actionsRef.current?.unmount(),
-        exitFallbackMs(spring.fast)
-      );
-      return () => clearTimeout(id);
-    }, [open, actionsRef]);
 
     // Measure items once the popup has mounted.
     useEffect(() => {
@@ -420,6 +407,9 @@ const DropdownContent = forwardRef<HTMLDivElement, DropdownContentProps>(
     const activeRect = activeIndex !== null ? itemRects[activeIndex] : null;
     const checkedRect = checkedIndex != null ? itemRects[checkedIndex] : null;
     const focusRect = focusedIndex !== null ? itemRects[focusedIndex] : null;
+    const checkedOverlay = useOverlayRect(checkedRect);
+    const hoverOverlay = useOverlayRect(activeRect);
+    const focusOverlay = useOverlayRect(focusRect);
     // Inside the popup, Base UI's Menu.Item / Menu.RadioItem own the role,
     // aria-checked, tabIndex, roving highlight, typeahead, and Enter/Space/
     // click activation (activation synthesizes a click, so the row div's
@@ -477,161 +467,134 @@ const DropdownContent = forwardRef<HTMLDivElement, DropdownContentProps>(
           sideOffset={sideOffset}
           className="z-50 outline-none"
         >
-          <motion.div
-            // A popup opening upward grows from its bottom edge — the edge
-            // anchored to the trigger — so the offset and origin flip with
-            // `side`.
-            initial={{ opacity: 0, y: side === "top" ? 4 : -4, scaleY: 0.96 }}
-            animate={
-              open
-                ? { opacity: 1, y: 0, scaleY: 1 }
-                : { opacity: 0, y: side === "top" ? 4 : -4, scaleY: 0.96 }
-            }
-            transition={open ? spring.fast : spring.fast.exit}
-            style={{
-              transformOrigin: side === "top" ? "bottom center" : "top center",
-            }}
-            // Base UI defers unmount while actionsRef is set; release it once
-            // the exit spring has finished so the close animation fully plays.
-            onAnimationComplete={() => {
-              if (!open) actionsRef.current?.unmount();
-            }}
-          >
-            <DropdownContext.Provider value={contentCtx}>
-              <Menu.Popup
-                render={
-                  <Elevated
-                    offset={2}
-                    shadowLevel={3}
-                    ref={(node: HTMLDivElement | null) => {
+          <DropdownContext.Provider value={contentCtx}>
+            <Menu.Popup
+              render={
+                <Elevated
+                  offset={2}
+                  shadowLevel={3}
+                  ref={(node: HTMLDivElement | null) => {
+                    (
+                      containerRef as React.MutableRefObject<HTMLDivElement | null>
+                    ).current = node;
+                    if (typeof ref === "function") ref(node);
+                    else if (ref)
                       (
-                        containerRef as React.MutableRefObject<HTMLDivElement | null>
+                        ref as React.MutableRefObject<HTMLDivElement | null>
                       ).current = node;
-                      if (typeof ref === "function") ref(node);
-                      else if (ref)
-                        (
-                          ref as React.MutableRefObject<HTMLDivElement | null>
-                        ).current = node;
-                    }}
-                  />
+                  }}
+                />
+              }
+              onMouseEnter={() => {
+                handlers.onMouseEnter();
+                setFocusedIndex(null);
+              }}
+              onMouseMove={handlers.onMouseMove}
+              onMouseLeave={handlers.onMouseLeave}
+              onFocus={(e) => {
+                const indexAttr = (e.target as HTMLElement)
+                  .closest("[data-proximity-index]")
+                  ?.getAttribute("data-proximity-index");
+                if (indexAttr != null) {
+                  const idx = Number(indexAttr);
+                  setActiveIndex(idx);
+                  setFocusedIndex(
+                    (e.target as HTMLElement).matches(":focus-visible")
+                      ? idx
+                      : null
+                  );
                 }
-                onMouseEnter={() => {
-                  handlers.onMouseEnter();
-                  setFocusedIndex(null);
-                }}
-                onMouseMove={handlers.onMouseMove}
-                onMouseLeave={handlers.onMouseLeave}
-                onFocus={(e) => {
-                  const indexAttr = (e.target as HTMLElement)
-                    .closest("[data-proximity-index]")
-                    ?.getAttribute("data-proximity-index");
-                  if (indexAttr != null) {
-                    const idx = Number(indexAttr);
-                    setActiveIndex(idx);
-                    setFocusedIndex(
-                      (e.target as HTMLElement).matches(":focus-visible")
-                        ? idx
-                        : null
-                    );
-                  }
-                }}
-                onBlur={(e) => {
-                  if (containerRef.current?.contains(e.relatedTarget as Node))
-                    return;
-                  setFocusedIndex(null);
-                  setActiveIndex(null);
-                }}
+              }}
+              onBlur={(e) => {
+                if (containerRef.current?.contains(e.relatedTarget as Node))
+                  return;
+                setFocusedIndex(null);
+                setActiveIndex(null);
+              }}
+              className={cn(
+                // min-w tracks the trigger via the Positioner's
+                // --anchor-width var.
+                `relative flex flex-col gap-0.5 w-72 max-w-full min-w-[var(--anchor-width)] max-h-[min(480px,var(--available-height))] overflow-y-auto ${shape.container} p-1 select-none outline-none`,
+                // A popup opening upward grows from its bottom edge — the
+                // edge anchored to the trigger — so the origin comes from
+                // Base UI's own --transform-origin var (it flips with the
+                // rendered side) and the enter/exit offset flips with
+                // data-side.
+                "origin-(--transform-origin) transition-[opacity,transform] duration-(--motion-fast) ease-spring",
+                "data-[instant]:duration-0",
+                "data-[starting-style]:opacity-0 data-[starting-style]:scale-y-95 data-[starting-style]:-translate-y-1",
+                "data-[starting-style]:data-[side=top]:translate-y-1",
+                "data-[ending-style]:opacity-0 data-[ending-style]:scale-y-95 data-[ending-style]:-translate-y-1",
+                "data-[ending-style]:data-[side=top]:translate-y-1",
+                "data-[ending-style]:duration-(--motion-fast-exit)",
+                className
+              )}
+            >
+              {/* Selected background */}
+              <div
                 className={cn(
-                  // min-w tracks the trigger via the Positioner's
-                  // --anchor-width var.
-                  `relative flex flex-col gap-0.5 w-72 max-w-full min-w-[var(--anchor-width)] max-h-[min(480px,var(--available-height))] overflow-y-auto ${shape.container} p-1 select-none outline-none`,
-                  className
+                  `absolute ${shape.bg} bg-active pointer-events-none`,
+                  "opacity-0 transition-[top,left,width,height,opacity] duration-(--motion-moderate-exit) ease-spring",
+                  checkedOverlay.isVisible && "opacity-100 duration-(--motion-moderate)"
                 )}
+                style={{
+                  ...(checkedOverlay.rect && {
+                    top: checkedOverlay.rect.top,
+                    left: checkedOverlay.rect.left,
+                    width: checkedOverlay.rect.width,
+                    height: checkedOverlay.rect.height,
+                  }),
+                  transitionProperty: checkedOverlay.justAppeared ? "none" : undefined,
+                }}
+              />
+
+              {/* Hover background */}
+              <div
+                className={cn(
+                  `absolute ${shape.bg} bg-hover pointer-events-none`,
+                  "opacity-0 transition-[top,left,width,height,opacity] duration-(--motion-fast-exit) ease-spring",
+                  hoverOverlay.isVisible && "opacity-100 duration-(--motion-fast)"
+                )}
+                style={{
+                  ...(hoverOverlay.rect && {
+                    top: hoverOverlay.rect.top,
+                    left: hoverOverlay.rect.left,
+                    width: hoverOverlay.rect.width,
+                    height: hoverOverlay.rect.height,
+                  }),
+                  transitionProperty: hoverOverlay.justAppeared ? "opacity" : undefined,
+                }}
+              />
+
+              {/* Focus ring */}
+              <div
+                className={cn(
+                  `absolute ${shape.focusRing} pointer-events-none z-20 border border-[color:var(--focus-ring,#6B97FF)]`,
+                  "opacity-0 transition-[top,left,width,height,opacity] duration-(--motion-fast-exit) ease-spring",
+                  focusOverlay.isVisible && "opacity-100 duration-(--motion-fast)"
+                )}
+                style={{
+                  ...(focusOverlay.rect && {
+                    left: focusOverlay.rect.left - 2,
+                    top: focusOverlay.rect.top - 2,
+                    width: focusOverlay.rect.width + 4,
+                    height: focusOverlay.rect.height + 4,
+                  }),
+                  transitionProperty: focusOverlay.justAppeared ? "none" : undefined,
+                }}
+              />
+
+              {/* display: contents keeps items direct flex children of the
+                  popup so proximity measurement and gap layout still work,
+                  while the group provides the radio value context. */}
+              <Menu.RadioGroup
+                value={checkedIndex ?? null}
+                className="contents"
               >
-                {/* Selected background */}
-                <AnimatePresence>
-                  {checkedRect && (
-                    <motion.div
-                      className={`absolute ${shape.bg} bg-active pointer-events-none`}
-                      initial={false}
-                      animate={{
-                        top: checkedRect.top,
-                        left: checkedRect.left,
-                        width: checkedRect.width,
-                        height: checkedRect.height,
-                        opacity: 1,
-                      }}
-                      exit={{ opacity: 0, transition: spring.moderate.exit }}
-                      transition={{
-                        ...spring.moderate,
-                        opacity: { duration: 0.08 },
-                      }}
-                    />
-                  )}
-                </AnimatePresence>
-
-                {/* Hover background */}
-                <AnimatePresence>
-                  {activeRect && (
-                    <motion.div
-                      key={sessionRef.current}
-                      className={`absolute ${shape.bg} bg-hover pointer-events-none`}
-                      initial={{
-                        opacity: 0,
-                        top: checkedRect?.top ?? activeRect.top,
-                        left: checkedRect?.left ?? activeRect.left,
-                        width: checkedRect?.width ?? activeRect.width,
-                        height: checkedRect?.height ?? activeRect.height,
-                      }}
-                      animate={{
-                        opacity: 1,
-                        top: activeRect.top,
-                        left: activeRect.left,
-                        width: activeRect.width,
-                        height: activeRect.height,
-                      }}
-                      exit={{ opacity: 0, transition: spring.fast.exit }}
-                      transition={{
-                        ...spring.fast,
-                        opacity: { duration: 0.08 },
-                      }}
-                    />
-                  )}
-                </AnimatePresence>
-
-                {/* Focus ring */}
-                <AnimatePresence>
-                  {focusRect && (
-                    <motion.div
-                      className={`absolute ${shape.focusRing} pointer-events-none z-20 border border-[color:var(--focus-ring,#6B97FF)]`}
-                      initial={false}
-                      animate={{
-                        left: focusRect.left - 2,
-                        top: focusRect.top - 2,
-                        width: focusRect.width + 4,
-                        height: focusRect.height + 4,
-                      }}
-                      exit={{ opacity: 0, transition: spring.fast.exit }}
-                      transition={{
-                        ...spring.fast,
-                        opacity: { duration: 0.08 },
-                      }}
-                    />
-                  )}
-                </AnimatePresence>
-
-                {/* display: contents keeps items direct flex children of the
-                    popup so proximity measurement and gap layout still work,
-                    while the group provides the radio value context. */}
-                <Menu.RadioGroup
-                  value={checkedIndex ?? null}
-                  className="contents"
-                >
-                  {children}
-                </Menu.RadioGroup>
-              </Menu.Popup>
-            </DropdownContext.Provider>
-          </motion.div>
+                {children}
+              </Menu.RadioGroup>
+            </Menu.Popup>
+          </DropdownContext.Provider>
         </Menu.Positioner>
       </Menu.Portal>
     );

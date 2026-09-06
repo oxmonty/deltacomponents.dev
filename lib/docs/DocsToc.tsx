@@ -35,7 +35,7 @@ function useActiveId(ids: string[]): string | null {
   return activeId;
 }
 
-/** "On this page" — the docs table of contents, above the properties panel. */
+/** "On this page" — the docs table of contents, under the properties panel. */
 export function DocsToc({ className }: { className?: string }) {
   // Read straight from the build-time manifest rather than scanning the DOM.
   // A scan can only run after the first paint, which is what made the panel

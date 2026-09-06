@@ -2,10 +2,8 @@
 
 import Link from "next/link";
 import { type ReactNode, type CSSProperties } from "react";
-import { motion } from "framer-motion";
 import { cn } from "@/registry/default/lib/utils";
 import { fontWeights } from "@/registry/default/lib/font-weight";
-import { spring } from "@/lib/springs";
 import { Badge } from "@/registry/default/badge";
 import { useIcon } from "@/lib/icon-context";
 
@@ -24,12 +22,6 @@ interface BentoCardProps {
    *  Rows are pinned at 300px (`grid-auto-rows`), so a preview can only be
    *  shown more fully by spending less of that height on padding. */
   previewClassName?: string;
-  /** FLIP-animate the card when the surrounding grid re-slots it (used by the
-   *  home bento grid when its column count changes). The card box tweens with
-   *  a spring while the preview area and footer label ride as
-   *  `layout="position"` nodes — framer scale-corrects nested layout nodes,
-   *  so the content stays crisp instead of stretching with the box. */
-  animateLayout?: boolean;
   /** Optional control pinned to the preview area's bottom-right corner —
    *  the /demo page puts the playground pen menu here. Rendered outside the
    *  (possibly scaled) preview content so it keeps its natural size. */
@@ -39,7 +31,7 @@ interface BentoCardProps {
   children: ReactNode;
 }
 
-export function BentoCard({ slug, name, isNew, gridSize = "small", animateLayout = false, action, className: extraClassName, previewClassName, style, children }: BentoCardProps) {
+export function BentoCard({ slug, name, isNew, gridSize = "small", action, className: extraClassName, previewClassName, style, children }: BentoCardProps) {
   // Rotated arrow-right rather than a dedicated arrow-up-right key: that key
   // would have to be added to the IconName union and to all five icon packs
   // for one glyph that a 45deg turn already draws correctly in every pack.
@@ -53,11 +45,7 @@ export function BentoCard({ slug, name, isNew, gridSize = "small", animateLayout
   // clicked anywhere in them. Now clicking only focuses what the user
   // actually clicked; Tab still routes into the card naturally.
   const footerLabel = (
-    <motion.div
-      layout={animateLayout ? "position" : false}
-      transition={spring.moderate}
-      className="flex items-center gap-2"
-    >
+    <div className="flex items-center gap-2">
       <span
         className={cn(
           "text-body text-muted-foreground transition-colors duration-80",
@@ -78,13 +66,11 @@ export function BentoCard({ slug, name, isNew, gridSize = "small", animateLayout
           New
         </Badge>
       )}
-    </motion.div>
+    </div>
   );
 
   return (
-    <motion.div
-      layout={animateLayout}
-      transition={spring.moderate}
+    <div
       className={cn(
         // No unnamed `group` here — many of the components rendered inside
         // (Button, Select, InputCopy, …) use Tailwind's unnamed `group-hover:`
@@ -99,16 +85,14 @@ export function BentoCard({ slug, name, isNew, gridSize = "small", animateLayout
       )}
       style={style}
     >
-      <motion.div
-        layout={animateLayout ? "position" : false}
-        transition={spring.moderate}
+      <div
         className={cn(
           "flex-1 min-h-0 flex items-center justify-center px-6 py-16",
           previewClassName
         )}
       >
         {children}
-      </motion.div>
+      </div>
 
       {/* Footer row: the name (a link to the docs when `slug` is set) on the
           left, the optional action pinned to the right.
@@ -137,6 +121,6 @@ export function BentoCard({ slug, name, isNew, gridSize = "small", animateLayout
           </div>
         )}
       </div>
-    </motion.div>
+    </div>
   );
 }

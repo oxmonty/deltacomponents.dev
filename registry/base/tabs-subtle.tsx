@@ -12,14 +12,12 @@ import {
   type HTMLAttributes,
 } from "react";
 import { Tabs } from "@base-ui/react/tabs";
-import { motion, AnimatePresence } from "framer-motion";
 import type { IconComponent } from "@/lib/icon-context";
 import { cn } from "@/lib/utils";
-import { spring } from "@/lib/springs";
 import { fontWeights } from "@/lib/font-weight";
 import { useShape } from "@/lib/shape-context";
 import { SizeProvider, useSize, type SizeVariant } from "@/lib/size-context";
-import { useProximityHover } from "@/hooks/use-proximity-hover";
+import { useProximityHover, type ItemRect } from "@/hooks/use-proximity-hover";
 
 interface TabsSubtleContextValue {
   registerTab: (index: number, element: HTMLElement | null) => void;
@@ -115,6 +113,25 @@ const TabsSubtle = forwardRef<HTMLDivElement, TabsSubtleProps>(
     const isHoveringSelected = hoveredIndex === selectedIndex;
     const isHovering = hoveredIndex !== null && !isHoveringSelected;
 
+    // The hover/focus pills stay permanently mounted and just fade out in
+    // place instead of unmounting — these refs hold the last real rect so the
+    // fade has somewhere to sit while it plays. The hover pill's fade-out has
+    // one exception: leaving the tablist entirely (not just onto the selected
+    // tab) also slides it back to the selected pill's position first, so it
+    // reads as merging back in rather than fading wherever the cursor left it.
+    const hoverPillRef = useRef<ItemRect | null>(null);
+    const isHoverPillVisible = hoverRect !== null && !isHoveringSelected;
+    if (isHoverPillVisible) {
+      hoverPillRef.current = hoverRect;
+    } else if (!isMouseInside.current && selectedRect) {
+      hoverPillRef.current = selectedRect;
+    }
+    const hoverPillRect = hoverPillRef.current;
+
+    const focusPillRef = useRef<ItemRect | null>(null);
+    if (focusRect) focusPillRef.current = focusRect;
+    const focusPillRect = focusPillRef.current;
+
     const root = (
       <TabsSubtleContext.Provider
         value={{ registerTab, hoveredIndex, selectedIndex, idPrefix, activeLabel }}
@@ -169,84 +186,58 @@ const TabsSubtle = forwardRef<HTMLDivElement, TabsSubtleProps>(
               )}
               {...props}
             >
-              {/* Selected pill */}
+              {/* Selected pill. Stays mounted and just tracks selectedRect, so a
+                  plain style update is enough — no enter/exit to animate. */}
               {selectedRect && (
-                <motion.div
+                <div
                   className={cn("absolute bg-active pointer-events-none", shape.bg)}
-                  initial={false}
-                  animate={{
+                  style={{
                     left: selectedRect.left,
                     width: selectedRect.width,
                     top: selectedRect.top,
                     height: selectedRect.height,
                     opacity: isHovering ? 0.8 : 1,
-                  }}
-                  transition={{
-                    ...spring.moderate,
-                    opacity: { duration: 0.08 },
+                    transition:
+                      "left var(--motion-moderate) var(--motion-ease), top var(--motion-moderate) var(--motion-ease), width var(--motion-moderate) var(--motion-ease), height var(--motion-moderate) var(--motion-ease), opacity var(--motion-fast) var(--motion-ease)",
                   }}
                 />
               )}
 
-              {/* Hover pill */}
-              <AnimatePresence>
-                {hoverRect && !isHoveringSelected && selectedRect && (
-                  <motion.div
-                    className={cn("absolute bg-active pointer-events-none", shape.bg)}
-                    initial={{
-                      left: selectedRect.left,
-                      width: selectedRect.width,
-                      top: selectedRect.top,
-                      height: selectedRect.height,
-                      opacity: 0,
-                    }}
-                    animate={{
-                      left: hoverRect.left,
-                      width: hoverRect.width,
-                      top: hoverRect.top,
-                      height: hoverRect.height,
-                      opacity: 0.4,
-                    }}
-                    exit={
-                      !isMouseInside.current && selectedRect
-                        ? {
-                            left: selectedRect.left,
-                            width: selectedRect.width,
-                            top: selectedRect.top,
-                            height: selectedRect.height,
-                            opacity: 0,
-                            transition: { ...spring.moderate, opacity: { duration: 0.06 } },
-                          }
-                        : { opacity: 0, transition: spring.fast.exit }
-                    }
-                    transition={{
-                      ...spring.fast,
-                      opacity: { duration: 0.08 },
-                    }}
-                  />
-                )}
-              </AnimatePresence>
+              {/* Hover pill. Permanently mounted (see hoverPillRect above) so
+                  its fade-out has a rect to sit at instead of unmounting. */}
+              {hoverPillRect && (
+                <div
+                  className={cn("absolute bg-active pointer-events-none", shape.bg)}
+                  style={{
+                    left: hoverPillRect.left,
+                    width: hoverPillRect.width,
+                    top: hoverPillRect.top,
+                    height: hoverPillRect.height,
+                    opacity: isHoverPillVisible ? 0.4 : 0,
+                    transition: isHoverPillVisible
+                      ? "left var(--motion-fast) var(--motion-ease), top var(--motion-fast) var(--motion-ease), width var(--motion-fast) var(--motion-ease), height var(--motion-fast) var(--motion-ease), opacity var(--motion-fast) var(--motion-ease)"
+                      : "left var(--motion-moderate) var(--motion-ease), top var(--motion-moderate) var(--motion-ease), width var(--motion-moderate) var(--motion-ease), height var(--motion-moderate) var(--motion-ease), opacity var(--motion-fast-exit) var(--motion-ease)",
+                  }}
+                />
+              )}
 
-              {/* Focus ring */}
-              <AnimatePresence>
-                {focusRect && (
-                  <motion.div
-                    className={cn("absolute pointer-events-none z-20 border border-[color:var(--focus-ring,#6B97FF)]", shape.focusRing)}
-                    initial={false}
-                    animate={{
-                      left: focusRect.left - 2,
-                      top: focusRect.top - 2,
-                      width: focusRect.width + 4,
-                      height: focusRect.height + 4,
-                    }}
-                    exit={{ opacity: 0, transition: spring.fast.exit }}
-                    transition={{
-                      ...spring.fast,
-                      opacity: { duration: 0.08 },
-                    }}
-                  />
-                )}
-              </AnimatePresence>
+              {/* Focus ring. Permanently mounted like the hover pill; opacity
+                  snaps to 1 instantly on the way in (matching the old
+                  initial={false}) and fades over motion-fast-exit on the way
+                  out, frozen at the last focused rect. */}
+              {focusPillRect && (
+                <div
+                  className={cn("absolute pointer-events-none z-20 border border-[color:var(--focus-ring,#6B97FF)]", shape.focusRing)}
+                  style={{
+                    left: focusPillRect.left - 2,
+                    top: focusPillRect.top - 2,
+                    width: focusPillRect.width + 4,
+                    height: focusPillRect.height + 4,
+                    opacity: focusRect ? 1 : 0,
+                    transition: `left var(--motion-fast) var(--motion-ease), top var(--motion-fast) var(--motion-ease), width var(--motion-fast) var(--motion-ease), height var(--motion-fast) var(--motion-ease), opacity ${focusRect ? "0ms" : "var(--motion-fast-exit)"} var(--motion-ease)`,
+                  }}
+                />
+              )}
 
               {children}
             </Tabs.List>
@@ -271,12 +262,11 @@ interface TabsSubtleItemProps extends HTMLAttributes<HTMLButtonElement> {
 const TabsSubtleItem = forwardRef<HTMLButtonElement, TabsSubtleItemProps>(
   ({ icon: Icon, label, index, className, ...props }, ref) => {
     const internalRef = useRef<HTMLButtonElement | null>(null);
-    // The collapsing label animates to a MEASURED layout width, not "auto":
-    // framer resolves an "auto" target from the element's *visual*
-    // (transformed) size, so under a scaled ancestor (e.g. /demo's card) the
-    // spring overshoots to scale-x the real width and snaps when "auto"
-    // lands. offsetWidth and ResizeObserver are transform-immune — same
-    // setup as the accordions' height animation.
+    // The collapsing label transitions to a MEASURED layout width, not CSS
+    // "auto" (browsers can't transition to/from auto). offsetWidth and
+    // ResizeObserver read layout space, so the measurement is immune to an
+    // ancestor's transform (e.g. /demo's scaled card) — same setup as the
+    // accordions' height animation.
     const [labelWidth, setLabelWidth] = useState<number | null>(null);
     const labelRoRef = useRef<ResizeObserver | null>(null);
     const measureLabel = useCallback((el: HTMLSpanElement | null) => {
@@ -374,37 +364,25 @@ const TabsSubtleItem = forwardRef<HTMLButtonElement, TabsSubtleItemProps>(
           />
         )}
         {collapseLabel ? (
-          <AnimatePresence initial={false}>
-            {showLabel && (
-              <motion.span
-                key="label"
-                className="overflow-hidden"
-                // Until the measurement lands, let CSS resolve the width
-                // instead of handing framer "auto": framer resolves an "auto"
-                // target from the element's *visual* size, so under a scaled
-                // ancestor (the /demo card, ~1.76x) it writes back a layout
-                // width that much too wide, then springs back down when the
-                // measured value arrives — the selected tab visibly pulses on
-                // arrival. Plain CSS auto is the true layout width, and the
-                // measured number that follows matches it exactly.
-                style={labelWidth == null ? { width: "auto" } : undefined}
-                initial={{ width: 0, opacity: 0, marginLeft: 0 }}
-                animate={{
-                  ...(labelWidth != null ? { width: labelWidth } : null),
-                  opacity: 1,
-                  // Matches the ladder's icon-to-label gap (gap-2 / gap-1.5).
-                  marginLeft: sizeClasses.variant === "compact" ? 6 : 8,
-                }}
-                exit={{ width: 0, opacity: 0, marginLeft: 0 }}
-                transition={{
-                  ...spring.fast,
-                  opacity: { duration: 0.06 },
-                }}
-              >
-                {labelContent}
-              </motion.span>
-            )}
-          </AnimatePresence>
+          <span
+            className="overflow-hidden"
+            style={{
+              // Until the measurement lands, let CSS resolve the true layout
+              // width instead of animating toward a guessed number — under a
+              // scaled ancestor (the /demo card, ~1.76x) a premature target
+              // would be wrong and then jump when the real measurement
+              // arrives.
+              width: !showLabel ? 0 : labelWidth == null ? "auto" : labelWidth,
+              opacity: showLabel ? 1 : 0,
+              // Matches the ladder's icon-to-label gap (gap-2 / gap-1.5).
+              marginLeft: showLabel ? (sizeClasses.variant === "compact" ? 6 : 8) : 0,
+              transition:
+                "width var(--motion-fast) var(--motion-ease), opacity var(--motion-fast-exit) var(--motion-ease), margin-left var(--motion-fast) var(--motion-ease)",
+            }}
+            aria-hidden={!showLabel || undefined}
+          >
+            {labelContent}
+          </span>
         ) : (
           labelContent
         )}

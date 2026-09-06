@@ -119,8 +119,8 @@ const ScrollBar = forwardRef<
       // Base UI keeps the scrollbar mounted while scrollable; visibility is
       // a plain opacity transition off its hover/scroll state attributes,
       // matching the cue fade — 160ms in, 120ms out (exits faster, per the
-      // animation guidelines); spring tokens are framer-motion configs and
-      // don't apply here.
+      // animation guidelines); these durations predate the --motion-moderate
+      // / --motion-moderate-exit CSS tiers and haven't been switched over.
       className={cn(
         // The 10px track stays as a comfortable hit target; the thumb inside
         // it rests narrow and low-contrast, then widens + darkens on hover so
