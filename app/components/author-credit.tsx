@@ -10,14 +10,15 @@ export function AuthorCredit({
   className,
   /** How the portrait is drawn.
    *
-   *  `tinted` (default, and what the properties card uses) paints the vector as
-   *  a CSS mask in the link's own colour, so the avatar sits muted at rest and
-   *  warms to the foreground alongside the label on hover.
+   *  `printed` (default) puts the raster on a white disc, so the portrait is
+   *  the drawing itself in both themes and costs the browser one image instead
+   *  of a few thousand `<line>` elements. It still damps at rest and comes up
+   *  to full on hover, tracking the label beside it — a raster can't take the
+   *  link's colour the way a mask can, so opacity carries that instead.
    *
-   *  `printed` puts the raster on a white disc, so it reads the same in both
-   *  themes and costs the browser one image instead of a few thousand `<line>`
-   *  elements — which is what the footer wants, sitting in the page's scroll. */
-  avatar = "tinted",
+   *  `tinted` paints the vector as a CSS mask in the link's own colour, so the
+   *  avatar inherits the muted → foreground transition literally. */
+  avatar = "printed",
 }: {
   className?: string;
   avatar?: "tinted" | "printed";
@@ -31,7 +32,7 @@ export function AuthorCredit({
       target="_blank"
       rel="noopener noreferrer"
       className={cn(
-        "text-body text-muted-foreground hover:text-foreground flex w-fit items-center gap-2 rounded transition-colors duration-80",
+        "group text-body text-muted-foreground hover:text-foreground flex w-fit items-center gap-2 rounded transition-colors duration-80",
         "outline-none focus-visible:ring-1 focus-visible:ring-[color:var(--focus-ring,#6B97FF)] focus-visible:ring-offset-2",
         className
       )}
@@ -46,8 +47,10 @@ export function AuthorCredit({
               // strength beside a dimmed label.
               "bg-current"
             : // The raster ships with its own white ground; bg-white covers the
-              // corners the circle crops.
-              "bg-white bg-contain bg-center bg-no-repeat"
+              // corners the circle crops. Damped at rest so it sits at the
+              // weight of the muted label rather than shouting beside it,
+              // and up to full on hover with the label.
+              "bg-white bg-contain bg-center bg-no-repeat opacity-70 transition-opacity duration-80 group-hover:opacity-100"
         )}
         style={
           tinted

@@ -14,7 +14,7 @@ export function SiteFooter() {
     // over the last ~50px, and a shallower footer parks the credit underneath
     // it where nobody sees it.
     <footer className="flex justify-center px-6 pt-4 pb-[calc(6rem+env(safe-area-inset-bottom))] xl:hidden">
-      <AuthorCredit avatar="printed" />
+      <AuthorCredit />
     </footer>
   );
 }
