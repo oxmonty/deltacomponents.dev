@@ -14,10 +14,11 @@ import { useShape } from "@/registry/default/lib/shape-context";
  * select with the chevron drawn over it — because that is the only way to
  * restyle the closed control while leaving the open list to the platform.
  *
- * Site chrome, not a registry component: the library publishes its own Select
- * (`registry/base/select`) for consumers. This is what the docs' own settings
- * panel wants — the OS list, opened where the OS opens it, with no popover to
- * position, no keyboard handling to own and nothing to animate.
+ * Site chrome, not a registry component: it is what the docs' own settings
+ * panel and playground controls want — the OS list, opened where the OS opens
+ * it, with no popover to position, no keyboard handling to own and nothing to
+ * animate. It replaced the library's own Select at both call sites, and that
+ * component is gone with them.
  *
  * The options are the platform's, so they cannot carry the per-item icons the
  * library's Select shows. `icon` keeps the current value's glyph on the closed

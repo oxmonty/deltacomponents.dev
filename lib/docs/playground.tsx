@@ -7,12 +7,7 @@ import { cn } from "@/lib/utils";
 import { fontWeights } from "@/registry/default/lib/font-weight";
 import { SurfaceProvider } from "@/lib/surface-context";
 import { useRightRailNode } from "@/lib/right-rail";
-import {
-  Select,
-  SelectTrigger,
-  SelectContent,
-  SelectItem,
-} from "@/registry/base/select";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 
 // ---------------------------------------------------------------------------
 // Shared scaffolding for doc-page playgrounds (Card, Button, …): the control
@@ -56,19 +51,13 @@ export function PlaySelect({
   options: { value: string; label: string }[];
 }) {
   return (
-    <Select value={value} onValueChange={onChange}>
-      <SelectTrigger
-        variant="borderless"
-        className="min-w-0 w-auto h-7 px-2 text-body"
-      />
-      <SelectContent>
-        {options.map((o, i) => (
-          <SelectItem key={o.value} value={o.value} index={i}>
-            {o.label}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+    <NativeSelect value={value} onChange={(e) => onChange(e.target.value)}>
+      {options.map((o) => (
+        <NativeSelectOption key={o.value} value={o.value}>
+          {o.label}
+        </NativeSelectOption>
+      ))}
+    </NativeSelect>
   );
 }
 

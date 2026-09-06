@@ -712,39 +712,6 @@
       ]
     },
     {
-      "name": "select",
-      "type": "registry:ui",
-      "title": "Select",
-      "description": "Animated select menu with collision-aware positioning, typeahead, proximity hover, spring-animated popover, and animated checkmark.",
-      "dependencies": [
-        "@base-ui/react",
-        "class-variance-authority",
-        "lucide-react"
-      ],
-      "registryDependencies": [
-        "utils",
-        "motion",
-        "shape-context",
-        "surface-context",
-        "surface-classes",
-        "icon-context",
-        "use-proximity-hover",
-        "elevated",
-        "size-context",
-        "tokens"
-      ],
-      "files": [
-        {
-          "path": "registry/base/select.tsx",
-          "type": "registry:ui",
-          "target": "components/ui/select.tsx"
-        }
-      ],
-      "categories": [
-        "components"
-      ]
-    },
-    {
       "name": "tooltip",
       "type": "registry:ui",
       "title": "Tooltip",
@@ -963,7 +930,7 @@
       "name": "product-card",
       "type": "registry:ui",
       "title": "Product Card",
-      "description": "Compound card for commerce rows — image well, overlaid badge, and a title/subtitle/metric footer.",
+      "description": "Compound card for commerce rows \u2014 image well, overlaid badge, and a title/subtitle/metric footer.",
       "registryDependencies": [
         "utils",
         "shape-context",
