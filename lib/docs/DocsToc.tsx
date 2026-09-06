@@ -35,7 +35,7 @@ function useActiveId(ids: string[]): string | null {
   return activeId;
 }
 
-/** "On this page" — the docs table of contents, under the properties panel. */
+/** "On this page" — the docs table of contents, at the top of the right rail. */
 export function DocsToc({ className }: { className?: string }) {
   // Read straight from the build-time manifest rather than scanning the DOM.
   // A scan can only run after the first paint, which is what made the panel
@@ -51,14 +51,17 @@ export function DocsToc({ className }: { className?: string }) {
   // One heading is the page itself; a list of one is noise.
   if (entries.length < 2) return null;
 
-  // www's shape: a quiet label rather than a heading, and a column of links a
-  // step below body size — the panel's job is to be glanceable while you read
-  // the page, not to compete with it. Depth rides a data attribute so the
+  // www's shape: a quiet label rather than a heading over a column of links.
+  // The links take the same size and tones as the left rail's rows —
+  // `text-body` on the size ladder, muted at rest and foreground for where you
+  // are — because the two rails are read as a pair, one listing the site and
+  // one listing the page, and a half-pixel difference between them read as a
+  // mistake rather than a hierarchy. Depth rides a data attribute so the
   // indent is one rule rather than a conditional per level.
   return (
     <nav
       aria-label="On this page"
-      className={cn("flex flex-col gap-2 text-sm", className)}
+      className={cn("flex flex-col gap-2", className)}
     >
       {/* Semibold at 12px: the label has to hold its own as a heading against
           the column of links under it without growing to compete with the
@@ -76,7 +79,7 @@ export function DocsToc({ className }: { className?: string }) {
           data-active={entry.id === activeId}
           data-depth={entry.depth}
           className={cn(
-            "text-muted-foreground hover:text-foreground data-[active=true]:text-foreground rounded text-[0.8rem] transition-colors duration-80",
+            "text-muted-foreground hover:text-foreground data-[active=true]:text-foreground text-body rounded transition-colors duration-80",
             // Underline on hover and on the section you are currently in, so
             // the active entry is marked twice over — colour alone is a weak
             // signal at this size, and it is the only one on a mono-tone rail.

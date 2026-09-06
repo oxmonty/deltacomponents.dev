@@ -9,11 +9,18 @@ import { Tooltip } from "@/registry/base/tooltip";
 import { Switch } from "@/components/ui/switch";
 import { InspectOverlay } from "./InspectOverlay";
 import { Code } from "@/registry/default/code";
+import { useNarrowFrame } from "@/lib/use-narrow-frame";
 
 /** Snippets longer than this collapse behind an Expand affordance; shorter
  *  ones render in full. Roughly the point where a reader stops taking the
- *  whole sample in at a glance. */
+ *  whole sample in at a glance.
+ *
+ *  That point is much earlier on a phone. The frame is the full width of the
+ *  screen there, so the source sits directly under the demo with nothing
+ *  beside it, and five or six lines are enough to push the demo they document
+ *  off the top of the viewport. */
 const COLLAPSE_AFTER_LINES = 12;
+const COLLAPSE_AFTER_LINES_NARROW = 4;
 
 export interface PlaybackButton {
   icon: ReactNode;
@@ -94,6 +101,7 @@ export function ComponentPreview({
   children,
 }: ComponentPreviewProps) {
   const [inspect, setInspect] = useState(defaultInspect);
+  const narrow = useNarrowFrame();
   const shape = useShape();
   const ReplayIcon = useIcon("rotate-ccw");
   const previewRef = useRef<HTMLDivElement>(null);
@@ -114,8 +122,11 @@ export function ComponentPreview({
   // Collapse the source only when there is enough of it to be worth hiding.
   // Most playground snippets are a line or two, and clipping those buries the
   // whole thing under the Expand gradient for no gain — the affordance would
-  // be taller than the code it covers.
-  const collapsible = (code?.trim().split("\n").length ?? 0) > COLLAPSE_AFTER_LINES;
+  // be taller than the code it covers. A one- or two-line sample stays open on
+  // a phone for the same reason.
+  const collapsible =
+    (code?.trim().split("\n").length ?? 0) >
+    (narrow ? COLLAPSE_AFTER_LINES_NARROW : COLLAPSE_AFTER_LINES);
 
   const frame = (
     <div

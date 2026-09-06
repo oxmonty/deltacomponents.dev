@@ -3,18 +3,15 @@
 import { useEffect, useState } from "react";
 
 /**
- * True below the sidebar's own 768px default breakpoint.
+ * True below 768px — the sidebar's own default breakpoint, shared so the docs
+ * chrome breaks where the components do.
  *
- * For the site's *previews* of the Sidebar — the doc-page examples and the
- * home bento card. Those run inside bounded frames a few hundred pixels wide,
- * so the component's real mobile rule doesn't apply to them: turning into a
- * drawer, or keeping a 12rem rail beside an 83px sliver of main region, hides
- * the very thing the preview exists to show. Each one pins
- * `mobileBreakpoint={0}` to stay a rail and asks this instead, so the frame
- * can spend its width on the rail alone.
+ * Used by ComponentPreview, which collapses a demo's source far sooner on a
+ * phone: the frame is the whole screen there, so a handful of lines pushes the
+ * demo it belongs to off the top.
  *
  * Starts false so the server and first client render agree; the media query
- * corrects it in an effect, exactly as the component's own `useIsMobile` does.
+ * corrects it in an effect, exactly as the sidebar's own `useIsMobile` does.
  */
 export function useNarrowFrame(): boolean {
   const [narrow, setNarrow] = useState(false);
