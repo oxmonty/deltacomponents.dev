@@ -731,7 +731,14 @@ export function Code({
               effectiveTextClassName
             )}
           >
-            {getIconForFile(filename)}
+            {/* The file badge is a solid shape where the name beside it is
+                13px text, so at one shared colour it out-weighs the name it
+                belongs to and pulls the eye off both the label and the copy
+                button. The token stays the same; a notch of transparency is
+                what evens the three optically. */}
+            <span className="flex items-center opacity-70">
+              {getIconForFile(filename)}
+            </span>
             <span className="font-medium tracking-tight">{filename}</span>
           </div>
           <div className="flex items-center gap-2">
