@@ -10,12 +10,14 @@ import { GitHubStarButton } from "@/app/components/right-panel";
  */
 export function SiteHeader() {
   return (
-    <header className="border-border bg-background sticky top-0 z-40 w-full border-b xl:hidden">
+    <header className="bg-background sticky top-0 z-40 w-full xl:hidden">
       <div className="flex h-14 items-center gap-2 px-4">
         <MobileNav />
         <div className="flex-1" />
         <ThemeToggle />
-        <GitHubStarButton />
+        {/* Icon only: the star count is right-panel chrome, and on a phone it
+            just crowds the row. */}
+        <GitHubStarButton showCount={false} />
       </div>
     </header>
   );

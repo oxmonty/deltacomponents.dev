@@ -14,7 +14,7 @@ export const TOOLTIP_COPY = {
 } as const;
 
 export const TABS_ITEMS = [
-  { value: "published", label: "Published (2)", copy: "\"Q3 roadmap\" and \"Why we rewrote onboarding\" are live." },
-  { value: "scheduled", label: "Scheduled", copy: "\"Migrating to Postgres\" goes out Thursday at 9am." },
-  { value: "draft", label: "Draft (0)", copy: "Nothing here yet — start writing to see it in this tab." },
+  { value: "account", label: "Account", copy: "Manage your account settings." },
+  { value: "password", label: "Password", copy: "Change your password here." },
+  { value: "settings", label: "Settings", copy: "Configure your preferences." },
 ] as const;

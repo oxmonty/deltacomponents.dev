@@ -80,12 +80,14 @@ function fetchStars(): Promise<number | null> {
   return starsPromise;
 }
 
-export function GitHubStarButton() {
+export function GitHubStarButton({ showCount = true }: { showCount?: boolean }) {
   const shapeCtx = useShape();
   const [stars, setStars] = useState<number | null>(cachedStars);
 
   useEffect(() => {
-    if (cachedStars !== null) return;
+    // No count on screen, no reason to spend an unauthenticated call on it —
+    // GitHub rate-limits those per IP, and the right panel needs the budget.
+    if (!showCount || cachedStars !== null) return;
     let cancelled = false;
     fetchStars().then((count) => {
       if (!cancelled && count !== null) setStars(count);
@@ -93,13 +95,16 @@ export function GitHubStarButton() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [showCount]);
 
   return (
     <Button
       variant="ghost"
-      size="sm"
-      leadingIcon={GitHubIcon}
+      size={showCount ? "sm" : "icon"}
+      // An icon-only Button takes its glyph as children — `leadingIcon` is
+      // deliberately ignored at that size, so passing it there renders an
+      // empty button.
+      leadingIcon={showCount ? GitHubIcon : undefined}
       aria-label="View on GitHub"
       className={shapeCtx.button}
       onClick={() =>
@@ -110,7 +115,8 @@ export function GitHubStarButton() {
         )
       }
     >
-      {stars !== null && (
+      {!showCount && <GitHubIcon />}
+      {showCount && stars !== null && (
         <span style={{ fontVariantNumeric: "tabular-nums" }}>
           {formatStars(stars)}
         </span>

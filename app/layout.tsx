@@ -12,9 +12,16 @@ import { SizeShortcut } from "@/lib/docs/size-shortcut";
 import { SizeAttribute } from "@/lib/docs/size-attribute";
 import { SettingsToast } from "@/lib/docs/settings-toast";
 import { HashScroll } from "@/lib/docs/hash-scroll";
+import { RouteScrollTop } from "@/lib/docs/route-scroll";
 import { SidebarLayout } from "@/app/components/sidebar-layout";
+import { MetaThemeColor } from "@/app/components/meta-theme-color";
 import { site } from "@/lib/config";
 import { createMetadata } from "@/lib/metadata";
+
+/** `--background` per theme, mirrored from globals.css. iOS paints its
+ *  address bar with this, so a value off by a shade reads as a seam across
+ *  the bottom of the screen. */
+const META_THEME_COLORS = { light: "#FAFAFA", dark: "#171717" };
 
 // The root defaults every route inherits and merges over. `createMetadata`
 // supplies the dynamic OG card; the icons and manifest are site-wide and have
@@ -56,20 +63,29 @@ export default async function RootLayout({
   const sidebarDefaultOpen = cookieStore.get("sidebar_state")?.value !== "false";
 
   return (
-    // data-scroll-behavior is Next's opt-in: without it the router forces
-    // `scroll-behavior: auto` for the duration of every route change, so the
-    // smooth scroll in globals.css never applies to sidebar or pager
-    // navigation. With it, both glide to the top of the new page.
-    <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth">
+    // Deliberately NO data-scroll-behavior attribute. It reads like the opt-in
+    // for smooth route scrolling and is the opposite: it tells the router the
+    // page uses smooth scrolling so it can force `scroll-behavior: auto` for
+    // the duration of every navigation. Left off (with
+    // `experimental.optimizeRouterScrolling` on — see next.config.ts) the
+    // router scrolls without touching the style, so the smooth scroll in
+    // globals.css applies and sidebar and pager navigation glide to the top.
+    <html lang="en" suppressHydrationWarning>
       <head>
+        {/* iOS Safari tints its address bar with this and shows the page
+            through it when it is unset — which left the site visible in the
+            bottom strip while the mobile nav covered the rest of the screen.
+            Written before the script below so the script has a tag to find;
+            MetaThemeColor keeps it in step after mount. */}
+        <meta name="theme-color" content={META_THEME_COLORS.light} />
         {/* Dark mode is a class on <html>, so a system-dark visitor would get
             one light frame before ThemeProvider's effect runs. This blocks
-            paint for a microsecond and applies it up front. Theme is not
-            persisted, so the OS preference is the whole story. */}
+            paint for a microsecond and applies it up front — the class and the
+            address-bar tint together. Theme is not persisted, so the OS
+            preference is the whole story. */}
         <script
           dangerouslySetInnerHTML={{
-            __html:
-              "try{if(matchMedia('(prefers-color-scheme: dark)').matches)document.documentElement.classList.add('dark')}catch(e){}",
+            __html: `try{if(matchMedia('(prefers-color-scheme: dark)').matches){document.documentElement.classList.add('dark');document.querySelector('meta[name="theme-color"]').setAttribute('content','${META_THEME_COLORS.dark}')}}catch(e){}`,
           }}
         />
       </head>
@@ -90,6 +106,8 @@ export default async function RootLayout({
                 <SidebarLayout defaultOpen={sidebarDefaultOpen}>{children}</SidebarLayout>
                 <SettingsToast />
                 <HashScroll />
+                <RouteScrollTop />
+                <MetaThemeColor colors={META_THEME_COLORS} />
                 <Analytics />
                 <SpeedInsights />
               </IconPlaygroundProvider>

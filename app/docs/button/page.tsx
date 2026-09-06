@@ -3,25 +3,19 @@
 import { useState } from "react";
 import { useIcon } from "@/lib/icon-context";
 import { Button } from "@/registry/base/button";
+import { Code } from "@/registry/default/code";
 import { ComponentPreview } from "@/lib/docs/ComponentPreview";
 import { PropsTable, type PropDef } from "@/lib/docs/PropsTable";
-import { DocPage, DocSection, DocSubSection } from "@/lib/docs/DocPage";
+import { DocPage, DocSection } from "@/lib/docs/DocPage";
 import { PlaygroundLayout } from "@/lib/docs/playground";
 import { ButtonPlayground } from "@/lib/docs/playgrounds/button";
 
-const usageCode = `import { Button } from "./components";
+const usageCode = `import { Button } from "@/components/ui/button";
 
 <Button>Button</Button>`;
 
-const variantsCode = `import { Button } from "./components";
-
-<Button variant="primary">Primary</Button>
-<Button variant="secondary">Secondary</Button>
-<Button variant="tertiary">Tertiary</Button>
-<Button variant="ghost">Ghost</Button>`;
-
-const iconsCode = `import { Button } from "./components";
-import { Plus, ArrowRight, Search } from "lucide-react";
+const demoCode = `import { Button } from "@/components/ui/button";
+import { ArrowRight, Plus, Search } from "lucide-react";
 
 <Button leadingIcon={Plus}>Create</Button>
 <Button variant="secondary" trailingIcon={ArrowRight}>Next</Button>
@@ -29,7 +23,19 @@ import { Plus, ArrowRight, Search } from "lucide-react";
   Search
 </Button>`;
 
-const loadingCode = `import { Button } from "./components";
+const basicCode = `import { Button } from "@/components/ui/button";
+
+<Button>Button</Button>`;
+
+const variantsCode = `import { Button } from "@/components/ui/button";
+
+<Button variant="primary">Primary</Button>
+<Button variant="secondary">Secondary</Button>
+<Button variant="tertiary">Tertiary</Button>
+<Button variant="ghost">Ghost</Button>`;
+
+
+const loadingCode = `import { Button } from "@/components/ui/button";
 import { Loader } from "lucide-react";
 
 <Button loading>Loading</Button>
@@ -78,59 +84,63 @@ export default function ButtonDoc() {
   const [loading, setLoading] = useState(false);
 
   return (
-    <DocPage slug="button">
-      <DocSection title="Playground">
-        <ButtonPlaygroundSection />
+    <DocPage
+      slug="button"
+      demo={
+        <ComponentPreview code={demoCode}>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button leadingIcon={Plus}>Create</Button>
+            <Button variant="secondary" trailingIcon={ArrowRight}>Next</Button>
+            <Button variant="tertiary" leadingIcon={Search} trailingIcon={ArrowRight}>Search</Button>
+          </div>
+        </ComponentPreview>
+      }
+    >
+      <DocSection title="Usage">
+        <Code language="tsx" code={usageCode} />
       </DocSection>
 
-      <DocSection title="Usage">
-        <ComponentPreview code={usageCode} padding="compact">
+      <DocSection title="Basic">
+        <ComponentPreview code={basicCode}>
           <Button>Button</Button>
         </ComponentPreview>
       </DocSection>
 
-      <DocSection title="Examples">
-        <DocSubSection title="Variants">
-          <ComponentPreview code={variantsCode}>
-            <div className="flex flex-wrap items-center gap-2">
-              <Button variant="primary">Primary</Button>
-              <Button variant="secondary">Secondary</Button>
-              <Button variant="tertiary">Tertiary</Button>
-              <Button variant="ghost">Ghost</Button>
-            </div>
-          </ComponentPreview>
-        </DocSubSection>
-
-        <DocSubSection title="With Icons">
-          <ComponentPreview code={iconsCode}>
-            <div className="flex flex-wrap items-center gap-2">
-              <Button leadingIcon={Plus}>Create</Button>
-              <Button variant="secondary" trailingIcon={ArrowRight}>Next</Button>
-              <Button variant="tertiary" leadingIcon={Search} trailingIcon={ArrowRight}>Search</Button>
-            </div>
-          </ComponentPreview>
-        </DocSubSection>
-
-        <DocSubSection title="Loading & Disabled">
-          <ComponentPreview code={loadingCode}>
-            <div className="flex flex-wrap items-center gap-2">
-              <Button loading={loading} onClick={() => {
-                setLoading(true);
-                setTimeout(() => setLoading(false), 2000);
-              }}>
-                {loading ? "Loading" : "Click me"}
-              </Button>
-              <Button variant="secondary" loading leadingIcon={Loader}>Saving</Button>
-              <Button disabled>Disabled</Button>
-            </div>
-          </ComponentPreview>
-        </DocSubSection>
+      <DocSection title="Playground">
+        <ButtonPlaygroundSection />
       </DocSection>
 
+      <DocSection title="Variants">
+        <ComponentPreview code={variantsCode}>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button variant="primary">Primary</Button>
+            <Button variant="secondary">Secondary</Button>
+            <Button variant="tertiary">Tertiary</Button>
+            <Button variant="ghost">Ghost</Button>
+          </div>
+        </ComponentPreview>
+      </DocSection>
+
+      <DocSection title="Loading & Disabled">
+        <ComponentPreview code={loadingCode}>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button loading={loading} onClick={() => {
+              setLoading(true);
+              setTimeout(() => setLoading(false), 2000);
+            }}>
+              {loading ? "Loading" : "Click me"}
+            </Button>
+            <Button variant="secondary" loading leadingIcon={Loader}>Saving</Button>
+            <Button disabled>Disabled</Button>
+          </div>
+        </ComponentPreview>
+      </DocSection>
+
+      {/* No sub-heading: this component exports one thing, so "Button" under
+          "API Reference" would name what the page is already about. Pages
+          with several exports (tabs, product-card) still split them. */}
       <DocSection title="API Reference">
-        <DocSubSection title="Button">
-          <PropsTable props={buttonProps} />
-        </DocSubSection>
+        <PropsTable props={buttonProps} />
       </DocSection>
     </DocPage>
   );

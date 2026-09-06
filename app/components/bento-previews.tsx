@@ -91,7 +91,7 @@ function TabsPreview() {
     // copy share a left edge, centred as one unit by the card's stage. Needs
     // the two-column card — in one column the stage is 213px against the
     // strip's 232, and a `w-fit` block that cannot shrink pins left instead.
-    <Tabs defaultValue="published" className="w-fit max-w-full">
+    <Tabs defaultValue="account" className="w-fit max-w-full">
       <TabsList>
         {TABS_ITEMS.map((tab) => (
           <TabsTrigger key={tab.value} value={tab.value}>

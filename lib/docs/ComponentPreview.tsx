@@ -26,10 +26,12 @@ interface ComponentPreviewProps {
   /** Source snippet rendered under the demo. Omit to show the demo alone —
    *  gallery rows do that, where one sample covers several frames. */
   code?: string;
-  /** Height the code panel is clipped to while collapsed. The default leaves
-   *  roughly nine readable lines: Code's Expand affordance is a 96px
-   *  gradient pinned to the bottom, so a shorter clip is largely covered by
-   *  it. Only applies once the snippet is long enough to collapse at all. */
+  /** Height the code panel is clipped to while collapsed. The default is a
+   *  teaser, not a preview: Code's Expand affordance is a 96px gradient
+   *  pinned to the bottom, so 8rem leaves roughly two clear lines above it —
+   *  enough to see it is the demo's source without the frame turning into a
+   *  wall of code. Only applies once the snippet is long enough to collapse
+   *  at all. */
   codeCollapsedHeight?: string;
   /** Label on the affordance that opens the collapsed source. */
   expandLabel?: string;
@@ -80,7 +82,7 @@ export function ComponentPreview({
   onReplay,
   playbackButton,
   padding = "default",
-  codeCollapsedHeight = "14rem",
+  codeCollapsedHeight = "8rem",
   expandLabel = "View code",
   minHeightClass = "min-h-[120px]",
   align = "center",

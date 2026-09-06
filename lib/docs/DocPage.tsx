@@ -28,6 +28,11 @@ interface DocPageProps {
   showInstall?: boolean;
   /** Optional note rendered under the install command. */
   installNote?: string;
+  /** The page's lead demo, rendered above Installation and deliberately
+   *  without a heading — a reader should see what the component *is* before
+   *  they are told how to install it, and a heading over the first thing on
+   *  the page is a label for something they can already see. */
+  demo?: ReactNode;
   children: ReactNode;
 }
 
@@ -38,6 +43,7 @@ export function DocPage({
   installSlug,
   showInstall = true,
   installNote,
+  demo,
   children,
 }: DocPageProps) {
   const entry = slug ? componentList.find((c) => c.slug === slug) : undefined;
@@ -50,9 +56,11 @@ export function DocPage({
     <div className="flex flex-col gap-8 px-6">
       <DocHeader title={heading} description={blurb} prev={prev} next={next} />
 
+      {demo}
+
       {slug && showInstall && (
         <div className="flex flex-col gap-3">
-          <AnchoredHeading className="text-title text-foreground leading-none">
+          <AnchoredHeading className="text-heading text-foreground leading-none">
             Installation
           </AnchoredHeading>
           <InstallTabs slug={installSlug ?? slug} note={installNote} />
@@ -145,7 +153,7 @@ export function DocSection({ title, id, children }: DocSectionProps) {
           it from a #link. */}
       <AnchoredHeading
         id={anchorId}
-        className="-mb-1 py-2 text-title text-foreground leading-none"
+        className="-mb-1 py-2 text-heading text-foreground leading-none"
       >
         {title}
       </AnchoredHeading>
@@ -174,7 +182,7 @@ export function DocSubSection({ title, id, children }: DocSubSectionProps) {
       <AnchoredHeading
         as="h3"
         id={anchorId}
-        className="-mb-1 py-1 text-subtitle text-foreground leading-none"
+        className="-mb-1 py-1 text-subheading text-foreground leading-none"
       >
         {title}
       </AnchoredHeading>

@@ -23,7 +23,7 @@ export default function DocsIndex() {
         <div className="flex flex-col gap-2">
           <AnchoredHeading
             as="h3"
-            className="text-title text-foreground leading-none"
+            className="text-subheading text-foreground leading-none"
           >
             TBD
           </AnchoredHeading>

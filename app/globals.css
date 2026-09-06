@@ -479,9 +479,19 @@ html, body {
    `prose` is the reading role — doc page descriptions, section copy, props
    descriptions. It sits a step above `body` because body is a CONTROL label
    size (it has to fit a 36px button), and prose that a reader scans for a
-   paragraph at a time wants more. Components never use it. */
+   paragraph at a time wants more. Components never use it.
+
+   `heading` / `subheading` are the CONTENT headings (a doc page's h2 and h3).
+   `title` / `subtitle` stay the CHROME sizes — panel headers, tab labels,
+   table text — which is why they are separate roles: an h2 at the chrome
+   size read as a bold paragraph rather than as a section break. The ladder
+   is the one every docs site converges on (30 / 24 / 19 on desktop), stepped
+   down on mobile so h2 never meets h1. Docs-only, so they have no counterpart
+   in `typeScale` — components never set a content heading. */
 :root {
   --fs-display: 24px;
+  --fs-heading: 20px;
+  --fs-subheading: 17px;
   --fs-title: 18px;
   --fs-prose: 16px;
   --fs-subtitle: 15px;
@@ -492,11 +502,15 @@ html, body {
 @media (min-width: 640px) {
   :root {
     --fs-display: 30px;
+    --fs-heading: 24px;
+    --fs-subheading: 19px;
   }
 }
 
 html[data-size="compact"] {
   --fs-display: 22px;
+  --fs-heading: 18px;
+  --fs-subheading: 16px;
   --fs-title: 17px;
   --fs-prose: 15px;
   --fs-subtitle: 14px;
@@ -507,11 +521,19 @@ html[data-size="compact"] {
 @media (min-width: 640px) {
   html[data-size="compact"] {
     --fs-display: 26px;
+    --fs-heading: 21px;
+    --fs-subheading: 17px;
   }
 }
 
 @utility text-display {
   font-size: var(--fs-display, 30px);
+}
+@utility text-heading {
+  font-size: var(--fs-heading, 24px);
+}
+@utility text-subheading {
+  font-size: var(--fs-subheading, 19px);
 }
 @utility text-title {
   font-size: var(--fs-title, 18px);

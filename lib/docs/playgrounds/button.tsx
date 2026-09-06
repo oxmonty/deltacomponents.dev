@@ -54,9 +54,19 @@ function buildButtonCode(o: {
   if (o.iconOnly) props.push(`aria-label="${o.label}"`);
   const child = o.iconOnly ? "<Plus />" : o.label;
 
+  // The import is part of the sample: it names the path the CLI writes the
+  // component to, which is the one thing a reader can't infer from the JSX.
+  const imports = [`import { Button } from "@/components/ui/button";`];
+  const icons = [
+    ...(o.iconOnly || o.leading ? ["Plus"] : []),
+    ...(!o.iconOnly && o.trailing ? ["ArrowRight"] : []),
+  ];
+  if (icons.length) imports.push(`import { ${icons.join(", ")} } from "lucide-react";`);
+  const header = `${imports.join("\n")}\n\n`;
+
   const oneLine = `<Button${props.length ? " " + props.join(" ") : ""}>${child}</Button>`;
-  if (oneLine.length <= 60) return oneLine;
-  return `<Button\n${props.map((p) => "  " + p).join("\n")}\n>\n  ${child}\n</Button>`;
+  if (oneLine.length <= 60) return header + oneLine;
+  return `${header}<Button\n${props.map((p) => "  " + p).join("\n")}\n>\n  ${child}\n</Button>`;
 }
 
 // A borderless text input styled to match the select rows.

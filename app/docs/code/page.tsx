@@ -4,7 +4,7 @@ import { Code } from "@/registry/default/code";
 import { PATRICK_DARK } from "@/lib/docs/code-themes";
 import { ComponentPreview } from "@/lib/docs/ComponentPreview";
 import { PropsTable, type PropDef } from "@/lib/docs/PropsTable";
-import { DocPage, DocSection, DocSubSection } from "@/lib/docs/DocPage";
+import { DocPage, DocSection } from "@/lib/docs/DocPage";
 
 const SAMPLE = `export function greet(name: string) {
   const greeting = \`Hello, \${name}!\`;
@@ -71,21 +71,24 @@ mod tests {
     }
 }`;
 
-const usageCode = `import { Code } from "./components";
+const usageCode = `import { Code } from "@/components/ui/code";
 
 <Code language="tsx" code={source} />`;
 
-const basicCode = `import { Code } from "./components";
+const demoCode = `import { Code } from "@/components/ui/code";
 
-<Code language="tsx" code={source} />`;
+<Code filename="greet.ts" language="typescript" code={source} />`;
 
-const filenameCode = `<Code
-  filename="greet.ts"
-  language="typescript"
-  code={source}
-/>`;
+const basicCode = `import { Code } from "@/components/ui/code";
 
-const packageManagerCode = `// A fenced npx command expands into all four managers.
+// No filename: the copy button floats over the block instead of sitting in
+// a header bar.
+<Code language="typescript" code={source} />`;
+
+
+const packageManagerCode = `import { Code } from "@/components/ui/code";
+
+// A fenced npx command expands into all four managers.
 const install = "\`\`\`npx\\nshadcn@latest add code\\n\`\`\`";
 
 <Code code={install} />
@@ -96,7 +99,9 @@ const install = "\`\`\`npx\\nshadcn@latest add code\\n\`\`\`";
   pnpm="pnpm add prism-react-renderer"
 />`;
 
-const customThemeCode = `
+const customThemeCode = `import { Code } from "@/components/ui/code";
+import type { PrismTheme } from "prism-react-renderer";
+
 // One fixed palette: the block stays dark on a light page.
 const patrickDark: PrismTheme = {
   plain: { color: "#eeeee3", backgroundColor: "#111111" },
@@ -110,7 +115,9 @@ const patrickDark: PrismTheme = {
 
 <Code filename="word_count.rs" language="rust" theme={patrickDark} code={source} />`;
 
-const expandableCode = `<Code
+const expandableCode = `import { Code } from "@/components/ui/code";
+
+<Code
   filename="hooks.ts"
   code={source}
   expandable
@@ -137,72 +144,68 @@ const codeBlockProps: PropDef[] = [
 
 export default function CodeDoc() {
   return (
-    <DocPage slug="code">
-      <DocSection title="Usage">
-        <ComponentPreview code={usageCode} padding="compact">
+    <DocPage
+      slug="code"
+      demo={
+        <ComponentPreview code={demoCode} padding="compact">
           <div className="w-full max-w-[520px]">
-            <Code language="tsx" code={SAMPLE} />
+            <Code filename="greet.ts" language="typescript" code={SAMPLE} />
+          </div>
+        </ComponentPreview>
+      }
+    >
+      <DocSection title="Usage">
+        <Code language="tsx" code={usageCode} />
+      </DocSection>
+
+      <DocSection title="Basic">
+        <ComponentPreview code={basicCode} padding="compact">
+          <div className="w-full max-w-[520px]">
+            <Code language="typescript" code={SAMPLE} />
           </div>
         </ComponentPreview>
       </DocSection>
 
-      <DocSection title="Examples">
-        <DocSubSection title="Basic">
-          <ComponentPreview code={basicCode} padding="compact">
-            <div className="w-full max-w-[520px]">
-              <Code language="tsx" code={SAMPLE} />
-            </div>
-          </ComponentPreview>
-        </DocSubSection>
-
-        <DocSubSection title="With a filename">
-          <ComponentPreview code={filenameCode} padding="compact">
-            <div className="w-full max-w-[520px]">
-              <Code filename="greet.ts" language="typescript" code={SAMPLE} />
-            </div>
-          </ComponentPreview>
-        </DocSubSection>
-
-        <DocSubSection title="Package managers">
-          <ComponentPreview code={packageManagerCode} padding="compact">
-            <div className="w-full max-w-[520px]">
-              <Code code={"```npx\nshadcn@latest add code\n```"} />
-            </div>
-          </ComponentPreview>
-        </DocSubSection>
-
-        <DocSubSection title="Custom theme">
-          <ComponentPreview code={customThemeCode} padding="compact">
-            <div className="w-full max-w-[520px]">
-              <Code
-                filename="word_count.rs"
-                language="rust"
-                theme={PATRICK_DARK}
-                code={RUST_SAMPLE}
-              />
-            </div>
-          </ComponentPreview>
-        </DocSubSection>
-
-        <DocSubSection title="Expandable">
-          <ComponentPreview code={expandableCode} padding="compact">
-            <div className="w-full max-w-[520px]">
-              <Code
-                filename="hooks.ts"
-                language="typescript"
-                code={LONG_SAMPLE}
-                expandable
-                collapsedHeight="10rem"
-              />
-            </div>
-          </ComponentPreview>
-        </DocSubSection>
+      <DocSection title="Package managers">
+        <ComponentPreview code={packageManagerCode} padding="compact">
+          <div className="w-full max-w-[520px]">
+            <Code code={"```npx\nshadcn@latest add code\n```"} />
+          </div>
+        </ComponentPreview>
       </DocSection>
 
+      <DocSection title="Custom theme">
+        <ComponentPreview code={customThemeCode} padding="compact">
+          <div className="w-full max-w-[520px]">
+            <Code
+              filename="word_count.rs"
+              language="rust"
+              theme={PATRICK_DARK}
+              code={RUST_SAMPLE}
+            />
+          </div>
+        </ComponentPreview>
+      </DocSection>
+
+      <DocSection title="Expandable">
+        <ComponentPreview code={expandableCode} padding="compact">
+          <div className="w-full max-w-[520px]">
+            <Code
+              filename="hooks.ts"
+              language="typescript"
+              code={LONG_SAMPLE}
+              expandable
+              collapsedHeight="10rem"
+            />
+          </div>
+        </ComponentPreview>
+      </DocSection>
+
+      {/* No sub-heading: this component exports one thing, so "Code" under
+          "API Reference" would name what the page is already about. Pages
+          with several exports (tabs, product-card) still split them. */}
       <DocSection title="API Reference">
-        <DocSubSection title="Code">
-          <PropsTable props={codeBlockProps} />
-        </DocSubSection>
+        <PropsTable props={codeBlockProps} />
       </DocSection>
     </DocPage>
   );

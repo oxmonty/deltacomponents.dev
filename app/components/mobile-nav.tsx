@@ -91,12 +91,19 @@ export function MobileNav() {
           align="start"
           sideOffset={12}
           alignOffset={-16}
+          // Base UI insets a popup from the viewport edge by default, which
+          // pushed the panel 5px in and left its text hanging off the
+          // hamburger's left edge. At 0 the panel is genuinely full-bleed, so
+          // the content's own px-6 lands exactly on the trigger's icon: 16px
+          // of header padding plus the 8px that centres a 16px glyph in a
+          // 32px button.
+          collisionPadding={0}
           className="z-50"
         >
           <Popover.Popup
             className={cn(
               "h-(--available-height) w-(--available-width) overflow-y-auto outline-none",
-              "border-border border-t bg-background/95 backdrop-blur",
+              "bg-background",
               "origin-top transition-[opacity,transform] duration-(--motion-moderate) ease-spring",
               "data-[instant]:duration-0",
               "data-[starting-style]:-translate-y-2 data-[starting-style]:opacity-0",

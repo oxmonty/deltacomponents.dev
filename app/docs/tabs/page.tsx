@@ -7,6 +7,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/registry/default/tabs";
+import { Code } from "@/registry/default/code";
 import { ComponentPreview } from "@/lib/docs/ComponentPreview";
 import { PropsTable, type PropDef } from "@/lib/docs/PropsTable";
 import { DocPage, DocSection, DocSubSection } from "@/lib/docs/DocPage";
@@ -61,7 +62,7 @@ function Triggers() {
   );
 }
 
-const usageCode = `import { Tabs, TabsContent, TabsList, TabsTrigger } from "./components";
+const usageCode = `import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 <Tabs defaultValue="account">
   <TabsList>
@@ -72,18 +73,26 @@ const usageCode = `import { Tabs, TabsContent, TabsList, TabsTrigger } from "./c
   <TabsContent value="password">Change your password here.</TabsContent>
 </Tabs>`;
 
-const basicCode = `import { Tabs, TabsContent, TabsList, TabsTrigger } from "./components";
+const demoCode = `import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 <Tabs defaultValue="account">
   <TabsList>
     <TabsTrigger value="account">Account</TabsTrigger>
     <TabsTrigger value="password">Password</TabsTrigger>
+    <TabsTrigger value="settings">Settings</TabsTrigger>
   </TabsList>
   <TabsContent value="account">Manage your account settings.</TabsContent>
   <TabsContent value="password">Change your password here.</TabsContent>
+  <TabsContent value="settings">Configure your preferences.</TabsContent>
 </Tabs>`;
 
-const underlineCode = `// An underline indicator instead of a filled pill, plus a hover wash that
+// The Basic demo is the two-tab minimum — the same source as Usage, rendered.
+const basicCode = usageCode;
+
+
+const underlineCode = `import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+// An underline indicator instead of a filled pill, plus a hover wash that
 // slides ahead of the click. Reads as navigation rather than as a control.
 <Tabs defaultValue="account" variant="underline">
   <TabsList>
@@ -94,13 +103,17 @@ const underlineCode = `// An underline indicator instead of a filled pill, plus 
   …
 </Tabs>`;
 
-const ghostCode = `// Same indicator, no tray behind it — for a tab strip that sits on a
+const ghostCode = `import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+// Same indicator, no tray behind it — for a tab strip that sits on a
 // surface which already has its own ground.
 <Tabs defaultValue="account" variant="ghost">
   …
 </Tabs>`;
 
-const concentricCode = `// Nested radii: the list takes the shape system's container radius, the
+const concentricCode = `import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+// Nested radii: the list takes the shape system's container radius, the
 // triggers its element radius. They differ by exactly the list's 4px padding
 // in both Rounded and Pill, so the corners stay concentric whichever the
 // reader picks in the properties panel.
@@ -108,19 +121,26 @@ const concentricCode = `// Nested radii: the list takes the shape system's conta
   …
 </Tabs>`;
 
-const sizesCode = `// sm / default / lg. The size drives the list height, the trigger padding,
+const sizesCode = `import { Tabs } from "@/components/ui/tabs";
+
+// sm / default / lg. The size drives the list height, the trigger padding,
 // and the underline's thickness together.
 <Tabs defaultValue="account" size="sm">…</Tabs>
 <Tabs defaultValue="account" size="default">…</Tabs>
 <Tabs defaultValue="account" size="lg">…</Tabs>`;
 
-const iconsCode = `<TabsList>
+const iconsCode = `import { TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { LockIcon, SettingsIcon, UserIcon } from "lucide-react";
+
+<TabsList>
   <TabsTrigger value="account" icon={<UserIcon />}>Account</TabsTrigger>
   <TabsTrigger value="password" icon={<LockIcon />}>Password</TabsTrigger>
   <TabsTrigger value="settings" icon={<SettingsIcon />}>Settings</TabsTrigger>
 </TabsList>`;
 
-const fadeInCode = `// Panels are static by default — for a heavy panel the fade is the thing
+const fadeInCode = `import { TabsContent } from "@/components/ui/tabs";
+
+// Panels are static by default — for a heavy panel the fade is the thing
 // that makes a tab switch feel slow. Opt in per panel when the content is
 // light enough to earn it.
 <TabsContent value="account" fadeIn>
@@ -170,95 +190,115 @@ const fromArrayProps: PropDef[] = [
 
 export default function TabsDoc() {
   return (
-    <DocPage slug="tabs">
-      <DocSection title="Usage">
-        <ComponentPreview code={usageCode} padding="compact">
+    <DocPage
+      slug="tabs"
+      demo={
+        <ComponentPreview code={demoCode} padding="compact">
           <Tabs defaultValue="account" className="w-fit max-w-full">
+            <Triggers />
+            <Panels />
+          </Tabs>
+        </ComponentPreview>
+      }
+    >
+      <DocSection title="Usage">
+        <Code language="tsx" code={usageCode} />
+      </DocSection>
+
+      <DocSection title="Basic">
+        <ComponentPreview code={basicCode}>
+          <Tabs defaultValue="account" className="w-fit max-w-full">
+            <TabsList>
+              <TabsTrigger value="account">Account</TabsTrigger>
+              <TabsTrigger value="password">Password</TabsTrigger>
+            </TabsList>
+            {/* Not the stacked `Panels` the rest of the page uses: an absolutely
+                positioned panel adds nothing to a `w-fit` parent's width, so
+                with only two triggers the strip stayed narrower than the copy
+                and the copy wrapped. In flow, the widest of the two sets the
+                block's width and the strip sits under it, left edges aligned. */}
+            <TabsContent value="account">
+              <p className="text-caption text-muted-foreground">
+                Manage your account settings.
+              </p>
+            </TabsContent>
+            <TabsContent value="password">
+              <p className="text-caption text-muted-foreground">
+                Change your password here.
+              </p>
+            </TabsContent>
+          </Tabs>
+        </ComponentPreview>
+      </DocSection>
+
+      <DocSection title="Underline">
+        <ComponentPreview code={underlineCode}>
+          <Tabs defaultValue="account" variant="underline" className="w-fit max-w-full">
             <Triggers />
             <Panels />
           </Tabs>
         </ComponentPreview>
       </DocSection>
 
-      <DocSection title="Examples">
-        <DocSubSection title="Basic">
-          <ComponentPreview code={basicCode}>
-            <Tabs defaultValue="account" className="w-fit max-w-full">
-              <Triggers />
-              <Panels />
-            </Tabs>
-          </ComponentPreview>
-        </DocSubSection>
+      <DocSection title="Ghost">
+        <ComponentPreview code={ghostCode}>
+          <Tabs defaultValue="account" variant="ghost" className="w-fit max-w-full">
+            <Triggers />
+            <Panels />
+          </Tabs>
+        </ComponentPreview>
+      </DocSection>
 
-        <DocSubSection title="Underline">
-          <ComponentPreview code={underlineCode}>
-            <Tabs defaultValue="account" variant="underline" className="w-fit max-w-full">
-              <Triggers />
-              <Panels />
-            </Tabs>
-          </ComponentPreview>
-        </DocSubSection>
+      <DocSection title="Sizes">
+        <ComponentPreview code={sizesCode} align="top" minHeightClass="min-h-[280px]">
+          {/* items-start, not centre: three strips of different widths centred
+              individually would step in and out on the left edge. */}
+          <div className="flex w-fit max-w-full flex-col items-start gap-7">
+            {(["sm", "default", "lg"] as const).map((size) => (
+              <Tabs key={size} defaultValue="account" size={size}>
+                <Triggers />
+                <Panels />
+              </Tabs>
+            ))}
+          </div>
+        </ComponentPreview>
+      </DocSection>
 
-        <DocSubSection title="Ghost">
-          <ComponentPreview code={ghostCode}>
-            <Tabs defaultValue="account" variant="ghost" className="w-fit max-w-full">
-              <Triggers />
-              <Panels />
-            </Tabs>
-          </ComponentPreview>
-        </DocSubSection>
+      <DocSection title="With Icons">
+        <ComponentPreview code={iconsCode}>
+          <Tabs defaultValue="account" className="w-fit max-w-full">
+            <TabsList>
+              <TabsTrigger value="account" icon={<UserIcon />}>
+                Account
+              </TabsTrigger>
+              <TabsTrigger value="password" icon={<LockIcon />}>
+                Password
+              </TabsTrigger>
+              <TabsTrigger value="settings" icon={<SettingsIcon />}>
+                Settings
+              </TabsTrigger>
+            </TabsList>
+            <Panels />
+          </Tabs>
+        </ComponentPreview>
+      </DocSection>
 
-        <DocSubSection title="Sizes">
-          <ComponentPreview code={sizesCode} align="top" minHeightClass="min-h-[280px]">
-            {/* items-start, not centre: three strips of different widths centred
-                individually would step in and out on the left edge. */}
-            <div className="flex w-fit max-w-full flex-col items-start gap-7">
-              {(["sm", "default", "lg"] as const).map((size) => (
-                <Tabs key={size} defaultValue="account" size={size}>
-                  <Triggers />
-                  <Panels />
-                </Tabs>
-              ))}
-            </div>
-          </ComponentPreview>
-        </DocSubSection>
+      <DocSection title="Concentric">
+        <ComponentPreview code={concentricCode}>
+          <Tabs defaultValue="account" concentric className="w-fit max-w-full">
+            <Triggers />
+            <Panels />
+          </Tabs>
+        </ComponentPreview>
+      </DocSection>
 
-        <DocSubSection title="With Icons">
-          <ComponentPreview code={iconsCode}>
-            <Tabs defaultValue="account" className="w-fit max-w-full">
-              <TabsList>
-                <TabsTrigger value="account" icon={<UserIcon />}>
-                  Account
-                </TabsTrigger>
-                <TabsTrigger value="password" icon={<LockIcon />}>
-                  Password
-                </TabsTrigger>
-                <TabsTrigger value="settings" icon={<SettingsIcon />}>
-                  Settings
-                </TabsTrigger>
-              </TabsList>
-              <Panels />
-            </Tabs>
-          </ComponentPreview>
-        </DocSubSection>
-
-        <DocSubSection title="Concentric">
-          <ComponentPreview code={concentricCode}>
-            <Tabs defaultValue="account" concentric className="w-fit max-w-full">
-              <Triggers />
-              <Panels />
-            </Tabs>
-          </ComponentPreview>
-        </DocSubSection>
-
-        <DocSubSection title="Animated panels">
-          <ComponentPreview code={fadeInCode}>
-            <Tabs defaultValue="account" variant="underline" className="w-fit max-w-full">
-              <Triggers />
-              <Panels fadeIn />
-            </Tabs>
-          </ComponentPreview>
-        </DocSubSection>
+      <DocSection title="Animated panels">
+        <ComponentPreview code={fadeInCode}>
+          <Tabs defaultValue="account" variant="underline" className="w-fit max-w-full">
+            <Triggers />
+            <Panels fadeIn />
+          </Tabs>
+        </ComponentPreview>
       </DocSection>
 
       <DocSection title="API Reference">

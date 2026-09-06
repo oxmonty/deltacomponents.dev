@@ -11,6 +11,7 @@ import {
   ProductCardSubtitle,
   ProductCardTitle,
 } from "@/registry/default/product-card";
+import { Code } from "@/registry/default/code";
 import { ComponentPreview } from "@/lib/docs/ComponentPreview";
 import { PropsTable, type PropDef } from "@/lib/docs/PropsTable";
 import { DocPage, DocSection, DocSubSection } from "@/lib/docs/DocPage";
@@ -36,7 +37,7 @@ const usageCode = `import {
   ProductCardMetric,
   ProductCardSubtitle,
   ProductCardTitle,
-} from "./components";
+} from "@/components/ui/product-card";
 
 <ProductCard>
   <ProductCardContent>
@@ -48,6 +49,9 @@ const usageCode = `import {
   </ProductCardContent>
 </ProductCard>`;
 
+// What the demo at the top of the page and the Basic section both render:
+// Usage leaves the image out to keep the shape of the composition visible,
+// and a real card almost always has one.
 const basicCode = `import {
   ProductCard,
   ProductCardContent,
@@ -56,7 +60,7 @@ const basicCode = `import {
   ProductCardMetric,
   ProductCardSubtitle,
   ProductCardTitle,
-} from "./components";
+} from "@/components/ui/product-card";
 
 <ProductCard>
   <ProductCardImage src="/twemco-clock.png" alt="Twemco Clock" />
@@ -69,7 +73,18 @@ const basicCode = `import {
   </ProductCardContent>
 </ProductCard>`;
 
-const innerCode = `// The "inner" variant overlays the content on the image — for
+
+const innerCode = `import {
+  ProductCard,
+  ProductCardContent,
+  ProductCardHeader,
+  ProductCardImage,
+  ProductCardMetric,
+  ProductCardSubtitle,
+  ProductCardTitle,
+} from "@/components/ui/product-card";
+
+// The "inner" variant overlays the content on the image — for
 // editorial rows where the caption should sit on the artwork.
 <ProductCard variant="inner">
   <ProductCardImage src="/twemco-clock.png" alt="Twemco Clock">
@@ -83,7 +98,13 @@ const innerCode = `// The "inner" variant overlays the content on the image — 
   </ProductCardImage>
 </ProductCard>`;
 
-const badgeCode = `// The badge stops propagation, so clicking it never fires onCardClick.
+const badgeCode = `import {
+  ProductCard,
+  ProductCardBadge,
+  ProductCardImage,
+} from "@/components/ui/product-card";
+
+// The badge stops propagation, so clicking it never fires onCardClick.
 const [wishlisted, setWishlisted] = useState(false);
 
 <ProductCard onCardClick={() => open(product)}>
@@ -100,7 +121,17 @@ const [wishlisted, setWishlisted] = useState(false);
   {/* … */}
 </ProductCard>`;
 
-const gridCode = `// A plain CSS grid of cards. \`max-w-none\` lifts the size cap so each card
+const gridCode = `import {
+  ProductCard,
+  ProductCardContent,
+  ProductCardHeader,
+  ProductCardImage,
+  ProductCardMetric,
+  ProductCardSubtitle,
+  ProductCardTitle,
+} from "@/components/ui/product-card";
+
+// A plain CSS grid of cards. \`max-w-none\` lifts the size cap so each card
 // fills its own cell, and square corners let the artwork read as printed.
 <div className="grid grid-cols-2 gap-6 sm:grid-cols-3">
   {essays.map((essay) => (
@@ -118,7 +149,17 @@ const gridCode = `// A plain CSS grid of cards. \`max-w-none\` lifts the size ca
   ))}
 </div>`;
 
-const sizeCode = `// One prop scales the whole card: it caps the width AND scales the image
+const sizeCode = `import {
+  ProductCard,
+  ProductCardContent,
+  ProductCardHeader,
+  ProductCardImage,
+  ProductCardMetric,
+  ProductCardSubtitle,
+  ProductCardTitle,
+} from "@/components/ui/product-card";
+
+// One prop scales the whole card: it caps the width AND scales the image
 // padding, the type, and the badge inset. \`w-full\` underneath keeps it from
 // overflowing a narrower box, so it still fills a grid cell.
 const [size, setSize] = useState<"sm" | "default" | "lg">("lg");
@@ -270,51 +311,46 @@ function Sizes() {
 
 export default function ProductCardDoc() {
   return (
-    <DocPage slug="product-card">
+    <DocPage
+      slug="product-card"
+      demo={
+        <ComponentPreview code={basicCode} padding="compact">
+          <Basic />
+        </ComponentPreview>
+      }
+    >
       <DocSection title="Usage">
-        <ComponentPreview code={usageCode} padding="compact">
-          <ProductCard>
-            <ProductCardContent>
-              <ProductCardHeader>
-                <ProductCardTitle>Twemco Clock</ProductCardTitle>
-                <ProductCardSubtitle>Clock</ProductCardSubtitle>
-              </ProductCardHeader>
-              <ProductCardMetric>$219</ProductCardMetric>
-            </ProductCardContent>
-          </ProductCard>
+        <Code language="tsx" code={usageCode} />
+      </DocSection>
+
+      <DocSection title="Basic">
+        <ComponentPreview code={basicCode} padding="compact">
+          <Basic />
         </ComponentPreview>
       </DocSection>
 
-      <DocSection title="Examples">
-        <DocSubSection title="Basic">
-          <ComponentPreview code={basicCode} padding="compact">
-            <Basic />
-          </ComponentPreview>
-        </DocSubSection>
+      <DocSection title="Inner layout">
+        <ComponentPreview code={innerCode} padding="compact">
+          <Inner />
+        </ComponentPreview>
+      </DocSection>
 
-        <DocSubSection title="Inner layout">
-          <ComponentPreview code={innerCode} padding="compact">
-            <Inner />
-          </ComponentPreview>
-        </DocSubSection>
+      <DocSection title="Sizes">
+        <ComponentPreview code={sizeCode} padding="compact">
+          <Sizes />
+        </ComponentPreview>
+      </DocSection>
 
-        <DocSubSection title="Sizes">
-          <ComponentPreview code={sizeCode} padding="compact">
-            <Sizes />
-          </ComponentPreview>
-        </DocSubSection>
+      <DocSection title="Badge">
+        <ComponentPreview code={badgeCode} padding="compact">
+          <WithBadge />
+        </ComponentPreview>
+      </DocSection>
 
-        <DocSubSection title="Badge">
-          <ComponentPreview code={badgeCode} padding="compact">
-            <WithBadge />
-          </ComponentPreview>
-        </DocSubSection>
-
-        <DocSubSection title="Grid">
-          <ComponentPreview code={gridCode} padding="compact">
-            <Grid />
-          </ComponentPreview>
-        </DocSubSection>
+      <DocSection title="Grid">
+        <ComponentPreview code={gridCode} padding="compact">
+          <Grid />
+        </ComponentPreview>
       </DocSection>
 
       <DocSection title="API Reference">
