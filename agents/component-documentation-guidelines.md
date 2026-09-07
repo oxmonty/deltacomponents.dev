@@ -6,7 +6,7 @@ Checklist and conventions for documenting every new component in this project. F
 
 ## Checklist for a New Component
 
-### 1. Component Source (`registry/default/<component-name>.tsx`)
+### 1. Component Source (`registry/ui/<component-name>.tsx`)
 
 - [ ] `"use client"` directive at the top
 - [ ] TypeScript props interface extending native HTML attributes where applicable
@@ -20,12 +20,12 @@ Checklist and conventions for documenting every new component in this project. F
   aliases on publish, from `registry.json`'s targets and `components.json`'s
   aliases, so `@/lib/utils` written here would simply fail to resolve:
   ```ts
-  import { cn } from "@/registry/default/lib/utils";
-  import { fontWeights } from "@/registry/default/lib/font-weight";
-  import { useShape } from "@/registry/default/lib/shape-context";
-  import { useIcon } from "@/registry/default/lib/icon-context";
-  import type { IconComponent } from "@/registry/default/lib/icon-context";
-  import { useProximityHover } from "@/registry/default/hooks/use-proximity-hover";
+  import { cn } from "@/registry/lib/utils";
+  import { fontWeights } from "@/registry/lib/font-weight";
+  import { useShape } from "@/registry/lib/shape-context";
+  import { useIcon } from "@/registry/lib/icon-context";
+  import type { IconComponent } from "@/registry/lib/icon-context";
+  import { useProximityHover } from "@/lib/hooks/use-proximity-hover";
   ```
 
 ### 2. Registry Entry (`registry.json`)
@@ -41,7 +41,7 @@ Add an item to the `items` array:
   "dependencies": ["class-variance-authority"], // npm packages (only those not already in the project)
   "registryDependencies": ["utils"],   // other registry items this depends on
   "files": [
-    { "path": "registry/default/component-name.tsx", "type": "registry:ui" }
+    { "path": "registry/ui/component-name.tsx", "type": "registry:ui" }
     // add sub-component files here if any (e.g., menu-item.tsx for dropdown)
   ]
 }
@@ -130,7 +130,7 @@ import { ComponentName } from "@/components/ui/component-name";
 `Steps` are in scope without importing them — only the props file needs an
 import.
 
-A demo imports from this repo's real path (`@/registry/default/...`); the build
+A demo imports from this repo's real path (`@/registry/ui/...`); the build
 rewrites the *displayed* import to the consumer's `@/components/ui/...` using
 the `target` fields in `registry.json`. Fenced blocks are hand-written, so they
 use the consumer's path directly.
@@ -179,7 +179,7 @@ When text gets heavier on an interactive state (selected, checked, active, open,
 ```
 
 **Rules:**
-- Weight comes from `fontVariationSettings` + the `fontWeights` tokens (`@/registry/default/lib/font-weight`), **never** `font-weight` / `fontWeight` — the design uses Inter's variable `wght` axis.
+- Weight comes from `fontVariationSettings` + the `fontWeights` tokens (`@/registry/lib/font-weight`), **never** `font-weight` / `fontWeight` — the design uses Inter's variable `wght` axis.
 - Each `fontWeights` token also pairs in an optical-size (`opsz`) value (e.g. `"'wght' 550, 'opsz' 20"`). This is intentional, **not** a stray axis: a heavier `wght` widens the text and a tighter (higher) `opsz` pulls it back, so animating between weights keeps the advance width nearly constant — the closed→bold delta drops from ~3px to ~0.6px (≈±0.5%), centered on zero. A sub-pixel residual remains because a single opsz value can't zero every string (glyph mixes scale differently); the ghost span still pins the container, so nothing reflows regardless. `font-variation-settings` interpolates `opsz` alongside `wght` during the transition. The explicit `opsz` overrides `font-optical-sizing: auto` on purpose — weight, not font-size, drives optical size here. Always read these from the tokens; never hand-write a bare `'wght' N` string.
 - The ghost span is always set to the **heaviest** weight the visible span can reach, carries `invisible` + `aria-hidden="true"`, and renders the identical content.
 - Both spans share the cell via `col-start-1 row-start-1` inside an `inline-grid` (or `grid`/`inline-grid flex-1` when it must fill a row).
@@ -235,15 +235,15 @@ everywhere else.
 ### Imports
 
 - Always use `@/` path aliases, never relative paths like `../../`
-- Component: `@/registry/default/<component-name>`
+- Component: `@/registry/ui/<component-name>`
 - Doc utilities: `@/lib/docs/ComponentPreview`, `@/lib/docs/PropsTable`, `@/lib/docs/DocPage`
-- Icons: `@/registry/default/lib/icon-context` (`useIcon`, `useIcons` hooks, `IconComponent` type)
-  - Components with internal icons: `import { useIcon } from "@/registry/default/lib/icon-context";`
+- Icons: `@/registry/lib/icon-context` (`useIcon`, `useIcons` hooks, `IconComponent` type)
+  - Components with internal icons: `import { useIcon } from "@/registry/lib/icon-context";`
   - Components accepting icon props: `import type { IconComponent } from "@/lib/icon-context";`
   - Doc pages: call `useIcon("icon-name")` inside the component function for each icon needed
   - Icon prop type is `IconComponent`, not `LucideIcon`
   - **Adding a new icon name**: add it to `IconName` + `defaultIcons` (Lucide) in
-    `registry/default/lib/icon-context.tsx`, **and** to all four maps in the docs-only
+    `registry/ui/lib/icon-context.tsx`, **and** to all four maps in the docs-only
     `lib/docs/icon-map.tsx` (Tabler, Phosphor, HugeIcons, Untitled UI) so the site's
     library switcher keeps working
   - **Installed vs docs-only**: only the Lucide slot system ships to consumers
@@ -313,7 +313,7 @@ interface PropDef {
 ## Quick Reference: File Locations
 
 ```
-registry/default/
+registry/ui/
   component-name.tsx          ← component source
   lib/utils.ts                ← shared utilities
   lib/motion.ts               ← duration tiers + easing, as CSS custom properties

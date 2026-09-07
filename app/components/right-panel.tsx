@@ -1,31 +1,31 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { cn } from "@/registry/default/lib/utils";
-import { fontWeights } from "@/registry/default/lib/font-weight";
-import { Button } from "@/registry/base/button";
+import { cn } from "@/registry/lib/utils";
+import { fontWeights } from "@/registry/lib/font-weight";
+import { Button } from "@/registry/ui/button";
 import { NativeSelect, NativeSelectOption } from "@/lib/docs/native-select";
 import {
   useShape,
   useShapeContext,
   type ShapeVariant,
-} from "@/registry/default/lib/shape-context";
-import { useSizeContext, type SizeVariant } from "@/registry/default/lib/size-context";
-import { useThemeContext, type Theme } from "@/registry/default/lib/theme-context";
-import { useIcon } from "@/registry/default/lib/icon-context";
+} from "@/registry/lib/shape-context";
+import { useSizeContext, type SizeVariant } from "@/registry/lib/size-context";
+import { useThemeContext, type Theme } from "@/lib/theme-context";
+import { useIcon } from "@/registry/lib/icon-context";
 import {
   useIconLibrary,
   iconLibraryOrder,
   iconLibraryLabels,
   type IconLibrary,
 } from "@/lib/docs/icon-playground";
-import { SurfaceProvider } from "@/registry/default/lib/surface-context";
+import { SurfaceProvider } from "@/registry/lib/surface-context";
 import { RightRailTarget } from "@/lib/right-rail";
 import { DocsToc } from "@/lib/docs/DocsToc";
 import { AuthorCredit } from "@/app/components/author-credit";
 import { showShortcutToast } from "@/lib/docs/settings-toast";
-import { Tooltip } from "@/registry/base/tooltip";
-import { ScrollArea } from "@/registry/base/scroll-area";
+import { Tooltip } from "@/registry/ui/tooltip";
+import { ScrollArea } from "@/app/components/ui/scroll-area";
 import { site } from "@/lib/config";
 
 const REPO = site.repo;

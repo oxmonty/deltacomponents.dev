@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { usePathname } from "next/navigation";
-import { cn } from "@/registry/default/lib/utils";
+import { cn } from "@/registry/lib/utils";
 import { TOC } from "@/lib/docs/toc.generated";
 
 /** Whichever heading the reader is currently under. The bottom 80% of the

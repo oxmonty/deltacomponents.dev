@@ -1,6 +1,6 @@
 import { type ReactNode } from "react";
-import { fontWeights } from "@/registry/default/lib/font-weight";
-import { cn } from "@/registry/default/lib/utils";
+import { fontWeights } from "@/registry/lib/font-weight";
+import { cn } from "@/registry/lib/utils";
 
 /**
  * A numbered procedure, in www's shape: a rule down the left joining every

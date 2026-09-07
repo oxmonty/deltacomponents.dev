@@ -10,7 +10,7 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-} from "@/registry/base/sidebar";
+} from "@/app/components/ui/sidebar";
 import { componentList, labelOf, sectionList } from "@/lib/docs/components";
 
 interface NavEntry {

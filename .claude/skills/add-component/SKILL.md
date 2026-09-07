@@ -11,14 +11,17 @@ it documented; 7 is what CI checks.
 If you only need the *shape of the doc page*, read the `component-docs` skill
 instead — this file sequences the whole job and links out for the mechanics.
 
-## 1. Pick a tier and write the source
+## 1. Write the source
 
-| Directory | For |
-| --- | --- |
-| `registry/base/` | Primitive-backed — wraps Base UI (`@base-ui/react`) |
-| `registry/default/` | Primitive-agnostic — owns its own behaviour |
+| Directory | For | Lands at |
+| --- | --- | --- |
+| `registry/ui/` | The component | `components/ui/` |
+| `registry/lib/` | A module it needs | `lib/` |
 
-Import siblings by their real path (`@/registry/default/...`). The registry
+There is no base/default split: Base UI is the default here, as it now is in
+shadcn, so wrapping it is not a category worth naming.
+
+Import siblings by their real path (`@/registry/ui/...`, `@/registry/lib/...`). The registry
 build rewrites those to the consumer's `@/components/ui/...` on publish, so
 never hand-write a consumer path in source — it would not resolve here.
 
@@ -45,7 +48,7 @@ In `registry.json`, append to `items`:
   "registryDependencies": ["utils", "shape-context"],
   "files": [
     {
-      "path": "registry/default/component-name.tsx",
+      "path": "registry/ui/component-name.tsx",
       "type": "registry:ui",
       "target": "components/ui/component-name.tsx"
     }
@@ -130,8 +133,8 @@ make check   # lint, typecheck, test
 
 ## Checklist
 
-- [ ] Source in `registry/base/` or `registry/default/`, importing siblings by
-      their real `@/registry/...` path.
+- [ ] Source in `registry/ui/`, importing siblings by their real
+      `@/registry/...` path.
 - [ ] `registry.json` entry with `dependencies`, `registryDependencies` and a
       `target` on every file.
 - [ ] `componentList` entry, positioned where it should read in the sidebar.

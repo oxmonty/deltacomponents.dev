@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useThemeContext } from "@/registry/default/lib/theme-context";
+import { useThemeContext } from "@/lib/theme-context";
 
 /**
  * Keeps `<meta name="theme-color">` on the resolved theme's background.

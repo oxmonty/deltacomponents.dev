@@ -1,7 +1,7 @@
 "use client";
 
-import { Button } from "@/registry/base/button";
-import { useThemeContext } from "@/registry/default/lib/theme-context";
+import { Button } from "@/registry/ui/button";
+import { useThemeContext } from "@/lib/theme-context";
 
 /** shadcn's half-filled-circle mark. Theme-agnostic on purpose: resolvedTheme
  *  is always "light" on the server and the first client render (see

@@ -61,8 +61,8 @@ Three cases, in order of preference.
 inline style keyed on a `data-*` attribute and let the browser interpolate.
 Nothing else is needed.
 
-**2. A Base UI primitive renders it** — anything in `registry/base/` built on
-`@base-ui/react`: Popover, Menu, Tooltip, Dialog, Drawer. Base UI keeps
+**2. A Base UI primitive renders it** — anything built on `@base-ui/react`:
+Popover, Menu, Tooltip, Dialog, Drawer. Base UI keeps
 the element mounted for the duration of a CSS transition and unmounts it when
 the transition ends, so it replaces `AnimatePresence` outright:
 

@@ -4,8 +4,8 @@ import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Popover } from "@base-ui/react/popover";
-import { cn } from "@/registry/default/lib/utils";
-import { fontWeights } from "@/registry/default/lib/font-weight";
+import { cn } from "@/registry/lib/utils";
+import { fontWeights } from "@/registry/lib/font-weight";
 import { componentList, labelOf, sectionList } from "@/lib/docs/components";
 import { StatusDot } from "@/app/components/sidebar";
 

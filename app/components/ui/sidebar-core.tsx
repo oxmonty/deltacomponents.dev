@@ -21,16 +21,16 @@ import {
   type HTMLAttributes,
   type Ref,
 } from "react";
-import { cn } from "@/registry/default/lib/utils";
-import { motionHoldMs } from "@/registry/default/lib/motion";
-import { fontWeights } from "@/registry/default/lib/font-weight";
-import { useShape } from "@/registry/default/lib/shape-context";
-import { useSize, useSizeVariant } from "@/registry/default/lib/size-context";
-import { useIcon } from "@/registry/default/lib/icon-context";
-import { useSurface, SurfaceProvider } from "@/registry/default/lib/surface-context";
-import { surfaceClasses } from "@/registry/default/lib/surface-classes";
-import { Button, type ButtonProps } from "@/registry/base/button";
-import { Tooltip } from "@/registry/base/tooltip";
+import { cn } from "@/registry/lib/utils";
+import { motionHoldMs } from "@/registry/lib/motion";
+import { fontWeights } from "@/registry/lib/font-weight";
+import { useShape } from "@/registry/lib/shape-context";
+import { useSize, useSizeVariant } from "@/registry/lib/size-context";
+import { useIcon } from "@/registry/lib/icon-context";
+import { useSurface, SurfaceProvider } from "@/registry/lib/surface-context";
+import { surfaceClasses } from "@/registry/lib/surface-classes";
+import { Button, type ButtonProps } from "@/registry/ui/button";
+import { Tooltip } from "@/registry/ui/tooltip";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 

@@ -1,5 +1,5 @@
-import { fontWeights } from "@/registry/default/lib/font-weight";
-import { ScrollArea } from "@/registry/base/scroll-area";
+import { fontWeights } from "@/registry/lib/font-weight";
+import { ScrollArea } from "@/app/components/ui/scroll-area";
 
 /** Renders `backtick` spans in a description as real inline code. Descriptions
  *  are plain strings, not markdown, so without this the backticks show up

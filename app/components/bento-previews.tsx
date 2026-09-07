@@ -1,15 +1,15 @@
 "use client";
 
-import { Button } from "@/registry/base/button";
-import { Tooltip } from "@/registry/base/tooltip";
-import { Code } from "@/registry/default/code";
+import { Button } from "@/registry/ui/button";
+import { Tooltip } from "@/registry/ui/tooltip";
+import { Code } from "@/registry/ui/code";
 import { PATRICK_DARK } from "@/lib/docs/code-themes";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@/registry/default/tabs";
+} from "@/registry/ui/tabs";
 import {
   ProductCard,
   ProductCardContent,
@@ -18,7 +18,7 @@ import {
   ProductCardMetric,
   ProductCardSubtitle,
   ProductCardTitle,
-} from "@/registry/default/product-card";
+} from "@/registry/ui/product-card";
 import { BUTTON_ITEMS, TOOLTIP_COPY, TABS_ITEMS } from "@/app/components/demo-data";
 
 function ButtonPreview() {

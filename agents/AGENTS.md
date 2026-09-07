@@ -19,11 +19,18 @@ Start here, then read the guide that matches what you are about to change.
   those declarations (see the comment at the top of section 1).
 - **Motion is CSS.** Three duration tiers and one easing, as custom properties.
   There is no animation library in this repo and nothing may add one.
-- **Two registry tiers.** `registry/base/` is primitive-backed (Base UI),
-  `registry/default/` is primitive-agnostic. A new component goes in one of
-  them, gets an entry in `registry.json`, a slug in `lib/docs/components.ts`, a
-  preview in `app/components/bento-previews.tsx`, and a page under
-  `content/docs/`. See the add-component skill for the full order.
+- **`registry/` is exactly what the site documents.** Its layout mirrors where
+  the CLI files things: `registry/ui/` → the consumer's `components/ui/`,
+  `registry/lib/` → their `lib/`. Everything in it is either a documented
+  component or a module one of them installs — nothing else belongs there.
+  Base UI is the default and needs no separate tier.
+- **A new component** goes in `registry/ui/`, gets an entry in `registry.json`,
+  a slug in `lib/docs/components.ts`, a preview in
+  `app/components/bento-previews.tsx`, and a page under `content/docs/`. See
+  the add-component skill for the full order.
+- **The site's own components live in `app/components/`** — `ui/` for the
+  primitives it uses (sidebar, scroll-area, badge), the rest for page chrome.
+  They are not published and need no registry entry.
 - **Doc pages are MDX.** `content/docs/<slug>.mdx` for the body,
   `content/demos/<slug>/` for its demos, `content/docs/<slug>.props.ts` for the
   prop tables. One route renders them all — there is no page component to write.

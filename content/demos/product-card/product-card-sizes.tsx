@@ -9,7 +9,7 @@ import {
   ProductCardMetric,
   ProductCardSubtitle,
   ProductCardTitle,
-} from "@/registry/default/product-card";
+} from "@/registry/ui/product-card";
 
 export default function ProductCardSizes() {
   const [size, setSize] = useState<"sm" | "default" | "lg">("lg");

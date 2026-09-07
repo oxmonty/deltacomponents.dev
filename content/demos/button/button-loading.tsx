@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useIcon } from "@/registry/default/lib/icon-context";
-import { Button } from "@/registry/base/button";
+import { useIcon } from "@/registry/lib/icon-context";
+import { Button } from "@/registry/ui/button";
 
 export default function ButtonLoading() {
   const Loader = useIcon("loader");

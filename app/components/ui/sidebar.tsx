@@ -9,17 +9,17 @@ import {
   type HTMLAttributes,
 } from "react";
 import { Dialog as DialogPrimitive } from "@base-ui/react/dialog";
-import { cn } from "@/registry/default/lib/utils";
-import { useSurface, SurfaceProvider } from "@/registry/default/lib/surface-context";
-import { surfaceClasses } from "@/registry/default/lib/surface-classes";
-import { ScrollArea } from "@/registry/base/scroll-area";
+import { cn } from "@/registry/lib/utils";
+import { useSurface, SurfaceProvider } from "@/registry/lib/surface-context";
+import { surfaceClasses } from "@/registry/lib/surface-classes";
+import { ScrollArea } from "@/app/components/ui/scroll-area";
 import {
   useSidebar,
   SidebarShell,
   type SidebarSide,
   type SidebarVariant,
   type SidebarCollapsible,
-} from "@/registry/default/sidebar-core";
+} from "@/app/components/ui/sidebar-core";
 
 // ─── Mobile sheet ────────────────────────────────────────────────────────────
 //
@@ -246,7 +246,7 @@ export {
   SIDEBAR_KEYBOARD_SHORTCUT_RIGHT,
   SIDEBAR_MIN_WIDTH,
   SIDEBAR_MAX_WIDTH,
-} from "@/registry/default/sidebar-core";
+} from "@/app/components/ui/sidebar-core";
 export type {
   SidebarContextValue,
   SidebarProviderProps,
@@ -260,7 +260,7 @@ export type {
   SidebarSide,
   SidebarVariant,
   SidebarCollapsible,
-} from "@/registry/default/sidebar-core";
+} from "@/app/components/ui/sidebar-core";
 export {
   SidebarMenu,
   SidebarMenuItem,
@@ -273,7 +273,7 @@ export {
   SidebarMenuSubItem,
   SidebarMenuSubButton,
   sidebarMenuButtonVariants,
-} from "@/registry/default/sidebar-menu";
+} from "@/app/components/ui/sidebar-menu";
 export type {
   SidebarMenuProps,
   SidebarMenuItemProps,
@@ -284,4 +284,4 @@ export type {
   SidebarMenuSubProps,
   SidebarMenuSubItemProps,
   SidebarMenuSubButtonProps,
-} from "@/registry/default/sidebar-menu";
+} from "@/app/components/ui/sidebar-menu";

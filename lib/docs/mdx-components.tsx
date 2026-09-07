@@ -1,14 +1,14 @@
 import type { MDXComponents } from "mdx/types";
 import type { ComponentProps } from "react";
 
-import { Code } from "@/registry/default/code";
+import { Code } from "@/registry/ui/code";
 import { ComponentPreview } from "@/lib/docs/ComponentPreview";
 import { AnchoredHeading, DocProse } from "@/lib/docs/DocPage";
 import { InstallTabs } from "@/lib/docs/InstallTabs";
 import { Playground } from "@/lib/docs/PlaygroundSection";
 import { PropsTable } from "@/lib/docs/PropsTable";
 import { Step, Steps } from "@/lib/docs/Steps";
-import { cn } from "@/registry/default/lib/utils";
+import { cn } from "@/registry/lib/utils";
 
 /** Spacing for a page's MDX body.
  *

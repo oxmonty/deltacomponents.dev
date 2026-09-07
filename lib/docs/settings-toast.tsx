@@ -3,11 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import { Toaster, toast } from "sonner";
 
-import { cn } from "@/registry/default/lib/utils";
-import { fontWeights } from "@/registry/default/lib/font-weight";
-import { useShape, useShapeContext } from "@/registry/default/lib/shape-context";
-import { useSizeContext } from "@/registry/default/lib/size-context";
-import { useThemeContext } from "@/registry/default/lib/theme-context";
+import { cn } from "@/registry/lib/utils";
+import { fontWeights } from "@/registry/lib/font-weight";
+import { useShape, useShapeContext } from "@/registry/lib/shape-context";
+import { useSizeContext } from "@/registry/lib/size-context";
+import { useThemeContext } from "@/lib/theme-context";
 import { useIconLibrary, iconLibraryLabels } from "@/lib/docs/icon-playground";
 
 /** Which right-panel setting each global shortcut key drives. */

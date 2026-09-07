@@ -10,7 +10,7 @@ import {
   type ReactNode,
 } from "react";
 
-import { IconProvider } from "@/registry/default/lib/icon-context";
+import { IconProvider } from "@/registry/lib/icon-context";
 import { iconMap, iconLibraryOrder, type IconLibrary } from "@/lib/docs/icon-map";
 
 export { iconLibraryOrder, iconLibraryLabels, type IconLibrary } from "@/lib/docs/icon-map";

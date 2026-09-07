@@ -1,7 +1,7 @@
 "use client";
 
-import { Tooltip } from "@/registry/base/tooltip";
-import { Button } from "@/registry/base/button";
+import { Tooltip } from "@/registry/ui/tooltip";
+import { Button } from "@/registry/ui/button";
 
 export default function TooltipDelay() {
   return (

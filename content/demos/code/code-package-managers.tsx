@@ -1,6 +1,6 @@
 "use client";
 
-import { Code } from "@/registry/default/code";
+import { Code } from "@/registry/ui/code";
 
 export default function CodePackageManagers() {
   return (

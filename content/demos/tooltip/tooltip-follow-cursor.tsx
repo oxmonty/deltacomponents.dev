@@ -1,6 +1,6 @@
 "use client";
 
-import { Tooltip } from "@/registry/base/tooltip";
+import { Tooltip } from "@/registry/ui/tooltip";
 
 export default function TooltipFollowCursor() {
   return (

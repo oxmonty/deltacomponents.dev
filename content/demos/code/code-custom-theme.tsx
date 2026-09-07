@@ -1,6 +1,6 @@
 "use client";
 
-import { Code } from "@/registry/default/code";
+import { Code } from "@/registry/ui/code";
 import { PATRICK_DARK } from "@/lib/docs/code-themes";
 
 const RUST_SAMPLE = `use std::collections::HashMap;

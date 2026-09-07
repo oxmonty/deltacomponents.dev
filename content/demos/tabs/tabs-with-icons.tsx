@@ -1,7 +1,7 @@
 "use client";
 
 import { LockIcon, SettingsIcon, UserIcon } from "lucide-react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/registry/default/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/registry/ui/tabs";
 
 const PANELS = [
   { value: "account", copy: "Manage your account settings." },

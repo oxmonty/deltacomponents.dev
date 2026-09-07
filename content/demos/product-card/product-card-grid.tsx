@@ -7,7 +7,7 @@ import {
   ProductCardImage,
   ProductCardSubtitle,
   ProductCardTitle,
-} from "@/registry/default/product-card";
+} from "@/registry/ui/product-card";
 
 /** The essay row — the images ship with the repo, and each card links out to
  *  the essay it is a screenshot of. */

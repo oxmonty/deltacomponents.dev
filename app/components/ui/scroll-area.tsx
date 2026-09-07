@@ -15,9 +15,9 @@ import {
   type ComponentRef,
 } from "react";
 import { ScrollArea as ScrollAreaPrimitive } from "@base-ui/react/scroll-area";
-import { cn } from "@/registry/default/lib/utils";
-import { useShape } from "@/registry/default/lib/shape-context";
-import { useTouchPrimary } from "@/registry/default/hooks/use-touch-primary";
+import { cn } from "@/registry/lib/utils";
+import { useShape } from "@/registry/lib/shape-context";
+import { useTouchPrimary } from "@/lib/hooks/use-touch-primary";
 
 // On touch-primary devices the Base UI machinery is skipped entirely in
 // favour of native overflow scrolling (better physics, momentum,

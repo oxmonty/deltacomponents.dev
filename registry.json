@@ -133,7 +133,7 @@
       ],
       "files": [
         {
-          "path": "registry/default/lib/utils.ts",
+          "path": "registry/lib/utils.ts",
           "type": "registry:lib"
         }
       ],
@@ -177,7 +177,7 @@
       },
       "files": [
         {
-          "path": "registry/default/lib/motion.ts",
+          "path": "registry/lib/motion.ts",
           "type": "registry:lib"
         }
       ],
@@ -192,7 +192,7 @@
       "description": "Variable font weight tokens for Inter (normal, medium, semibold, bold) using font-variation-settings.",
       "files": [
         {
-          "path": "registry/default/lib/font-weight.ts",
+          "path": "registry/lib/font-weight.ts",
           "type": "registry:lib"
         }
       ],
@@ -207,7 +207,7 @@
       "description": "React context that tracks the current substrate elevation level. Elevated components (Dropdown, Select, etc.) read it via useSurface() and render at substrate + offset, then re-provide a new substrate so further nesting elevates further.",
       "files": [
         {
-          "path": "registry/default/lib/surface-context.tsx",
+          "path": "registry/lib/surface-context.tsx",
           "type": "registry:lib"
         }
       ],
@@ -222,48 +222,12 @@
       "description": "Static lookup tables for bg-surface-N and shadow-surface-N utilities. Required because Tailwind v4 cannot detect template-literal class names.",
       "files": [
         {
-          "path": "registry/default/lib/surface-classes.ts",
+          "path": "registry/lib/surface-classes.ts",
           "type": "registry:lib"
         }
       ],
       "registryDependencies": [
         "surfaces"
-      ],
-      "categories": [
-        "lib"
-      ]
-    },
-    {
-      "name": "elevated",
-      "type": "registry:lib",
-      "title": "Elevated",
-      "description": "Elevation primitive. Wraps the read-substrate / compute-level / apply-classes / re-provide-context pattern into one component. Pulls in the surface theme tokens, substrate context, and class lookup so a single install drops in the whole elevation system.",
-      "registryDependencies": [
-        "surfaces",
-        "utils",
-        "surface-context",
-        "surface-classes"
-      ],
-      "files": [
-        {
-          "path": "registry/default/lib/elevated.tsx",
-          "type": "registry:lib"
-        }
-      ],
-      "categories": [
-        "lib"
-      ]
-    },
-    {
-      "name": "theme-context",
-      "type": "registry:lib",
-      "title": "Theme Context",
-      "description": "React context provider for system/light/dark theme switching, with a `T` shortcut, a transition guard for the colour cross-fade, and a `resolvedTheme` that settles \"system\" against the OS preference.",
-      "files": [
-        {
-          "path": "registry/default/lib/theme-context.tsx",
-          "type": "registry:lib"
-        }
       ],
       "categories": [
         "lib"
@@ -276,7 +240,7 @@
       "description": "React context provider for runtime shape variant switching (pill or rounded). Controls border-radius across all Delta Components components.",
       "files": [
         {
-          "path": "registry/default/lib/shape-context.tsx",
+          "path": "registry/lib/shape-context.tsx",
           "type": "registry:lib"
         }
       ],
@@ -296,7 +260,7 @@
       "description": "React context provider for the two-step size ladder (36px default, 28px compact). Controls control heights, text, icon, and padding scale across all Delta Components components, and exports the role-based typography scale.",
       "files": [
         {
-          "path": "registry/default/lib/size-context.tsx",
+          "path": "registry/lib/size-context.tsx",
           "type": "registry:lib"
         }
       ],
@@ -315,42 +279,12 @@
       "registryDependencies": [],
       "files": [
         {
-          "path": "registry/default/lib/icon-context.tsx",
+          "path": "registry/lib/icon-context.tsx",
           "type": "registry:lib"
         }
       ],
       "categories": [
         "lib"
-      ]
-    },
-    {
-      "name": "use-proximity-hover",
-      "type": "registry:hook",
-      "title": "useProximityHover",
-      "description": "React hook for proximity-based hover detection. Tracks the closest item to the mouse cursor within a container, enabling smooth animated background indicators.",
-      "files": [
-        {
-          "path": "registry/default/hooks/use-proximity-hover.ts",
-          "type": "registry:hook"
-        }
-      ],
-      "categories": [
-        "hook"
-      ]
-    },
-    {
-      "name": "use-touch-primary",
-      "type": "registry:hook",
-      "title": "useTouchPrimary",
-      "description": "Detects touch-primary devices (coarse pointer + touch points), updating live on pointer-mode and media-query changes. Adapted from Lina (https://lina.sameer.sh).",
-      "files": [
-        {
-          "path": "registry/default/hooks/use-touch-primary.tsx",
-          "type": "registry:hook"
-        }
-      ],
-      "categories": [
-        "hook"
       ]
     },
     {
@@ -373,7 +307,7 @@
       ],
       "files": [
         {
-          "path": "registry/base/button.tsx",
+          "path": "registry/ui/button.tsx",
           "type": "registry:ui",
           "target": "components/ui/button.tsx"
         }
@@ -399,234 +333,6 @@
       ]
     },
     {
-      "name": "sidebar",
-      "type": "registry:ui",
-      "title": "Sidebar",
-      "description": "Refined, composable app sidebar with offcanvas collapse, floating and inset variants, a mobile drawer, cookie-persisted state, keyboard shortcut, and proximity-hover menus with traveling selection, hover, and focus indicators.",
-      "dependencies": [
-        "@base-ui/react",
-        "lucide-react",
-        "class-variance-authority"
-      ],
-      "registryDependencies": [
-        "utils",
-        "motion",
-        "font-weight",
-        "shape-context",
-        "size-context",
-        "surface-context",
-        "surface-classes",
-        "icon-context",
-        "use-proximity-hover",
-        "tooltip",
-        "scroll-area",
-        "button",
-        "tokens"
-      ],
-      "files": [
-        {
-          "path": "registry/base/sidebar.tsx",
-          "type": "registry:ui",
-          "target": "components/ui/sidebar.tsx"
-        },
-        {
-          "path": "registry/default/sidebar-core.tsx",
-          "type": "registry:ui",
-          "target": "components/ui/sidebar-core.tsx"
-        },
-        {
-          "path": "registry/default/sidebar-menu.tsx",
-          "type": "registry:ui",
-          "target": "components/ui/sidebar-menu.tsx"
-        }
-      ],
-      "categories": [
-        "components"
-      ]
-    },
-    {
-      "name": "sidebar-menu-grid",
-      "type": "registry:lib",
-      "title": "Sidebar Menu Grid",
-      "description": "Shared popup geometry for sidebar-anchored dropdown menus: trigger width +10px shifted -4px, items on the rows' leading and text axes, trailing glyphs on the trigger chevron's axis.",
-      "files": [
-        {
-          "path": "registry/default/lib/sidebar-menu-grid.ts",
-          "type": "registry:lib"
-        }
-      ],
-      "categories": [
-        "lib"
-      ]
-    },
-    {
-      "name": "scroll-area",
-      "type": "registry:ui",
-      "title": "Scroll Area",
-      "description": "Scroll container with a restyled overlay scrollbar that stays discoverable on hover and follows the shape system. Falls back to native overflow scrolling on touch-primary devices. Base UI flavor; adapted from Lina (https://lina.sameer.sh).",
-      "dependencies": [
-        "@base-ui/react"
-      ],
-      "registryDependencies": [
-        "utils",
-        "shape-context",
-        "use-touch-primary",
-        "tokens"
-      ],
-      "files": [
-        {
-          "path": "registry/base/scroll-area.tsx",
-          "target": "components/ui/scroll-area.tsx",
-          "type": "registry:ui"
-        }
-      ],
-      "css": {
-        "@property --sf-start": {
-          "syntax": "\"<number>\"",
-          "inherits": "false",
-          "initial-value": "1"
-        },
-        "@property --sf-end": {
-          "syntax": "\"<number>\"",
-          "inherits": "false",
-          "initial-value": "1"
-        },
-        "@keyframes sf-reveal-start": {
-          "from": {
-            "--sf-start": "1"
-          },
-          "to": {
-            "--sf-start": "0"
-          }
-        },
-        "@keyframes sf-reveal-end": {
-          "from": {
-            "--sf-end": "0"
-          },
-          "to": {
-            "--sf-end": "1"
-          }
-        },
-        ".scroll-fade, .scroll-fade-x": {
-          "--scroll-fade-size": "48px"
-        },
-        ".scroll-fade": {
-          "-webkit-mask-image": "linear-gradient(to bottom, transparent 0, #000 var(--scroll-fade-size), #000 calc(100% - var(--scroll-fade-size)), transparent 100%)",
-          "mask-image": "linear-gradient(to bottom, transparent 0, #000 var(--scroll-fade-size), #000 calc(100% - var(--scroll-fade-size)), transparent 100%)"
-        },
-        ".scroll-fade-x": {
-          "-webkit-mask-image": "linear-gradient(to right, transparent 0, #000 var(--scroll-fade-size), #000 calc(100% - var(--scroll-fade-size)), transparent 100%)",
-          "mask-image": "linear-gradient(to right, transparent 0, #000 var(--scroll-fade-size), #000 calc(100% - var(--scroll-fade-size)), transparent 100%)"
-        },
-        "@keyframes sf-divider-start": {
-          "from": {
-            "opacity": "0"
-          },
-          "to": {
-            "opacity": "1"
-          }
-        },
-        "@keyframes sf-divider-end": {
-          "from": {
-            "opacity": "1"
-          },
-          "to": {
-            "opacity": "0"
-          }
-        },
-        "@supports (timeline-scope: --sf)": {
-          ".scroll-divider": {
-            "position": "relative",
-            "timeline-scope": "--sf-scroller",
-            "--scroll-divider-size": "48px"
-          },
-          ".scroll-divider .scroll-fade": {
-            "scroll-timeline-name": "--sf-scroller"
-          },
-          ".scroll-divider::before, .scroll-divider::after": {
-            "content": "\"\"",
-            "position": "absolute",
-            "left": "var(--scroll-divider-inset, 0px)",
-            "right": "var(--scroll-divider-inset, 0px)",
-            "height": "1px",
-            "background-color": "var(--border)",
-            "pointer-events": "none",
-            "z-index": "1",
-            "opacity": "0"
-          },
-          ".scroll-divider::before": {
-            "top": "0",
-            "animation": "sf-divider-start both linear",
-            "animation-timeline": "--sf-scroller",
-            "animation-range": "0 var(--scroll-divider-size)"
-          },
-          ".scroll-divider:first-child::before": {
-            "content": "none"
-          },
-          ".scroll-divider::after": {
-            "bottom": "0",
-            "animation": "sf-divider-end both linear",
-            "animation-timeline": "--sf-scroller",
-            "animation-range": "calc(100% - var(--scroll-divider-size)) 100%"
-          }
-        },
-        "@supports (animation-timeline: scroll())": {
-          ".scroll-fade": {
-            "mask-image": "linear-gradient(to bottom, rgba(0, 0, 0, var(--sf-start)) 0, #000 var(--scroll-fade-size), #000 calc(100% - var(--scroll-fade-size)), rgba(0, 0, 0, var(--sf-end)) 100%)",
-            "-webkit-mask-image": "linear-gradient(to bottom, rgba(0, 0, 0, var(--sf-start)) 0, #000 var(--scroll-fade-size), #000 calc(100% - var(--scroll-fade-size)), rgba(0, 0, 0, var(--sf-end)) 100%)",
-            "animation": "sf-reveal-start both linear, sf-reveal-end both linear",
-            "animation-timeline": "scroll(self), scroll(self)",
-            "animation-range-start": "0, calc(100% - var(--scroll-fade-size))",
-            "animation-range-end": "var(--scroll-fade-size), 100%"
-          },
-          ".scroll-fade-x": {
-            "mask-image": "linear-gradient(to right, rgba(0, 0, 0, var(--sf-start)) 0, #000 var(--scroll-fade-size), #000 calc(100% - var(--scroll-fade-size)), rgba(0, 0, 0, var(--sf-end)) 100%)",
-            "-webkit-mask-image": "linear-gradient(to right, rgba(0, 0, 0, var(--sf-start)) 0, #000 var(--scroll-fade-size), #000 calc(100% - var(--scroll-fade-size)), rgba(0, 0, 0, var(--sf-end)) 100%)",
-            "animation": "sf-reveal-start both linear, sf-reveal-end both linear",
-            "animation-timeline": "scroll(self inline), scroll(self inline)",
-            "animation-range-start": "0, calc(100% - var(--scroll-fade-size))",
-            "animation-range-end": "var(--scroll-fade-size), 100%"
-          }
-        },
-        "@media (pointer: fine)": {
-          "*": {
-            "scrollbar-width": "thin",
-            "scrollbar-color": "rgb(var(--overlay) / 0.08) transparent"
-          },
-          "::-webkit-scrollbar": {
-            "width": "10px",
-            "height": "10px"
-          },
-          "::-webkit-scrollbar-track, ::-webkit-scrollbar-corner": {
-            "background": "transparent"
-          },
-          "::-webkit-scrollbar-thumb": {
-            "background-color": "rgb(var(--overlay) / 0.08)",
-            "border": "3px solid transparent",
-            "background-clip": "content-box",
-            "border-radius": "9999px"
-          },
-          "::-webkit-scrollbar-thumb:vertical": {
-            "border-left-width": "1px",
-            "border-right-width": "5px"
-          },
-          "::-webkit-scrollbar-thumb:horizontal": {
-            "border-top-width": "1px",
-            "border-bottom-width": "5px"
-          },
-          "::-webkit-scrollbar-thumb:hover": {
-            "background-color": "rgb(var(--overlay) / 0.12)"
-          },
-          "::-webkit-scrollbar-thumb:active": {
-            "background-color": "rgb(var(--overlay) / 0.16)"
-          }
-        }
-      },
-      "categories": [
-        "components"
-      ]
-    },
-    {
       "name": "tooltip",
       "type": "registry:ui",
       "title": "Tooltip",
@@ -642,35 +348,12 @@
       ],
       "files": [
         {
-          "path": "registry/base/tooltip.tsx",
+          "path": "registry/ui/tooltip.tsx",
           "target": "components/ui/tooltip.tsx",
           "type": "registry:ui"
         }
       ],
       "docs": "Docs & live playground: https://deltacomponents.dev/docs/tooltip.",
-      "categories": [
-        "components"
-      ]
-    },
-    {
-      "name": "badge",
-      "type": "registry:ui",
-      "title": "Badge",
-      "description": "Compact label with solid and dot variants, Tailwind color palette, and three sizes.",
-      "dependencies": [
-        "class-variance-authority"
-      ],
-      "registryDependencies": [
-        "utils",
-        "shape-context",
-        "size-context"
-      ],
-      "files": [
-        {
-          "path": "registry/default/badge.tsx",
-          "type": "registry:ui"
-        }
-      ],
       "categories": [
         "components"
       ]
@@ -690,7 +373,7 @@
       ],
       "files": [
         {
-          "path": "registry/default/tabs.tsx",
+          "path": "registry/ui/tabs.tsx",
           "type": "registry:ui",
           "target": "components/ui/tabs.tsx"
         }
@@ -782,17 +465,17 @@
       },
       "files": [
         {
-          "path": "registry/default/code.tsx",
+          "path": "registry/ui/code.tsx",
           "type": "registry:ui",
           "target": "components/ui/code.tsx"
         },
         {
-          "path": "registry/default/code-icons.tsx",
+          "path": "registry/ui/code-icons.tsx",
           "type": "registry:ui",
           "target": "components/ui/code-icons.tsx"
         },
         {
-          "path": "registry/default/lib/prism-languages.ts",
+          "path": "registry/lib/prism-languages.ts",
           "type": "registry:lib",
           "target": "lib/prism-languages.ts"
         }
@@ -814,7 +497,7 @@
       ],
       "files": [
         {
-          "path": "registry/default/product-card.tsx",
+          "path": "registry/ui/product-card.tsx",
           "type": "registry:ui",
           "target": "components/ui/product-card.tsx"
         }

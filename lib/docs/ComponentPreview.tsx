@@ -2,11 +2,11 @@
 
 import { useRef, type MouseEvent, type ReactNode } from "react";
 import { routeKeyboardOnMouseDown } from "@/lib/click-to-focus";
-import { fontWeights } from "@/registry/default/lib/font-weight";
-import { useShape } from "@/registry/default/lib/shape-context";
-import { useIcon } from "@/registry/default/lib/icon-context";
-import { Tooltip } from "@/registry/base/tooltip";
-import { Code } from "@/registry/default/code";
+import { fontWeights } from "@/registry/lib/font-weight";
+import { useShape } from "@/registry/lib/shape-context";
+import { useIcon } from "@/registry/lib/icon-context";
+import { Tooltip } from "@/registry/ui/tooltip";
+import { Code } from "@/registry/ui/code";
 import { demos } from "@/lib/docs/demos.generated";
 import { useNarrowFrame } from "@/lib/use-narrow-frame";
 

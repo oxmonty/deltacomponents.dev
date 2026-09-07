@@ -2,13 +2,13 @@
 
 import { useEffect, useRef, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { cn } from "@/registry/default/lib/utils";
+import { cn } from "@/registry/lib/utils";
 import {
   SidebarProvider,
   SidebarTrigger,
   SidebarInset,
   useSidebar,
-} from "@/registry/base/sidebar";
+} from "@/app/components/ui/sidebar";
 import { SiteSidebar } from "@/app/components/sidebar";
 import { SiteHeader } from "@/app/components/site-header";
 import { RightPanel } from "@/app/components/right-panel";

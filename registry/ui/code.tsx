@@ -8,11 +8,11 @@ import type { PrismTheme } from "prism-react-renderer"
 // Side-effect import: registers extra Prism grammars (bash, docker,
 // java, ruby, php, …) on the shared instance. Must come before any
 // ``<Highlight>`` usage in this module.
-import "@/registry/default/lib/prism-languages"
+import "@/registry/lib/prism-languages"
 
-import { cn } from "@/registry/default/lib/utils"
-import { getIconForFile } from "@/registry/default/code-icons"
-import { Button } from "@/registry/base/button"
+import { cn } from "@/registry/lib/utils"
+import { getIconForFile } from "@/registry/ui/code-icons"
+import { Button } from "@/registry/ui/button"
 
 type PackageManager = "npm" | "yarn" | "pnpm" | "bun"
 

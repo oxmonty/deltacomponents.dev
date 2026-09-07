@@ -5,7 +5,7 @@ import { componentList, neighbours } from "@/lib/docs/components";
 import { DocPager } from "@/lib/docs/DocPager";
 import { DocHeader } from "@/lib/docs/DocHeader";
 import { BentoGrid } from "@/app/components/bento-grid";
-import { Button } from "@/registry/base/button";
+import { Button } from "@/registry/ui/button";
 
 export default function Page() {
   const { prev, next } = neighbours("/");

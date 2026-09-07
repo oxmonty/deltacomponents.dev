@@ -1,14 +1,14 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Code } from "@/registry/default/code";
+import { Code } from "@/registry/ui/code";
 import { Step, Steps } from "@/lib/docs/Steps";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@/registry/default/tabs";
+} from "@/registry/ui/tabs";
 import { installUrl } from "@/lib/registry-url";
 
 interface RegistryFile {

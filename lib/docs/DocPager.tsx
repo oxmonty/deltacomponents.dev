@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { Button } from "@/registry/base/button";
-import { useIcon } from "@/registry/default/lib/icon-context";
+import { Button } from "@/registry/ui/button";
+import { useIcon } from "@/registry/lib/icon-context";
 
 export interface PagerLink {
   href: string;

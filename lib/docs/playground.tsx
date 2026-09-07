@@ -3,9 +3,9 @@
 import { useState, useEffect, useRef, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { Shuffle } from "lucide-react";
-import { cn } from "@/registry/default/lib/utils";
-import { fontWeights } from "@/registry/default/lib/font-weight";
-import { SurfaceProvider } from "@/registry/default/lib/surface-context";
+import { cn } from "@/registry/lib/utils";
+import { fontWeights } from "@/registry/lib/font-weight";
+import { SurfaceProvider } from "@/registry/lib/surface-context";
 import { useRightRailNode } from "@/lib/right-rail";
 import { NativeSelect, NativeSelectOption } from "@/lib/docs/native-select";
 

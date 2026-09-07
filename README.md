@@ -33,8 +33,7 @@ animations need the Inter variable font, which ships in `public/fonts`.
 
 ## Adding a component
 
-1. Write the source in `registry/base/<name>.tsx` (primitive-backed) or
-   `registry/default/<name>.tsx` (primitive-agnostic).
+1. Write the source in `registry/ui/<name>.tsx`.
 2. Add an entry to `registry.json` pointing at the file, with its npm
    `dependencies` and `registryDependencies`.
 3. Add the slug to `componentList` in `lib/docs/components.ts` — this drives

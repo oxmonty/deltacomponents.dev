@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { useIcon } from "@/registry/default/lib/icon-context";
-import { useSizeVariant } from "@/registry/default/lib/size-context";
-import { Button } from "@/registry/base/button";
+import { useIcon } from "@/registry/lib/icon-context";
+import { useSizeVariant } from "@/registry/lib/size-context";
+import { Button } from "@/registry/ui/button";
 import { Switch } from "@/lib/docs/switch";
 import {
   PLAY_SWITCH,

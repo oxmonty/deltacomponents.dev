@@ -5,7 +5,7 @@
   "description": "Variable font weight tokens for Inter (normal, medium, semibold, bold) using font-variation-settings.",
   "files": [
     {
-      "path": "registry/default/lib/font-weight.ts",
+      "path": "registry/lib/font-weight.ts",
       "content": "// Inter (variable) weight tokens for `fontVariationSettings`.\n//\n// Each weight is paired with an optical-size (`opsz`) value so that animating\n// between weights keeps the text's advance width nearly constant: a heavier\n// `wght` widens the text, and a tighter (higher) `opsz` pulls it back.\n//\n// The compensation is per-glyph, so any residual multiplies with label\n// length — calibrate against a CORPUS of realistic strings (4–40 chars,\n// mixed/caps/lowercase-heavy at 13px), minimizing the worst-case |delta|\n// centered on zero, never against a single baseline string. Measured against\n// the 400/opsz-14 baseline: medium and semibold hold every corpus string\n// within ±0.4px, bold within ±0.7px. Semibold was re-measured 2026-08-24\n// down from opsz 20, which over-corrected and visibly SHRANK long labels\n// (−1.6px at 38 chars) on selection.\n//\n// Setting `opsz` explicitly here overrides `font-optical-sizing: auto`, which\n// is intended — we want weight, not font-size, to drive optical size.\nexport const fontWeights = {\n  normal: \"'wght' 400, 'opsz' 14\",\n  medium: \"'wght' 450, 'opsz' 15\",\n  semibold: \"'wght' 550, 'opsz' 18\",\n  bold: \"'wght' 700, 'opsz' 25\",\n} as const;\n",
       "type": "registry:lib"
     }

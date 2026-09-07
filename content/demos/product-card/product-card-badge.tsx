@@ -10,7 +10,7 @@ import {
   ProductCardMetric,
   ProductCardSubtitle,
   ProductCardTitle,
-} from "@/registry/default/product-card";
+} from "@/registry/ui/product-card";
 
 /** Lucide's bookmark, inlined so the badge carries no icon dependency. It
  *  fills when the item is saved and stays an outline when it is not, so the

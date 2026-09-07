@@ -2,8 +2,8 @@
 
 import * as React from "react"
 
-import { cn } from "@/registry/default/lib/utils"
-import { useShape } from "@/registry/default/lib/shape-context"
+import { cn } from "@/registry/lib/utils"
+import { useShape } from "@/registry/lib/shape-context"
 
 /* ------------------------------------------------------------------
  * Context for sharing state between compound components

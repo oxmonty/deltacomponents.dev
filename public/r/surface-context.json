@@ -5,7 +5,7 @@
   "description": "React context that tracks the current substrate elevation level. Elevated components (Dropdown, Select, etc.) read it via useSurface() and render at substrate + offset, then re-provide a new substrate so further nesting elevates further.",
   "files": [
     {
-      "path": "registry/default/lib/surface-context.tsx",
+      "path": "registry/lib/surface-context.tsx",
       "content": "\"use client\";\n\nimport { createContext, useContext, type ReactNode } from \"react\";\n\nconst SurfaceContext = createContext<number>(1);\n\nexport function useSurface(): number {\n  return useContext(SurfaceContext);\n}\n\nexport function SurfaceProvider({\n  value,\n  children,\n}: {\n  value: number;\n  children: ReactNode;\n}) {\n  return (\n    <SurfaceContext.Provider value={Math.max(1, Math.min(8, value))}>\n      {children}\n    </SurfaceContext.Provider>\n  );\n}\n",
       "type": "registry:lib"
     }

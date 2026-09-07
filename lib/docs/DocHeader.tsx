@@ -2,11 +2,11 @@
 
 import Link from "next/link";
 import { type ReactNode } from "react";
-import { Button } from "@/registry/base/button";
-import { Tooltip } from "@/registry/base/tooltip";
-import { fontWeights } from "@/registry/default/lib/font-weight";
-import { useIcon } from "@/registry/default/lib/icon-context";
-import { useSizeVariant } from "@/registry/default/lib/size-context";
+import { Button } from "@/registry/ui/button";
+import { Tooltip } from "@/registry/ui/tooltip";
+import { fontWeights } from "@/registry/lib/font-weight";
+import { useIcon } from "@/registry/lib/icon-context";
+import { useSizeVariant } from "@/registry/lib/size-context";
 import type { PageLink } from "@/lib/docs/components";
 
 /** The title / description / arrows block every page opens with.

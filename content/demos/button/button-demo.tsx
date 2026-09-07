@@ -1,7 +1,7 @@
 "use client";
 
-import { useIcon } from "@/registry/default/lib/icon-context";
-import { Button } from "@/registry/base/button";
+import { useIcon } from "@/registry/lib/icon-context";
+import { Button } from "@/registry/ui/button";
 
 export default function ButtonDemo() {
   const Plus = useIcon("plus");

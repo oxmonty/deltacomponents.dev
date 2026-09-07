@@ -107,7 +107,7 @@ One file per demo, at `content/demos/<slug>/<slug>-<what-it-shows>.tsx`:
 ```tsx
 "use client";
 
-import { Tabs, TabsList, TabsTrigger } from "@/registry/default/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/registry/ui/tabs";
 
 export default function TabsBasic() {
   return (
@@ -124,7 +124,7 @@ Rules:
 
 - **Default export, no props.** `ComponentPreview` renders it as `<Component />`.
 - **Name it `<slug>-<what-it-shows>`.** The lead demo is `<slug>-demo`.
-- **Import from this repo's real path** (`@/registry/default/tabs`), never
+- **Import from this repo's real path** (`@/registry/ui/tabs`), never
   `@/components/ui/tabs`. `scripts/build-demos.ts` rewrites the *displayed*
   import to the path `shadcn add` writes to, using `registry.json`'s own
   `target` fields. Pre-rewriting it breaks the build.

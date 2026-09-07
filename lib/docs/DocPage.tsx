@@ -1,8 +1,8 @@
 "use client";
 
 import { type ReactNode } from "react";
-import { cn } from "@/registry/default/lib/utils";
-import { fontWeights } from "@/registry/default/lib/font-weight";
+import { cn } from "@/registry/lib/utils";
+import { fontWeights } from "@/registry/lib/font-weight";
 import { componentList, labelOf, neighbours, toLabel } from "@/lib/docs/components";
 import { DocPager } from "@/lib/docs/DocPager";
 import { DocHeader } from "@/lib/docs/DocHeader";

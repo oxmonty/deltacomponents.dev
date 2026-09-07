@@ -1,6 +1,6 @@
 "use client";
 
-import { Code } from "@/registry/default/code";
+import { Code } from "@/registry/ui/code";
 
 const SAMPLE = `export function greet(name: string) {
   const greeting = \`Hello, \${name}!\`;
