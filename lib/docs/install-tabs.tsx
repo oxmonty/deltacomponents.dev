@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Code } from "@/registry/ui/code";
-import { Step, Steps } from "@/lib/docs/Steps";
+import { Step, Steps } from "@/lib/docs/steps";
 import {
   Tabs,
   TabsContent,

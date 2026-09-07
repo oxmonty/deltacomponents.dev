@@ -11,8 +11,8 @@ import {
 // A slot in the desktop right rail (below "Make them yours") that any page can
 // fill. The page keeps ownership of the content — it renders through a portal
 // into this target, so React context and state still flow from the page tree.
-// Used by the Card doc's Playground to park its controls in the rail while the
-// live preview stays in the main column.
+// Used by the Button doc's Playground to park its controls in the rail while
+// the live preview stays in the main column.
 // ---------------------------------------------------------------------------
 
 interface RightRailValue {

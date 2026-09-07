@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { componentList } from "@/lib/docs/components";
-import { DocPage } from "@/lib/docs/DocPage";
+import { DocPage } from "@/lib/docs/doc-page";
 import { mdxBodyClass } from "@/lib/docs/mdx-components";
 import { componentMetadata } from "@/lib/metadata";
 

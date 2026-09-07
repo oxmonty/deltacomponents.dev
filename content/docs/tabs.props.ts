@@ -1,4 +1,4 @@
-import type { PropDef } from "@/lib/docs/PropsTable";
+import type { PropDef } from "@/lib/docs/props-table";
 
 export const tabsProps: PropDef[] = [
   { name: "defaultValue", type: "string", description: "Value of the tab selected on first render, when uncontrolled." },

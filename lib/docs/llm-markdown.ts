@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { componentList, labelOf } from "@/lib/docs/components";
 import { demos } from "@/lib/docs/demos.generated";
 import { installUrl } from "@/lib/registry-url";
-import type { PropDef } from "@/lib/docs/PropsTable";
+import type { PropDef } from "@/lib/docs/props-table";
 
 /**
  * A doc page as plain markdown, for an agent to read.

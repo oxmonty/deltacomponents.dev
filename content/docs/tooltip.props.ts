@@ -1,4 +1,4 @@
-import type { PropDef } from "@/lib/docs/PropsTable";
+import type { PropDef } from "@/lib/docs/props-table";
 
 export const tooltipProps: PropDef[] = [
   {

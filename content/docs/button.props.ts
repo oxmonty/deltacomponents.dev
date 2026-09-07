@@ -1,4 +1,4 @@
-import type { PropDef } from "@/lib/docs/PropsTable";
+import type { PropDef } from "@/lib/docs/props-table";
 
 export const buttonProps: PropDef[] = [
   { name: "variant", type: '"primary" | "secondary" | "tertiary" | "ghost"', default: '"primary"', description: "Visual style of the button." },

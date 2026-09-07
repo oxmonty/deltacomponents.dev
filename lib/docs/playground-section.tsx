@@ -1,6 +1,6 @@
 "use client";
 
-import { ComponentPreview } from "@/lib/docs/ComponentPreview";
+import { ComponentPreview } from "@/lib/docs/component-preview";
 import { PlaygroundLayout } from "@/lib/docs/playground";
 import { ButtonPlayground } from "@/lib/docs/playgrounds/button";
 

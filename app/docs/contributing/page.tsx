@@ -1,6 +1,6 @@
 import { neighbours } from "@/lib/docs/components";
-import { DocHeader } from "@/lib/docs/DocHeader";
-import { DocPager } from "@/lib/docs/DocPager";
+import { DocHeader } from "@/lib/docs/doc-header";
+import { DocPager } from "@/lib/docs/doc-pager";
 import { mdxBodyClass } from "@/lib/docs/mdx-components";
 import Content from "@/content/docs/contributing.mdx";
 

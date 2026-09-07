@@ -7,7 +7,7 @@ import { Tooltip } from "@/registry/ui/tooltip";
 import { fontWeights } from "@/registry/lib/font-weight";
 import { useIcon } from "@/registry/lib/icon-context";
 import { useSizeVariant } from "@/lib/docs/size-context";
-import { CopyPage } from "@/lib/docs/CopyPage";
+import { CopyPage } from "@/lib/docs/copy-page";
 import type { PageLink } from "@/lib/docs/components";
 
 /** The title / description / arrows block every page opens with.

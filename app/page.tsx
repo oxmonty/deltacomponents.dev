@@ -1,9 +1,7 @@
-"use client";
-
 import Link from "next/link";
 import { componentList, neighbours } from "@/lib/docs/components";
-import { DocPager } from "@/lib/docs/DocPager";
-import { DocHeader } from "@/lib/docs/DocHeader";
+import { DocPager } from "@/lib/docs/doc-pager";
+import { DocHeader } from "@/lib/docs/doc-header";
 import { BentoGrid } from "@/app/components/bento-grid";
 import { Button } from "@/registry/ui/button";
 

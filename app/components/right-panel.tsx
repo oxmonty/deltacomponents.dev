@@ -21,7 +21,7 @@ import {
 } from "@/lib/docs/icon-playground";
 import { SurfaceProvider } from "@/registry/lib/surface-context";
 import { RightRailTarget } from "@/lib/right-rail";
-import { DocsToc } from "@/lib/docs/DocsToc";
+import { DocsToc } from "@/lib/docs/docs-toc";
 import { AuthorCredit } from "@/app/components/author-credit";
 import { showShortcutToast } from "@/lib/docs/settings-toast";
 import { Tooltip } from "@/registry/ui/tooltip";
@@ -39,7 +39,7 @@ function formatStars(n: number): string {
 }
 
 /** GitHub mark, shaped as an IconComponent so it can ride Button's leadingIcon slot. */
-export function GitHubIcon({ size = 16, className }: { size?: number; className?: string }) {
+function GitHubIcon({ size = 16, className }: { size?: number; className?: string }) {
   return (
     <svg
       width={size}
@@ -121,7 +121,7 @@ export function GitHubStarButton({ showCount = true }: { showCount?: boolean }) 
 }
 
 /** The inner settings content — reused in the right column and mobile drawer. */
-export function SettingsContent() {
+function SettingsContent() {
   const { theme, setTheme } = useThemeContext();
   const { shape, setShape } = useShapeContext();
   const { size, setSize } = useSizeContext();

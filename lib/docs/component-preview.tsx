@@ -8,7 +8,7 @@ import { useIcon } from "@/registry/lib/icon-context";
 import { Tooltip } from "@/registry/ui/tooltip";
 import { Code } from "@/registry/ui/code";
 import { demos } from "@/lib/docs/demos.generated";
-import { useNarrowFrame } from "@/lib/use-narrow-frame";
+import { useNarrowFrame } from "@/lib/hooks/use-narrow-frame";
 
 /** Snippets longer than this collapse behind an Expand affordance; shorter
  *  ones render in full. Roughly the point where a reader stops taking the

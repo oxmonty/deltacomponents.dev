@@ -1,4 +1,4 @@
-import type { PropDef } from "@/lib/docs/PropsTable";
+import type { PropDef } from "@/lib/docs/props-table";
 
 export const productCardProps: PropDef[] = [
   { name: "variant", type: '"default" | "inner"', default: '"default"', description: "Where the content sits: below the image, or overlaid on it." },

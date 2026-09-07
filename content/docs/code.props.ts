@@ -1,4 +1,4 @@
-import type { PropDef } from "@/lib/docs/PropsTable";
+import type { PropDef } from "@/lib/docs/props-table";
 
 export const codeBlockProps: PropDef[] = [
   { name: "code", type: "string", description: "The source to render. A fenced markdown block (```lang) is unwrapped, and its language wins over `language`." },
