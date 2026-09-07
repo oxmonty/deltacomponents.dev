@@ -23,12 +23,12 @@ import {
   type RefObject,
 } from "react";
 import { cva, type VariantProps } from "class-variance-authority";
-import { cn } from "@/lib/utils";
-import { fontWeights } from "@/lib/font-weight";
-import { useShape } from "@/lib/shape-context";
-import { useSize, SizeProvider, type SizeVariant } from "@/lib/size-context";
-import { useProximityHover, type ItemRect } from "@/hooks/use-proximity-hover";
-import type { IconComponent } from "@/lib/icon-context";
+import { cn } from "@/registry/default/lib/utils";
+import { fontWeights } from "@/registry/default/lib/font-weight";
+import { useShape } from "@/registry/default/lib/shape-context";
+import { useSize, SizeProvider, type SizeVariant } from "@/registry/default/lib/size-context";
+import { useProximityHover, type ItemRect } from "@/registry/default/hooks/use-proximity-hover";
+import type { IconComponent } from "@/registry/default/lib/icon-context";
 import { resolveSlotTemplate, slotElement } from "@/registry/default/sidebar-core";
 
 // SSR-safe layout effect (client components still server-render in Next).

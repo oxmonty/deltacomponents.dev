@@ -2,10 +2,10 @@
 
 import * as React from "react";
 
-import { cn } from "@/lib/utils";
-import { useShape } from "@/lib/shape-context";
-import { useSurface } from "@/lib/surface-context";
-import { surfaceClasses } from "@/lib/surface-classes";
+import { cn } from "@/registry/default/lib/utils";
+import { useShape } from "@/registry/default/lib/shape-context";
+import { useSurface } from "@/registry/default/lib/surface-context";
+import { surfaceClasses } from "@/registry/default/lib/surface-classes";
 
 type TabVariant = "default" | "underline" | "ghost";
 type TabSize = "sm" | "default" | "lg";

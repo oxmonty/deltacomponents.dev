@@ -9,9 +9,9 @@ import {
   type ReactNode,
 } from "react";
 import { Tooltip as TooltipPrimitive } from "@base-ui/react/tooltip";
-import { cn } from "@/lib/utils";
-import { fontWeights } from "@/lib/font-weight";
-import { useShape } from "@/lib/shape-context";
+import { cn } from "@/registry/default/lib/utils";
+import { fontWeights } from "@/registry/default/lib/font-weight";
+import { useShape } from "@/registry/default/lib/shape-context";
 
 // ---------------------------------------------------------------------------
 // Portal container context

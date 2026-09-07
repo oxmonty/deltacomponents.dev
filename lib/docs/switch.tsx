@@ -3,8 +3,8 @@
 import { forwardRef, useId, type HTMLAttributes } from "react";
 import { Switch as SwitchPrimitive } from "@base-ui/react/switch";
 
-import { cn } from "@/lib/utils";
-import { useSize, type SizeVariant } from "@/lib/size-context";
+import { cn } from "@/registry/default/lib/utils";
+import { useSize, type SizeVariant } from "@/registry/default/lib/size-context";
 
 /** Docs-chrome toggle: the boolean controls in the right-panel playgrounds.
  *

@@ -354,26 +354,6 @@
       ]
     },
     {
-      "name": "use-merge-split",
-      "type": "registry:hook",
-      "title": "useMergeSplitBlocks",
-      "description": "React hook + renderer for the selected-background merge/split animation. When one row bridges or splits two contiguous selected runs, their inner edges glide together (or apart) and swap to a single block, instead of one block spring-growing over the union.",
-      "registryDependencies": [
-        "motion",
-        "use-proximity-hover",
-        "tokens"
-      ],
-      "files": [
-        {
-          "path": "registry/default/hooks/use-merge-split.tsx",
-          "type": "registry:hook"
-        }
-      ],
-      "categories": [
-        "hook"
-      ]
-    },
-    {
       "name": "button",
       "type": "registry:ui",
       "title": "Button",
@@ -414,71 +394,6 @@
         }
       },
       "docs": "Docs & live playground: https://deltacomponents.dev/docs/button.",
-      "categories": [
-        "components"
-      ]
-    },
-    {
-      "name": "dropdown",
-      "type": "registry:ui",
-      "title": "Dropdown",
-      "description": "Dropdown menu with proximity hover, animated selection indicator, inline panel or triggered popup with collision-aware positioning, typeahead, and close-on-select. Includes MenuItem.",
-      "dependencies": [
-        "@base-ui/react"
-      ],
-      "registryDependencies": [
-        "utils",
-        "motion",
-        "font-weight",
-        "shape-context",
-        "surface-context",
-        "surface-classes",
-        "icon-context",
-        "use-proximity-hover",
-        "elevated",
-        "size-context",
-        "tokens"
-      ],
-      "files": [
-        {
-          "path": "registry/base/dropdown.tsx",
-          "type": "registry:ui",
-          "target": "components/ui/dropdown.tsx"
-        },
-        {
-          "path": "registry/default/menu-item.tsx",
-          "type": "registry:ui",
-          "target": "components/ui/menu-item.tsx"
-        }
-      ],
-      "categories": [
-        "components"
-      ]
-    },
-    {
-      "name": "input-copy",
-      "type": "registry:ui",
-      "title": "Input Copy",
-      "description": "Read-only input with a copy-to-clipboard button and animated check feedback. Supports optional label and shape context.",
-      "dependencies": [
-        "lucide-react"
-      ],
-      "registryDependencies": [
-        "utils",
-        "motion",
-        "font-weight",
-        "shape-context",
-        "icon-context",
-        "size-context",
-        "tooltip",
-        "tokens"
-      ],
-      "files": [
-        {
-          "path": "registry/default/input-copy.tsx",
-          "type": "registry:ui"
-        }
-      ],
       "categories": [
         "components"
       ]
@@ -756,44 +671,6 @@
           "type": "registry:ui"
         }
       ],
-      "categories": [
-        "components"
-      ]
-    },
-    {
-      "name": "tabs-subtle",
-      "type": "registry:ui",
-      "title": "Tabs Subtle",
-      "description": "Horizontal tab navigation with proximity hover, animated pill selection indicator, and fluid font-weight transitions.",
-      "dependencies": [
-        "@base-ui/react",
-        "lucide-react"
-      ],
-      "registryDependencies": [
-        "utils",
-        "motion",
-        "font-weight",
-        "icon-context",
-        "use-proximity-hover",
-        "size-context",
-        "tokens"
-      ],
-      "files": [
-        {
-          "path": "registry/base/tabs-subtle.tsx",
-          "type": "registry:ui",
-          "target": "components/ui/tabs-subtle.tsx"
-        }
-      ],
-      "css": {
-        ".scrollbar-hide": {
-          "-ms-overflow-style": "none",
-          "scrollbar-width": "none"
-        },
-        ".scrollbar-hide::-webkit-scrollbar": {
-          "display": "none"
-        }
-      },
       "categories": [
         "components"
       ]

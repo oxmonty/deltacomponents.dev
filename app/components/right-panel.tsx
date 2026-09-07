@@ -9,17 +9,17 @@ import {
   useShape,
   useShapeContext,
   type ShapeVariant,
-} from "@/lib/shape-context";
-import { useSizeContext, type SizeVariant } from "@/lib/size-context";
+} from "@/registry/default/lib/shape-context";
+import { useSizeContext, type SizeVariant } from "@/registry/default/lib/size-context";
 import { useThemeContext, type Theme } from "@/registry/default/lib/theme-context";
-import { useIcon } from "@/lib/icon-context";
+import { useIcon } from "@/registry/default/lib/icon-context";
 import {
   useIconLibrary,
   iconLibraryOrder,
   iconLibraryLabels,
   type IconLibrary,
 } from "@/lib/docs/icon-playground";
-import { SurfaceProvider } from "@/lib/surface-context";
+import { SurfaceProvider } from "@/registry/default/lib/surface-context";
 import { RightRailTarget } from "@/lib/right-rail";
 import { DocsToc } from "@/lib/docs/DocsToc";
 import { AuthorCredit } from "@/app/components/author-credit";

@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 
-import { useSizeContext } from "@/lib/size-context";
+import { useSizeContext } from "@/registry/default/lib/size-context";
 
 /**
  * Docs-site-only: mirrors the active size step onto `<html data-size>` so the

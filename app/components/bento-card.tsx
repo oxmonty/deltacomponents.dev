@@ -5,7 +5,7 @@ import { type ReactNode, type CSSProperties } from "react";
 import { cn } from "@/registry/default/lib/utils";
 import { fontWeights } from "@/registry/default/lib/font-weight";
 import { Badge } from "@/registry/default/badge";
-import { useIcon } from "@/lib/icon-context";
+import { useIcon } from "@/registry/default/lib/icon-context";
 
 const sizeClasses: Record<string, string> = {
   large: "md:col-span-2 md:row-span-2",

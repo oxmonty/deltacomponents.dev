@@ -32,9 +32,11 @@ Start here, then read the guide that matches what you are about to change.
   fails if either has drifted.
 - **Registry source imports the real path.** A component that depends on a
   sibling imports `@/registry/...` like anything else here; `make registry`
-  rewrites those to the paths `shadcn add` writes to, from the `target` fields
-  in `registry.json`. There is no `components/ui/` to keep in step, and the
-  docs site's own chrome lives in `lib/docs/`.
+  rewrites those to the paths `shadcn add` writes to, from `registry.json`'s
+  targets and `components.json`'s aliases. Never write a consumer path
+  (`@/lib/utils`, `@/components/ui/button`) in source — there are no shim
+  directories left to make it resolve. The docs site's own chrome is in
+  `lib/docs/`.
 - **Run `make registry` after touching `registry.json`** or any file it lists,
   and commit the regenerated `public/r`.
 - **`make check` is what CI runs** — lint, typecheck, test. Green before you

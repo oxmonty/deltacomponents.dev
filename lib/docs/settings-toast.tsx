@@ -3,10 +3,10 @@
 import { useEffect, useRef, useState } from "react";
 import { Toaster, toast } from "sonner";
 
-import { cn } from "@/lib/utils";
-import { fontWeights } from "@/lib/font-weight";
-import { useShape, useShapeContext } from "@/lib/shape-context";
-import { useSizeContext } from "@/lib/size-context";
+import { cn } from "@/registry/default/lib/utils";
+import { fontWeights } from "@/registry/default/lib/font-weight";
+import { useShape, useShapeContext } from "@/registry/default/lib/shape-context";
+import { useSizeContext } from "@/registry/default/lib/size-context";
 import { useThemeContext } from "@/registry/default/lib/theme-context";
 import { useIconLibrary, iconLibraryLabels } from "@/lib/docs/icon-playground";
 

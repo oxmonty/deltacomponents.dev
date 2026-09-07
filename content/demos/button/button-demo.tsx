@@ -1,6 +1,6 @@
 "use client";
 
-import { useIcon } from "@/lib/icon-context";
+import { useIcon } from "@/registry/default/lib/icon-context";
 import { Button } from "@/registry/base/button";
 
 export default function ButtonDemo() {

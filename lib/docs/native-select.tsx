@@ -2,7 +2,7 @@
 
 import type { ComponentProps, ReactNode } from "react";
 import { cn } from "@/registry/default/lib/utils";
-import { useIcon } from "@/lib/icon-context";
+import { useIcon } from "@/registry/default/lib/icon-context";
 import { useShape } from "@/registry/default/lib/shape-context";
 
 /**

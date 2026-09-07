@@ -5,8 +5,8 @@ import { type ReactNode } from "react";
 import { Button } from "@/registry/base/button";
 import { Tooltip } from "@/registry/base/tooltip";
 import { fontWeights } from "@/registry/default/lib/font-weight";
-import { useIcon } from "@/lib/icon-context";
-import { useSizeVariant } from "@/lib/size-context";
+import { useIcon } from "@/registry/default/lib/icon-context";
+import { useSizeVariant } from "@/registry/default/lib/size-context";
 import type { PageLink } from "@/lib/docs/components";
 
 /** The title / description / arrows block every page opens with.

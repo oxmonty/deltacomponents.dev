@@ -13,7 +13,7 @@ import {
   type IconComponentProps,
   type IconComponent,
   type IconName,
-} from "@/lib/icon-context";
+} from "@/registry/default/lib/icon-context";
 
 // ── Tabler ──────────────────────────────────────────────────
 import {

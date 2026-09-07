@@ -21,14 +21,14 @@ import {
   type HTMLAttributes,
   type Ref,
 } from "react";
-import { cn } from "@/lib/utils";
-import { motionHoldMs } from "@/lib/motion";
-import { fontWeights } from "@/lib/font-weight";
-import { useShape } from "@/lib/shape-context";
-import { useSize, useSizeVariant } from "@/lib/size-context";
-import { useIcon } from "@/lib/icon-context";
-import { useSurface, SurfaceProvider } from "@/lib/surface-context";
-import { surfaceClasses } from "@/lib/surface-classes";
+import { cn } from "@/registry/default/lib/utils";
+import { motionHoldMs } from "@/registry/default/lib/motion";
+import { fontWeights } from "@/registry/default/lib/font-weight";
+import { useShape } from "@/registry/default/lib/shape-context";
+import { useSize, useSizeVariant } from "@/registry/default/lib/size-context";
+import { useIcon } from "@/registry/default/lib/icon-context";
+import { useSurface, SurfaceProvider } from "@/registry/default/lib/surface-context";
+import { surfaceClasses } from "@/registry/default/lib/surface-classes";
 import { Button, type ButtonProps } from "@/registry/base/button";
 import { Tooltip } from "@/registry/base/tooltip";
 

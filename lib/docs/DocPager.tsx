@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Button } from "@/registry/base/button";
-import { useIcon } from "@/lib/icon-context";
+import { useIcon } from "@/registry/default/lib/icon-context";
 
 export interface PagerLink {
   href: string;

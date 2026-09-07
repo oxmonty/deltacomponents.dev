@@ -15,14 +15,17 @@ Checklist and conventions for documenting every new component in this project. F
 - [ ] Named exports for the component, sub-components, variant helper, and props type
 - [ ] Any text that changes weight on state (selected/checked/active/open) uses the **ghost-span pattern** (see below) — never animate weight on text without reserving its width
 - [ ] Any animation is **CSS** — a duration tier and the shared easing, as custom properties. There is no animation library in this repo and nothing may add one (see [motion-guidelines.md](motion-guidelines.md))
-- [ ] Uses `@/` path aliases for all internal imports:
+- [ ] Imports siblings by their **real** path under `registry/`, never the path
+  a consumer will have. `make registry` rewrites these to the consumer's
+  aliases on publish, from `registry.json`'s targets and `components.json`'s
+  aliases, so `@/lib/utils` written here would simply fail to resolve:
   ```ts
-  import { cn } from "@/lib/utils";
-  import { fontWeights } from "@/lib/font-weight";
-  import { useShape } from "@/lib/shape-context";
-  import { useIcon } from "@/lib/icon-context";
-  import type { IconComponent } from "@/lib/icon-context";
-  import { useProximityHover } from "@/hooks/use-proximity-hover";
+  import { cn } from "@/registry/default/lib/utils";
+  import { fontWeights } from "@/registry/default/lib/font-weight";
+  import { useShape } from "@/registry/default/lib/shape-context";
+  import { useIcon } from "@/registry/default/lib/icon-context";
+  import type { IconComponent } from "@/registry/default/lib/icon-context";
+  import { useProximityHover } from "@/registry/default/hooks/use-proximity-hover";
   ```
 
 ### 2. Registry Entry (`registry.json`)
@@ -176,7 +179,7 @@ When text gets heavier on an interactive state (selected, checked, active, open,
 ```
 
 **Rules:**
-- Weight comes from `fontVariationSettings` + the `fontWeights` tokens (`@/lib/font-weight`), **never** `font-weight` / `fontWeight` — the design uses Inter's variable `wght` axis.
+- Weight comes from `fontVariationSettings` + the `fontWeights` tokens (`@/registry/default/lib/font-weight`), **never** `font-weight` / `fontWeight` — the design uses Inter's variable `wght` axis.
 - Each `fontWeights` token also pairs in an optical-size (`opsz`) value (e.g. `"'wght' 550, 'opsz' 20"`). This is intentional, **not** a stray axis: a heavier `wght` widens the text and a tighter (higher) `opsz` pulls it back, so animating between weights keeps the advance width nearly constant — the closed→bold delta drops from ~3px to ~0.6px (≈±0.5%), centered on zero. A sub-pixel residual remains because a single opsz value can't zero every string (glyph mixes scale differently); the ghost span still pins the container, so nothing reflows regardless. `font-variation-settings` interpolates `opsz` alongside `wght` during the transition. The explicit `opsz` overrides `font-optical-sizing: auto` on purpose — weight, not font-size, drives optical size here. Always read these from the tokens; never hand-write a bare `'wght' N` string.
 - The ghost span is always set to the **heaviest** weight the visible span can reach, carries `invisible` + `aria-hidden="true"`, and renders the identical content.
 - Both spans share the cell via `col-start-1 row-start-1` inside an `inline-grid` (or `grid`/`inline-grid flex-1` when it must fill a row).
@@ -234,8 +237,8 @@ everywhere else.
 - Always use `@/` path aliases, never relative paths like `../../`
 - Component: `@/registry/default/<component-name>`
 - Doc utilities: `@/lib/docs/ComponentPreview`, `@/lib/docs/PropsTable`, `@/lib/docs/DocPage`
-- Icons: `@/lib/icon-context` (`useIcon`, `useIcons` hooks, `IconComponent` type)
-  - Components with internal icons: `import { useIcon } from "@/lib/icon-context";`
+- Icons: `@/registry/default/lib/icon-context` (`useIcon`, `useIcons` hooks, `IconComponent` type)
+  - Components with internal icons: `import { useIcon } from "@/registry/default/lib/icon-context";`
   - Components accepting icon props: `import type { IconComponent } from "@/lib/icon-context";`
   - Doc pages: call `useIcon("icon-name")` inside the component function for each icon needed
   - Icon prop type is `IconComponent`, not `LucideIcon`

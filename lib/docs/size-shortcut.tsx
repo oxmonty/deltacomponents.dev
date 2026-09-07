@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 
-import { useSizeContext } from "@/lib/size-context";
+import { useSizeContext } from "@/registry/default/lib/size-context";
 
 /**
  * Docs-site-only global shortcut: S toggles the size variant. Mount once

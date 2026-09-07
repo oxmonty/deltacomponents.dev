@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 
-import { useShapeContext, shapeMap, type ShapeVariant } from "@/lib/shape-context";
+import { useShapeContext, shapeMap, type ShapeVariant } from "@/registry/default/lib/shape-context";
 
 const shapeOrder = Object.keys(shapeMap) as ShapeVariant[];
 
