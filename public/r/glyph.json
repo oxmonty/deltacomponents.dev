@@ -1,0 +1,22 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "glyph",
+  "title": "Glyph",
+  "description": "The Twitter/X-style verified checkmark, with the check cut out of the rosette as a real hole via an SVG mask so whatever sits behind it shows through.",
+  "registryDependencies": [
+    "https://deltacomponentsdev.vercel.app/r/utils.json"
+  ],
+  "files": [
+    {
+      "path": "registry/ui/glyph.tsx",
+      "content": "\"use client\";\n\nimport { forwardRef, useId, type SVGAttributes } from \"react\";\nimport { cn } from \"@/lib/utils\";\n\n// Rosette and check outlines are lucide's badge-check paths (ISC license),\n// not a dependency — only the coordinates are reused, in a 24x24 viewBox.\nconst ROSETTE_PATH =\n  \"M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z\";\nconst CHECK_PATH = \"m9 12 2 2 4-4\";\n\nexport interface GlyphProps extends SVGAttributes<SVGSVGElement> {\n  /** Fill color of the rosette. */\n  color?: string;\n  /** Size in pixels, applied to both width and height. */\n  size?: number;\n  /** Accessible label. Omit to keep the badge decorative (aria-hidden) when\n   *  it sits beside text that already announces \"verified\". */\n  label?: string;\n  className?: string;\n}\n\n/**\n * The Twitter/X-style verified checkmark: a rosette filled with `color`, with\n * the check cut out as a genuine hole via an SVG mask, so whatever sits\n * behind the badge (a photo, a gradient) shows through instead of a painted\n * checkmark seaming against it.\n *\n * The name is broader than the behaviour on purpose: the shape and the glyph\n * are fixed for now, but this is meant to grow into a mask-plus-icon\n * primitive — an arbitrary outline with an arbitrary glyph knocked out of it.\n * Generalising it needs more than another two props. A glyph drawn at icon\n * scale swallows the shape it sits in, so each one needs its own scale, and\n * then its own choice of stroke versus fill (a star wants a solid hole; an\n * open path like this check can only be stroked) and a nudge per shape, since\n * a shield's usable interior sits higher than a circle's. Worth doing against\n * a second real case, not ahead of one.\n */\nexport const Glyph = forwardRef<SVGSVGElement, GlyphProps>(\n  ({ color = \"#1d9bf0\", size = 20, label, className, ...props }, ref) => {\n    // useId() can return characters like \":\" (e.g. \":r0:\"), which isn't a\n    // legal SVG id in every engine.\n    const maskId = `glyph-${useId().replace(/:/g, \"\")}`;\n\n    return (\n      <svg\n        ref={ref}\n        viewBox=\"0 0 24 24\"\n        width={size}\n        height={size}\n        className={cn(className)}\n        {...(label\n          ? { role: \"img\" }\n          : { \"aria-hidden\": true, role: undefined })}\n        {...props}\n      >\n        {label && <title>{label}</title>}\n        <mask id={maskId}>\n          <path d={ROSETTE_PATH} fill=\"white\" />\n          <path\n            d={CHECK_PATH}\n            stroke=\"black\"\n            strokeWidth={2.5}\n            fill=\"none\"\n            strokeLinecap=\"round\"\n            strokeLinejoin=\"round\"\n          />\n        </mask>\n        <path d={ROSETTE_PATH} fill={color} mask={`url(#${maskId})`} />\n      </svg>\n    );\n  }\n);\n\nGlyph.displayName = \"Glyph\";\n",
+      "type": "registry:ui",
+      "target": "components/ui/glyph.tsx"
+    }
+  ],
+  "docs": "Docs & live playground: https://deltacomponents.dev/docs/glyph.",
+  "categories": [
+    "components"
+  ],
+  "type": "registry:ui"
+}

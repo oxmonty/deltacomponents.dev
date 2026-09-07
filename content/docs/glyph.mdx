@@ -1,0 +1,49 @@
+---
+description: "The Twitter/X-style verified checkmark, with the check cut out of the rosette as a real hole so whatever sits behind it shows through."
+---
+
+import { glyphProps } from "./glyph.props";
+
+<ComponentPreview name="glyph-demo" />
+
+The check isn't drawn on top of the rosette in a matching color — it's cut
+out of it with an SVG `mask`, leaving a genuine hole. Painting the check
+white (or whatever the surrounding background happens to be) only works on a
+flat card; the moment the badge sits over a photo or a gradient, the paint
+seams. A real hole never does, because there's nothing to match.
+
+## Installation
+
+<InstallTabs slug="glyph" />
+
+## Usage
+
+```tsx
+import { Glyph } from "@/components/ui/glyph";
+
+<Glyph />
+```
+
+## Basic
+
+<ComponentPreview name="glyph-basic" />
+
+## Colors
+
+<ComponentPreview name="glyph-colors" />
+
+## Sizes
+
+<ComponentPreview name="glyph-sizes" />
+
+## Accessible label
+
+<ComponentPreview name="glyph-label" />
+
+By default the badge is `aria-hidden` — it's meant to sit beside a name or
+title that already announces "verified". Pass `label` to announce it instead,
+which switches the badge to `role="img"` with an `<svg><title>`.
+
+## API Reference
+
+<PropsTable props={glyphProps} />

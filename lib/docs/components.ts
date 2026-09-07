@@ -39,6 +39,7 @@ export const componentList: ComponentEntry[] = [
   { slug: "tabs", name: "Tabs", isNew: true, gridSize: "medium" },
   { slug: "button", name: "Button", gridSize: "small" },
   { slug: "tooltip", name: "Tooltip", gridSize: "small" },
+  { slug: "glyph", name: "Glyph", isNew: true, gridSize: "small" },
 ];
 
 export interface PageLink {

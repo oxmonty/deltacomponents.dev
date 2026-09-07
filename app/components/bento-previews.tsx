@@ -2,6 +2,7 @@
 
 import { Button } from "@/registry/ui/button";
 import { Tooltip } from "@/registry/ui/tooltip";
+import { Glyph } from "@/registry/ui/glyph";
 import { Code } from "@/registry/ui/code";
 import { PATRICK_DARK } from "@/lib/docs/code-themes";
 import {
@@ -117,10 +118,21 @@ function TabsPreview() {
   );
 }
 
+function GlyphPreview() {
+  return (
+    // A gradient stage, not a flat card: the knockout only reads as a hole
+    // when what's behind the badge isn't a solid color.
+    <div className="flex size-16 items-center justify-center rounded-full bg-[conic-gradient(from_180deg,#f97316,#ec4899,#8b5cf6,#f97316)]">
+      <Glyph size={32} />
+    </div>
+  );
+}
+
 export const previewMap: Record<string, React.FC> = {
   tabs: TabsPreview,
   "product-card": ProductCardPreview,
   "code": CodePreview,
   button: ButtonPreview,
   tooltip: TooltipPreview,
+  "glyph": GlyphPreview,
 };

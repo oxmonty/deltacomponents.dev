@@ -466,6 +466,26 @@
       "categories": [
         "components"
       ]
+    },
+    {
+      "name": "glyph",
+      "type": "registry:ui",
+      "title": "Glyph",
+      "description": "The Twitter/X-style verified checkmark, with the check cut out of the rosette as a real hole via an SVG mask so whatever sits behind it shows through.",
+      "registryDependencies": [
+        "utils"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/glyph.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/glyph.tsx"
+        }
+      ],
+      "docs": "Docs & live playground: https://deltacomponents.dev/docs/glyph.",
+      "categories": [
+        "components"
+      ]
     }
   ]
 }

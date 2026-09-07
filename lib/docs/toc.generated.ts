@@ -86,6 +86,43 @@ export const TOC: Record<string, TocEntry[]> = {
       "depth": 2
     }
   ],
+  "/docs/glyph": [
+    {
+      "id": "installation",
+      "text": "Installation",
+      "depth": 2
+    },
+    {
+      "id": "usage",
+      "text": "Usage",
+      "depth": 2
+    },
+    {
+      "id": "basic",
+      "text": "Basic",
+      "depth": 2
+    },
+    {
+      "id": "colors",
+      "text": "Colors",
+      "depth": 2
+    },
+    {
+      "id": "sizes",
+      "text": "Sizes",
+      "depth": 2
+    },
+    {
+      "id": "accessible-label",
+      "text": "Accessible label",
+      "depth": 2
+    },
+    {
+      "id": "api-reference",
+      "text": "API Reference",
+      "depth": 2
+    }
+  ],
   "/docs": [
     {
       "id": "tbd",

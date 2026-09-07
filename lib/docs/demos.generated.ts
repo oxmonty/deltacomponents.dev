@@ -12,6 +12,11 @@ import DemoCodeCodeCustomTheme from "@/content/demos/code/code-custom-theme";
 import DemoCodeCodeDemo from "@/content/demos/code/code-demo";
 import DemoCodeCodeExpandable from "@/content/demos/code/code-expandable";
 import DemoCodeCodePackageManagers from "@/content/demos/code/code-package-managers";
+import DemoGlyphGlyphBasic from "@/content/demos/glyph/glyph-basic";
+import DemoGlyphGlyphColors from "@/content/demos/glyph/glyph-colors";
+import DemoGlyphGlyphDemo from "@/content/demos/glyph/glyph-demo";
+import DemoGlyphGlyphLabel from "@/content/demos/glyph/glyph-label";
+import DemoGlyphGlyphSizes from "@/content/demos/glyph/glyph-sizes";
 import DemoProductCardProductCardBadge from "@/content/demos/product-card/product-card-badge";
 import DemoProductCardProductCardBasic from "@/content/demos/product-card/product-card-basic";
 import DemoProductCardProductCardDemo from "@/content/demos/product-card/product-card-demo";
@@ -74,6 +79,26 @@ export const demos: Record<string, DemoEntry> = {
   "code-package-managers": {
     Component: DemoCodeCodePackageManagers,
     source: "import { Code } from \"@/components/ui/code\";\n\nexport default function CodePackageManagers() {\n  return (\n    <div className=\"w-full max-w-[520px]\">\n      <Code code={\"```npx\\nshadcn@latest add code\\n```\"} />\n    </div>\n  );\n}",
+  },
+  "glyph-basic": {
+    Component: DemoGlyphGlyphBasic,
+    source: "import { Glyph } from \"@/components/ui/glyph\";\n\nexport default function GlyphBasic() {\n  return (\n    <div className=\"flex items-center gap-1.5\">\n      <span style={{ fontVariationSettings: \"'wght' 550\" }}>Ada Lovelace</span>\n      <Glyph />\n    </div>\n  );\n}",
+  },
+  "glyph-colors": {
+    Component: DemoGlyphGlyphColors,
+    source: "import { Glyph } from \"@/components/ui/glyph\";\n\nexport default function GlyphColors() {\n  return (\n    <div className=\"flex items-center gap-4\">\n      <Glyph color=\"#1d9bf0\" />\n      <Glyph color=\"#22c55e\" />\n      <Glyph color=\"#f59e0b\" />\n      <Glyph color=\"#8b5cf6\" />\n      <Glyph color=\"#000000\" />\n    </div>\n  );\n}",
+  },
+  "glyph-demo": {
+    Component: DemoGlyphGlyphDemo,
+    source: "import { BadgeCheck } from \"lucide-react\";\nimport { Glyph } from \"@/components/ui/glyph\";\n\n// A gradient tile, not a flat card: the knockout only reads as a hole when\n// what sits behind the badge isn't a solid color.\nfunction Tile({ children }: { children: React.ReactNode }) {\n  return (\n    <div className=\"flex size-24 items-center justify-center rounded-2xl bg-[conic-gradient(from_180deg,#f97316,#ec4899,#8b5cf6,#f97316)]\">\n      {children}\n    </div>\n  );\n}\n\nexport default function GlyphDemo() {\n  return (\n    <div className=\"flex items-center gap-10\">\n      <div className=\"flex flex-col items-center gap-2\">\n        <Tile>\n          <Glyph size={40} />\n        </Tile>\n        <span className=\"text-caption text-muted-foreground\">Knockout</span>\n      </div>\n      {/* The conventional approach: a solid icon painted on top. It matches\n          on a flat card, then seams the moment it sits over anything else. */}\n      <div className=\"flex flex-col items-center gap-2\">\n        <Tile>\n          <BadgeCheck\n            size={40}\n            fill=\"#1d9bf0\"\n            stroke=\"white\"\n            strokeWidth={2}\n          />\n        </Tile>\n        <span className=\"text-caption text-muted-foreground\">Painted</span>\n      </div>\n    </div>\n  );\n}",
+  },
+  "glyph-label": {
+    Component: DemoGlyphGlyphLabel,
+    source: "import { Glyph } from \"@/components/ui/glyph\";\n\nexport default function GlyphLabel() {\n  return (\n    <div className=\"flex items-center gap-1.5\">\n      <Glyph label=\"Verified account\" />\n      <span className=\"text-caption text-muted-foreground\">\n        Announced to screen readers instead of hidden.\n      </span>\n    </div>\n  );\n}",
+  },
+  "glyph-sizes": {
+    Component: DemoGlyphGlyphSizes,
+    source: "import { Glyph } from \"@/components/ui/glyph\";\n\nexport default function GlyphSizes() {\n  return (\n    <div className=\"flex items-end gap-4\">\n      <Glyph size={14} />\n      <Glyph size={20} />\n      <Glyph size={32} />\n      <Glyph size={48} />\n    </div>\n  );\n}",
   },
   "product-card-badge": {
     Component: DemoProductCardProductCardBadge,
