@@ -40,11 +40,12 @@ export const mdxComponents: MDXComponents = {
   // and its content in one flex column, and MDX emits the two as flat
   // siblings. The rhythm moves to margins on the body wrapper instead (see
   // `mdxBodyClass`), which is the only way to space a flat run of elements.
-  // A page's h1 is the route's own title, so markdown should not normally
-  // carry one — but an unmapped heading renders as raw browser default, which
-  // is worse than a duplicate. Mapped for completeness, at the same role.
+  // The page already has an h1 — the route renders the component's name from
+  // `componentList` — so a `#` in the body is a second one, which is wrong for
+  // both the outline and the type. It renders as an h2, identical to `##`:
+  // headings in a doc page start at level two by definition.
   h1: ({ id, children }: ComponentProps<"h1">) => (
-    <AnchoredHeading as="h2" id={id} className="text-display text-foreground leading-none">
+    <AnchoredHeading id={id} className="text-heading text-foreground leading-none">
       {String(children)}
     </AnchoredHeading>
   ),

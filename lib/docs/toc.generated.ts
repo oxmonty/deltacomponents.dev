@@ -83,14 +83,14 @@ export const TOC: Record<string, TocEntry[]> = {
     {
       "id": "tbd",
       "text": "TBD",
-      "depth": 3
+      "depth": 2
     }
   ],
   "/docs": [
     {
       "id": "tbd",
       "text": "TBD",
-      "depth": 3
+      "depth": 2
     }
   ],
   "/docs/product-card": [
