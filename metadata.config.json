@@ -7,8 +7,8 @@
     "accent": "#E5E5E5"
   },
   "logo": null,
-  "faviconSrc": null,
-  "faviconLetter": "DC",
+  "faviconSrc": "public/logo.svg",
+  "faviconLetter": null,
   "faviconTransparent": true,
   "faviconLetterSize": 50,
   "faviconDarkBg": "#000000",
