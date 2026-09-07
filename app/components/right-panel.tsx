@@ -9,8 +9,8 @@ import {
   useShape,
   useShapeContext,
   type ShapeVariant,
-} from "@/registry/lib/shape-context";
-import { useSizeContext, type SizeVariant } from "@/registry/lib/size-context";
+} from "@/lib/docs/shape-context";
+import { useSizeContext, type SizeVariant } from "@/lib/docs/size-context";
 import { useThemeContext, type Theme } from "@/lib/theme-context";
 import { useIcon } from "@/registry/lib/icon-context";
 import {
@@ -121,7 +121,7 @@ export function GitHubStarButton({ showCount = true }: { showCount?: boolean }) 
 }
 
 /** The inner settings content — reused in the right column and mobile drawer. */
-export function SettingsContent({ tooltipSide = "left" }: { tooltipSide?: "left" | "right" | "top" | "bottom" }) {
+export function SettingsContent() {
   const { theme, setTheme } = useThemeContext();
   const { shape, setShape } = useShapeContext();
   const { size, setSize } = useSizeContext();
@@ -164,72 +164,64 @@ export function SettingsContent({ tooltipSide = "left" }: { tooltipSide?: "left"
     <div className="flex flex-col gap-2">
       {/* Theme, Radius & Icons selects */}
       <div className="flex flex-col gap-1.5 py-3">
-        <Tooltip content={<span>Press &ensp;<kbd className="font-mono opacity-50">T</kbd>&ensp; to cycle</span>} side={tooltipSide}>
-          <div className="flex items-center justify-between">
-            <span className="text-body text-muted-foreground">Theme</span>
-            <NativeSelect
-              aria-label="Theme"
-              value={theme}
-              onChange={(e) => setTheme(e.target.value as Theme)}
-              icon={ActiveThemeIcon ? <ActiveThemeIcon size={16} strokeWidth={1.5} /> : undefined}
-            >
-              {themeOptions.map((o) => (
-                <NativeSelectOption key={o.value} value={o.value}>
-                  {o.label}
-                </NativeSelectOption>
-              ))}
-            </NativeSelect>
-          </div>
-        </Tooltip>
-        <Tooltip content={<span>Press &ensp;<kbd className="font-mono opacity-50">R</kbd>&ensp; to toggle</span>} side={tooltipSide}>
-          <div className="flex items-center justify-between">
-            <span className="text-body text-muted-foreground">Radius</span>
-            <NativeSelect
-              aria-label="Radius"
-              value={shape}
-              onChange={(e) => setShape(e.target.value as ShapeVariant)}
-              icon={ActiveShapeIcon ? <ActiveShapeIcon size={16} strokeWidth={1.5} /> : undefined}
-            >
-              {shapeOptions.map((o) => (
-                <NativeSelectOption key={o.value} value={o.value}>
-                  {o.label}
-                </NativeSelectOption>
-              ))}
-            </NativeSelect>
-          </div>
-        </Tooltip>
-        <Tooltip content={<span>Press &ensp;<kbd className="font-mono opacity-50">S</kbd>&ensp; to toggle</span>} side={tooltipSide}>
-          <div className="flex items-center justify-between">
-            <span className="text-body text-muted-foreground">Size</span>
-            <NativeSelect
-              aria-label="Size"
-              value={size}
-              onChange={(e) => setSize(e.target.value as SizeVariant)}
-            >
-              {sizeOptions.map((o) => (
-                <NativeSelectOption key={o.value} value={o.value}>
-                  {o.label}
-                </NativeSelectOption>
-              ))}
-            </NativeSelect>
-          </div>
-        </Tooltip>
-        <Tooltip content={<span>Press &ensp;<kbd className="font-mono opacity-50">I</kbd>&ensp; to cycle</span>} side={tooltipSide}>
-          <div className="flex items-center justify-between">
-            <span className="text-body text-muted-foreground">Icons</span>
-            <NativeSelect
-              aria-label="Icons"
-              value={iconLibrary}
-              onChange={(e) => setIconLibrary(e.target.value as IconLibrary)}
-            >
-              {iconOptions.map((o) => (
-                <NativeSelectOption key={o.value} value={o.value}>
-                  {o.label}
-                </NativeSelectOption>
-              ))}
-            </NativeSelect>
-          </div>
-        </Tooltip>
+        <div className="flex items-center justify-between">
+          <span className="text-body text-muted-foreground">Theme</span>
+          <NativeSelect
+            aria-label="Theme"
+            value={theme}
+            onChange={(e) => setTheme(e.target.value as Theme)}
+            icon={ActiveThemeIcon ? <ActiveThemeIcon size={16} strokeWidth={1.5} /> : undefined}
+          >
+            {themeOptions.map((o) => (
+              <NativeSelectOption key={o.value} value={o.value}>
+                {o.label}
+              </NativeSelectOption>
+            ))}
+          </NativeSelect>
+        </div>
+        <div className="flex items-center justify-between">
+          <span className="text-body text-muted-foreground">Radius</span>
+          <NativeSelect
+            aria-label="Radius"
+            value={shape}
+            onChange={(e) => setShape(e.target.value as ShapeVariant)}
+            icon={ActiveShapeIcon ? <ActiveShapeIcon size={16} strokeWidth={1.5} /> : undefined}
+          >
+            {shapeOptions.map((o) => (
+              <NativeSelectOption key={o.value} value={o.value}>
+                {o.label}
+              </NativeSelectOption>
+            ))}
+          </NativeSelect>
+        </div>
+        <div className="flex items-center justify-between">
+          <span className="text-body text-muted-foreground">Size</span>
+          <NativeSelect
+            aria-label="Size"
+            value={size}
+            onChange={(e) => setSize(e.target.value as SizeVariant)}
+          >
+            {sizeOptions.map((o) => (
+              <NativeSelectOption key={o.value} value={o.value}>
+                {o.label}
+              </NativeSelectOption>
+            ))}
+          </NativeSelect>
+        </div>
+        <div className="flex items-center justify-between">
+          <span className="text-body text-muted-foreground">Icons</span>
+          <NativeSelect
+            aria-label="Icons"
+            value={iconLibrary}
+            onChange={(e) => setIconLibrary(e.target.value as IconLibrary)}
+          >
+            {iconOptions.map((o) => (
+              <NativeSelectOption key={o.value} value={o.value}>
+                {o.label}
+              </NativeSelectOption>
+            ))}
+          </NativeSelect>
+        </div>
       </div>
 
     </div>
@@ -369,7 +361,7 @@ export function RightPanel() {
               </h2>
               <GitHubStarButton />
             </div>
-            <SettingsContent tooltipSide="left" />
+            <SettingsContent />
             {/* Desktop's home for the credit. Below xl this panel is gone and
                 SiteFooter carries it instead. */}
             <AuthorCredit />

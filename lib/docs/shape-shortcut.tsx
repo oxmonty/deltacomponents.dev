@@ -2,14 +2,13 @@
 
 import { useEffect } from "react";
 
-import { useShapeContext, shapeMap, type ShapeVariant } from "@/registry/lib/shape-context";
+import { useShapeContext, shapeMap, type ShapeVariant } from "@/lib/docs/shape-context";
 
 const shapeOrder = Object.keys(shapeMap) as ShapeVariant[];
 
 /**
  * Docs-site-only global shortcut: R cycles the radius variant. Mount once
- * inside ShapeProvider. Lives here (not in the installed shape-context) so
- * consumer apps never get a bare-keypress listener on document.
+ * inside ShapeProvider.
  */
 export function ShapeShortcut() {
   const { shape, setShape } = useShapeContext();

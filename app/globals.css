@@ -466,11 +466,11 @@ html, body {
 
 /* ── Type-scale roles ─────────────────────────────────────────────────────
    Site-chrome font sizes ride these variables instead of fixed px so the
-   whole site follows the size ladder. The docs-only SizeAttribute component
-   (lib/docs/size-attribute.tsx) mirrors the active step onto
-   <html data-size>; values must stay in sync with `typeScale` in
-   registry/lib/size-context.tsx. `display` keeps its responsive
-   pair (mobile / ≥sm) from the old text-[22px] sm:text-[28px] titles.
+   whole site follows the size ladder. The docs-only SizeProvider
+   (lib/docs/size-context.tsx) mirrors the active step onto <html data-size>;
+   values must stay in sync with `typeScale` in that same file. `display`
+   keeps its responsive pair (mobile / ≥sm) from the old text-[22px]
+   sm:text-[28px] titles.
 
    `prose` is the reading role — doc page descriptions, section copy, props
    descriptions. It sits a step above `body` because body is a CONTROL label
@@ -504,6 +504,20 @@ html, body {
   --fs-table: 14px;
   --fs-body: 13px;
   --fs-caption: 13px;
+
+  /* Control-size ladder: the height/padding/text/gap/icon scale every
+     registry control (Button, and anything else on the same ladder) reads
+     directly, instead of a SizeProvider React context. Default here; [data-
+     size="compact"] below overrides it for whatever subtree a docs-only
+     SizeProvider (lib/docs/size-context.tsx), or Button's own root when an
+     explicit compact size is requested, scopes. */
+  --control-h: 36px;
+  --control-px: 16px;
+  --control-text: 13px;
+  --control-gap: 6px;
+  --control-icon-box: 36px;
+  --control-icon-glyph: 16px;
+  --control-icon-pad: 10px;
 }
 
 @media (min-width: 640px) {
@@ -514,7 +528,10 @@ html, body {
   }
 }
 
-html[data-size="compact"] {
+/* Plain attribute selector, NOT html[data-size=...], so any wrapper — not
+   just <html> — can scope its own subtree the same way [data-radius="pill"]
+   does above. */
+[data-size="compact"] {
   --fs-display: 23px;
   --fs-heading: 18px;
   --fs-subheading: 16px;
@@ -524,10 +541,18 @@ html[data-size="compact"] {
   --fs-table: 13px;
   --fs-body: 12px;
   --fs-caption: 12px;
+
+  --control-h: 28px;
+  --control-px: 12px;
+  --control-text: 12px;
+  --control-gap: 4px;
+  --control-icon-box: 28px;
+  --control-icon-glyph: 14px;
+  --control-icon-pad: 6px;
 }
 
 @media (min-width: 640px) {
-  html[data-size="compact"] {
+  [data-size="compact"] {
     --fs-display: 26px;
     --fs-heading: 21px;
     --fs-subheading: 17px;
@@ -580,6 +605,44 @@ html[data-size="compact"] {
   }
 }
 
+/* ── Shape radius tokens ──────────────────────────────────────────────────
+   Registry components (Button, Tooltip, Tabs, ProductCard) read these
+   directly — `rounded-[var(--radius-*)]` — instead of a ShapeProvider React
+   context, so a published component needs no provider. Rounded is the
+   default on :root because that's what the site itself renders
+   (ShapeProvider mounts with defaultShape="rounded" — lib/docs/shape-
+   context.tsx); [data-radius="pill"] overrides it for whatever subtree the
+   provider scopes.
+
+   Plain attribute selector, NOT html[data-radius=...], so any wrapper — not
+   just <html> — can scope its own subtree. Portalled content (tooltips,
+   dropdown menus) escapes the subtree it renders from and is appended near
+   <body>, so it inherits whatever value lives on <html> rather than a
+   closer wrapper's override.
+
+   Role names match the ShapeClasses `shapeMap` in lib/docs/shape-context.tsx
+   (site chrome only, kept for the Customise card and other chrome that still
+   wants matching Tailwind classes rather than raw vars). */
+:root {
+  --radius-item: 8px;
+  --radius-bg: 8px;
+  --radius-focus-ring: 10px;
+  --radius-merged-bg: 8px;
+  --radius-container: 12px;
+  --radius-button: 8px;
+  --radius-input: 8px;
+}
+
+[data-radius="pill"] {
+  --radius-item: 20px;
+  --radius-bg: 20px;
+  --radius-focus-ring: 22px;
+  --radius-merged-bg: 16px;
+  --radius-container: 24px;
+  --radius-button: 20px;
+  --radius-input: 20px;
+}
+
 /* Shape cross-fade: ShapeProvider adds `.transitioning` around the rounded↔pill
    swap so corners tween instead of snapping. Theme changes deliberately do NOT
    use this — they suppress transitions instead (see theme-context.tsx), since a
@@ -596,15 +659,16 @@ html.transitioning *::after {
    OS accent color. Lives in @layer base so `outline-none` (utilities layer)
    still wins — components that draw their own ring aren't double-ringed,
    and elements with their own radius utility keep it. The radius rides
-   --shape-input-radius (published by ShapeProvider) so the ring corners
-   match the borderless select in both shape modes; 8px = the rounded-mode
-   default for pre-hydration paint. Enforced by the focus-ring lint rule in
+   --radius-input directly (no ShapeProvider JS needed to publish it — it's
+   already a real custom property above) so the ring corners match the
+   borderless select in both shape modes; 8px = the rounded-mode default for
+   pre-hydration paint. Enforced by the focus-ring lint rule in
    eslint.config.mjs. */
 @layer base {
   :focus-visible {
     outline: 1px solid var(--focus-ring, #6B97FF);
     outline-offset: 2px;
-    border-radius: var(--shape-input-radius, 8px);
+    border-radius: var(--radius-input, 8px);
   }
 
   /* Prose links are inline text boxes — the shape-system radius reads

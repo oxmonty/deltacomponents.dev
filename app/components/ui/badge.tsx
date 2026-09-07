@@ -3,8 +3,8 @@
 import { forwardRef, type HTMLAttributes } from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/registry/lib/utils";
-import { useShape } from "@/registry/lib/shape-context";
-import { useSizeVariant } from "@/registry/lib/size-context";
+import { useShape } from "@/lib/docs/shape-context";
+import { useSizeVariant } from "@/lib/docs/size-context";
 
 const badgeColors = {
   gray: "#a3a3a3",

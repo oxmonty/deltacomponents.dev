@@ -3,7 +3,6 @@
 import * as React from "react"
 
 import { cn } from "@/registry/lib/utils"
-import { useShape } from "@/registry/lib/shape-context"
 
 /* ------------------------------------------------------------------
  * Context for sharing state between compound components
@@ -66,7 +65,6 @@ const ProductCard = React.forwardRef<HTMLDivElement, ProductCardProps>(
     },
     ref
   ) => {
-    const shape = useShape()
     const normalizedSize = normalizeSize(size)
     return (
       <ProductCardContext.Provider value={{ variant, size, animated }}>
@@ -74,7 +72,7 @@ const ProductCard = React.forwardRef<HTMLDivElement, ProductCardProps>(
           ref={ref}
           className={cn(
             "w-full cursor-pointer overflow-hidden",
-            shape.container,
+            "rounded-[var(--radius-container,12px)]",
             // The size step caps the card's own width as well as scaling what
             // is inside it, so `size` reads as a size rather than only as
             // padding. `w-full` keeps it from overflowing a narrower box — in
@@ -115,14 +113,13 @@ const ProductCardImage = React.forwardRef<
 >(({ className, src, alt, imageClassName, children, ...props }, ref) => {
   const { variant, size, animated } = useProductCardContext()
   const normalizedSize = normalizeSize(size)
-  const shape = useShape()
 
   return (
     <div
       ref={ref}
       className={cn(
         "relative aspect-square w-full overflow-hidden transition-colors duration-300",
-        shape.container,
+        "rounded-[var(--radius-container,12px)]",
         "bg-muted",
         "[&:hover]:bg-muted/80 [&:active]:bg-muted/80",
         animated &&
@@ -177,7 +174,6 @@ const ProductCardBadge = React.forwardRef<
 >(({ className, isActive = false, icon, children, onClick, ...props }, ref) => {
   const { size } = useProductCardContext()
   const normalizedSize = normalizeSize(size)
-  const shape = useShape()
 
   return (
     <button
@@ -189,7 +185,7 @@ const ProductCardBadge = React.forwardRef<
       }}
       className={cn(
         "absolute flex items-center gap-1 font-medium transition-colors",
-        shape.button,
+        "rounded-[var(--radius-button,8px)]",
         normalizedSize === "sm" &&
           "top-1.5 right-1.5 px-1.5 py-0.5 text-[10px]",
         normalizedSize === "default" && "top-2 right-2 px-2 py-1 text-xs",

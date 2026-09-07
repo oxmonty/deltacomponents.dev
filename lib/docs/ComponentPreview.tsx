@@ -3,7 +3,7 @@
 import { useRef, type MouseEvent, type ReactNode } from "react";
 import { routeKeyboardOnMouseDown } from "@/lib/click-to-focus";
 import { fontWeights } from "@/registry/lib/font-weight";
-import { useShape } from "@/registry/lib/shape-context";
+import { useShape } from "@/lib/docs/shape-context";
 import { useIcon } from "@/registry/lib/icon-context";
 import { Tooltip } from "@/registry/ui/tooltip";
 import { Code } from "@/registry/ui/code";

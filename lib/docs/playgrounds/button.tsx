@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useIcon } from "@/registry/lib/icon-context";
-import { useSizeVariant } from "@/registry/lib/size-context";
+import { useSizeVariant } from "@/lib/docs/size-context";
 import { Button } from "@/registry/ui/button";
 import { Switch } from "@/lib/docs/switch";
 import {

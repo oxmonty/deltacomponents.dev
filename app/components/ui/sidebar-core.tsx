@@ -24,8 +24,8 @@ import {
 import { cn } from "@/registry/lib/utils";
 import { motionHoldMs } from "@/registry/lib/motion";
 import { fontWeights } from "@/registry/lib/font-weight";
-import { useShape } from "@/registry/lib/shape-context";
-import { useSize, useSizeVariant } from "@/registry/lib/size-context";
+import { useShape } from "@/lib/docs/shape-context";
+import { useSize, useSizeVariant } from "@/lib/docs/size-context";
 import { useIcon } from "@/registry/lib/icon-context";
 import { useSurface, SurfaceProvider } from "@/registry/lib/surface-context";
 import { surfaceClasses } from "@/registry/lib/surface-classes";

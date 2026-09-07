@@ -11,7 +11,6 @@ import {
 import { Tooltip as TooltipPrimitive } from "@base-ui/react/tooltip";
 import { cn } from "@/registry/lib/utils";
 import { fontWeights } from "@/registry/lib/font-weight";
-import { useShape } from "@/registry/lib/shape-context";
 
 // ---------------------------------------------------------------------------
 // Portal container context
@@ -139,7 +138,6 @@ function Tooltip({
 }: TooltipProps) {
   const [internalOpen, setInternalOpen] = useState(false);
   const open = forceOpen !== undefined ? forceOpen : internalOpen;
-  const shape = useShape();
   const portalContainer = useContext(TooltipPortalContainerContext);
   const hasAmbientProvider = useContext(TooltipGroupContext);
 
@@ -193,7 +191,7 @@ function Tooltip({
               // height (~26px) as untrimmed browsers.
               "bg-foreground text-background text-[12px] px-2 py-1",
               "[text-box:trim-both_cap_alphabetic] supports-[text-box:trim-both]:py-2",
-              shape.bg,
+              "rounded-[var(--radius-bg,8px)]",
               "transition-[opacity,transform] duration-(--motion-fast) ease-spring",
               "data-[ending-style]:duration-(--motion-fast-exit)",
               "data-[starting-style]:opacity-0 data-[ending-style]:opacity-0",

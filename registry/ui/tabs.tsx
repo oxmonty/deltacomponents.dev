@@ -3,7 +3,6 @@
 import * as React from "react";
 
 import { cn } from "@/registry/lib/utils";
-import { useShape } from "@/registry/lib/shape-context";
 import { useSurface } from "@/registry/lib/surface-context";
 import { surfaceClasses } from "@/registry/lib/surface-classes";
 
@@ -164,13 +163,17 @@ const indicatorHeight: Record<TabSize, string> = {
 
 /** Outer (list) and inner (trigger, indicator) radius classes.
  *
- *  Both come from the shape system rather than fixed pixels, so the Radius
- *  control in the docs — and any consumer's own ShapeProvider — moves the tabs
- *  with everything else. The concentric pair works out because `container` sits
- *  exactly 4px above `bg` in both shapes (12/8 rounded, 24/20 pill) and 4px is
- *  the list's padding: outer = inner + padding, which is the whole rule. */
-function radii(shape: ReturnType<typeof useShape>, concentric: boolean) {
-  return { outer: concentric ? shape.container : shape.bg, inner: shape.bg };
+ *  Both read the `--radius-*` custom properties in globals.css rather than
+ *  fixed pixels, so the Radius control in the docs — and any consumer's own
+ *  `data-radius` scope — moves the tabs with everything else. The concentric
+ *  pair works out because `--radius-container` sits exactly 4px above
+ *  `--radius-bg` in both shapes (12/8 rounded, 24/20 pill) and 4px is the
+ *  list's padding: outer = inner + padding, which is the whole rule. */
+function radii(concentric: boolean) {
+  return {
+    outer: concentric ? "rounded-[var(--radius-container,12px)]" : "rounded-[var(--radius-bg,8px)]",
+    inner: "rounded-[var(--radius-bg,8px)]",
+  };
 }
 
 // The indicator (and the hover wash) sit at 0,0 and read their real position
@@ -203,8 +206,7 @@ function TabsList({ children, className }: TabsListProps) {
     setActiveTab,
     triggerElements,
   } = useTabs();
-  const shape = useShape();
-  const { outer, inner } = radii(shape, concentric);
+  const { outer, inner } = radii(concentric);
   const substrate = useSurface();
   // bg two steps up so the pill clears the track in both themes; shadow one
   // step up so the chip stays quiet rather than reading as a popover.
@@ -380,8 +382,8 @@ function TabsList({ children, className }: TabsListProps) {
   );
 }
 
-// 13px is the control-label step the size system uses everywhere (see
-// `size-context`). `lg` steps the type up as well as the box — `text-body` is
+// 13px is the control-label step the size system uses everywhere (see the
+// `--control-*` tokens in globals.css). `lg` steps the type up as well as the box — `text-body` is
 // 13px in this ladder, the same as `text-caption`, so leaving it there gave the
 // large variant a taller row with a label no bigger than the small one's.
 const triggerSize: Record<TabSize, string> = {
@@ -408,8 +410,7 @@ const TabsTrigger = React.forwardRef<HTMLButtonElement, TabsTriggerProps>(
   ({ value, children, className, disabled = false, icon }, forwardedRef) => {
     const { activeTab, setActiveTab, variant, size, concentric, baseId, triggerElements } =
       useTabs();
-    const shape = useShape();
-    const { inner } = radii(shape, concentric);
+    const { inner } = radii(concentric);
     const isActive = activeTab === value;
 
     // Registers this trigger by its value, not a mount-order index, so a
@@ -502,9 +503,6 @@ interface TabsContentProps {
   /** Render this panel from the first render instead of waiting for it to
    *  become active — for crawlers, or content that must exist up front. */
   forceMount?: boolean;
-  /** Fade the panel in on entry. Off by default: for a heavy panel the fade
-   *  is the thing that makes a tab switch feel slow. */
-  fadeIn?: boolean;
 }
 
 function TabsContent({
@@ -512,7 +510,6 @@ function TabsContent({
   children,
   className,
   forceMount = false,
-  fadeIn = false,
 }: TabsContentProps) {
   const { activeTab, baseId, activatedTabs } = useTabs();
   const isActive = activeTab === value;
@@ -540,16 +537,6 @@ function TabsContent({
       className={cn(
         "mt-2 outline-none",
         "focus-visible:ring-1 focus-visible:ring-[color:var(--focus-ring,#6B97FF)]",
-        // `hidden` is plain `display: none`, which a transition can't
-        // normally animate out of — `allow-discrete` plus `@starting-style`
-        // is what lets `display` itself ride the same transition as opacity,
-        // so a panel can fade in the moment it stops being hidden.
-        fadeIn && [
-          "opacity-100 starting:opacity-0",
-          "[&[hidden]]:opacity-0",
-          "transition-[opacity,display] [transition-behavior:allow-discrete]",
-          "duration-(--motion-moderate) ease-spring",
-        ],
         className
       )}
     >

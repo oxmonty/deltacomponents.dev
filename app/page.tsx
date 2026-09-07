@@ -10,8 +10,12 @@ import { Button } from "@/registry/ui/button";
 export default function Page() {
   const { prev, next } = neighbours("/");
 
+  // No top margin on the outer element: the docs layout opens every other page
+  // on `py-20 sm:py-28` alone, and an extra offset here put the showcase title
+  // 48px lower than every title a reader pages to next. The mobile header is
+  // sticky, so it already occupies layout space and there is nothing to clear.
   return (
-    <div className="mt-12 lg:mt-0">
+    <div>
       <div className="w-full max-w-[680px] mx-auto py-20 sm:py-28 px-6">
         <DocHeader
           title="Delta Components"

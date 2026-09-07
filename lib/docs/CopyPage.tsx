@@ -7,8 +7,8 @@ import { usePathname } from "next/navigation";
 import { Button } from "@/registry/ui/button";
 import { Tooltip } from "@/registry/ui/tooltip";
 import { useIcon } from "@/registry/lib/icon-context";
-// import { useShape } from "@/registry/lib/shape-context";
-import { useSizeVariant } from "@/registry/lib/size-context";
+// import { useShape } from "@/lib/docs/shape-context";
+import { useSizeVariant } from "@/lib/docs/size-context";
 // import { cn } from "@/registry/lib/utils";
 
 // /** The prompt an assistant opens with. It carries the markdown URL rather than

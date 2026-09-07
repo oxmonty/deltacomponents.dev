@@ -6,7 +6,7 @@ import { Button } from "@/registry/ui/button";
 import { Tooltip } from "@/registry/ui/tooltip";
 import { fontWeights } from "@/registry/lib/font-weight";
 import { useIcon } from "@/registry/lib/icon-context";
-import { useSizeVariant } from "@/registry/lib/size-context";
+import { useSizeVariant } from "@/lib/docs/size-context";
 import { CopyPage } from "@/lib/docs/CopyPage";
 import type { PageLink } from "@/lib/docs/components";
 

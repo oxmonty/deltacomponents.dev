@@ -3,13 +3,12 @@ import { cookies } from "next/headers";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-import { ShapeProvider } from "@/registry/lib/shape-context";
-import { SizeProvider } from "@/registry/lib/size-context";
+import { ShapeProvider } from "@/lib/docs/shape-context";
+import { SizeProvider } from "@/lib/docs/size-context";
 import { ThemeProvider } from "@/lib/theme-context";
 import { IconPlaygroundProvider } from "@/lib/docs/icon-playground";
 import { ShapeShortcut } from "@/lib/docs/shape-shortcut";
 import { SizeShortcut } from "@/lib/docs/size-shortcut";
-import { SizeAttribute } from "@/lib/docs/size-attribute";
 import { SettingsToast } from "@/lib/docs/settings-toast";
 import { HashScroll } from "@/lib/docs/hash-scroll";
 import { RouteScrollTop } from "@/lib/docs/route-scroll";
@@ -124,7 +123,6 @@ export default async function RootLayout({
           <ShapeShortcut />
           <SizeProvider>
             <SizeShortcut />
-            <SizeAttribute />
             <ThemeProvider>
               <IconPlaygroundProvider defaultLibrary="untitledui">
                 <SidebarLayout defaultOpen={sidebarDefaultOpen}>{children}</SidebarLayout>

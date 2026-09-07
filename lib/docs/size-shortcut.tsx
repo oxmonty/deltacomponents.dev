@@ -2,12 +2,11 @@
 
 import { useEffect } from "react";
 
-import { useSizeContext } from "@/registry/lib/size-context";
+import { useSizeContext } from "@/lib/docs/size-context";
 
 /**
  * Docs-site-only global shortcut: S toggles the size variant. Mount once
- * inside SizeProvider. Lives here (not in the installed size-context) so
- * consumer apps never get a bare-keypress listener on document.
+ * inside SizeProvider.
  */
 export function SizeShortcut() {
   const { size, setSize } = useSizeContext();

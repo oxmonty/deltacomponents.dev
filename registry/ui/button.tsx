@@ -12,12 +12,24 @@ import { Button as ButtonPrimitive } from "@base-ui/react/button";
 import { cva, type VariantProps } from "class-variance-authority";
 import type { IconComponent } from "@/registry/lib/icon-context";
 import { cn } from "@/registry/lib/utils";
-import { useShape } from "@/registry/lib/shape-context";
-import { useSizeVariant } from "@/registry/lib/size-context";
+
+// The two-step size ladder shared by every control (default = 36px control
+// height, compact = 28px for dense surfaces) rides `--control-*` custom
+// properties instead of two sets of literal classes — see the size ladder in
+// globals.css. `:root` carries the default values; `[data-size="compact"]`
+// overrides them, either from an ancestor (e.g. a docs-only SizeProvider) or
+// from this component's own root (see `resolvedSize` below), so a button
+// resolves the right size whether it's driven by an explicit prop or by
+// whatever scope it's rendered in — with no context import required.
+const controlSize =
+  "h-[var(--control-h,36px)] px-[var(--control-px,16px)] text-[length:var(--control-text,13px)] gap-[var(--control-gap,6px)]";
+const iconOnlySize =
+  "size-[var(--control-icon-box,36px)] p-0 [&_svg]:size-[var(--control-icon-glyph,16px)]";
 
 const buttonVariants = cva(
   [
     "group relative isolate inline-flex items-center justify-center outline-none cursor-pointer",
+    "rounded-[var(--radius-button,8px)]",
     "transition-colors duration-80",
     "disabled:opacity-50 disabled:pointer-events-none",
     "focus-visible:ring-1 focus-visible:ring-[color:var(--focus-ring,#6B97FF)]",
@@ -30,22 +42,18 @@ const buttonVariants = cva(
         tertiary: "text-foreground",
         ghost: "text-muted-foreground hover:text-foreground",
       },
-      // The two-step size ladder shared by every control — see the size ladder in globals.css.
-      // default = 36px control height, compact = 28px for dense surfaces.
       size: {
-        default: "h-9 px-4 text-[13px] gap-1.5",
-        compact: "h-7 px-3 text-[12px] gap-1",
-        icon: "h-9 w-9 p-0 [&_svg]:h-4 [&_svg]:w-4",
-        "icon-compact": "h-7 w-7 p-0 [&_svg]:h-3.5 [&_svg]:w-3.5",
+        default: controlSize,
+        compact: controlSize,
+        icon: iconOnlySize,
+        "icon-compact": iconOnlySize,
       },
       iconLeft: { true: "" },
       iconRight: { true: "" },
     },
     compoundVariants: [
-      { size: "compact", iconLeft: true, className: "pl-[6px]" },
-      { size: "default", iconLeft: true, className: "pl-[10px]" },
-      { size: "compact", iconRight: true, className: "pr-[6px]" },
-      { size: "default", iconRight: true, className: "pr-[10px]" },
+      { iconLeft: true, className: "pl-[var(--control-icon-pad,10px)]" },
+      { iconRight: true, className: "pr-[var(--control-icon-pad,10px)]" },
     ],
     defaultVariants: {
       variant: "primary",
@@ -78,8 +86,9 @@ const legacySizeAliases: Partial<Record<ButtonSize, ButtonSizeCanonical>> = {
 interface ButtonProps
   extends ButtonHTMLAttributes<HTMLButtonElement>,
     Omit<VariantProps<typeof buttonVariants>, "size"> {
-  /** Omitted, the button follows the surrounding SizeProvider (default 36px,
-   *  compact 28px). Legacy sm/md/lg values still resolve. */
+  /** Omitted, the button follows the ambient `data-size` scope (default 36px,
+   *  compact 28px) — see the `--control-*` tokens in globals.css. Legacy
+   *  sm/md/lg values still resolve. */
   size?: ButtonSize;
   /** When true, the given single React-element child becomes the rendered element (slot-style). */
   asChild?: boolean;
@@ -162,22 +171,23 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           }>)
         : null;
     const label = asChildElement ? asChildElement.props.children : children;
-    // Resolve the size: explicit prop (legacy aliases mapped onto the
-    // canonical ladder) > surrounding SizeProvider > default.
-    const contextSize = useSizeVariant();
+    // Resolve the size from the explicit prop alone (legacy aliases mapped
+    // onto the canonical ladder) — no ambient SizeProvider read. Falling
+    // outside an explicit prop, "default" is just the JS fallback; the
+    // *rendered* size still follows an ambient `data-size="compact"`
+    // ancestor via the `--control-*` vars in buttonVariants, CSS handles
+    // that resolution on its own.
     const resolvedSize: ButtonSizeCanonical = size
       ? legacySizeAliases[size] ?? (size as ButtonSizeCanonical)
-      : contextSize === "compact"
-        ? "compact"
-        : "default";
+      : "default";
     const isIconOnly = resolvedSize === "icon" || resolvedSize === "icon-compact";
     const isCompact =
       resolvedSize === "compact" || resolvedSize === "icon-compact";
+    // Best-effort JS fallback for icon components that don't size off the
+    // `size-[var(--control-icon-glyph,16px)]` class below (e.g. a non-SVG glyph
+    // font) — accurate whenever `size` was passed explicitly, otherwise just
+    // the default-tier glyph size until CSS corrects it.
     const iconSize = isCompact ? 14 : 16;
-    // Spinner box tracks the button height so the loading glyph stays
-    // proportionate across sizes.
-    const spinnerSizeClass = isCompact ? "h-7 w-7" : "h-9 w-9";
-    const shape = useShape();
     const bgClass = active
       ? activeBgVariants[variant ?? "primary"]
       : bgVariants[variant ?? "primary"];
@@ -196,16 +206,18 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
             <>
               <span className="flex items-center justify-center gap-[inherit] opacity-0">
                 {LeadingIcon && !isIconOnly && (
-                  <LeadingIcon size={iconSize} strokeWidth={2} />
+                  <LeadingIcon size={iconSize} strokeWidth={2} className="size-[var(--control-icon-glyph,16px)]" />
                 )}
                 {label}
                 {TrailingIcon && !isIconOnly && (
-                  <TrailingIcon size={iconSize} strokeWidth={2} />
+                  <TrailingIcon size={iconSize} strokeWidth={2} className="size-[var(--control-icon-glyph,16px)]" />
                 )}
               </span>
               <span className="absolute inset-0 flex items-center justify-center">
+                {/* Tracks the button height so the loading glyph stays
+                    proportionate across sizes, ambient or explicit. */}
                 <svg
-                  className={spinnerSizeClass}
+                  className="size-[var(--control-h,36px)]"
                   viewBox="0 0 24 24"
                   fill="none"
                 >
@@ -233,7 +245,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
                 <LeadingIcon
                   size={iconSize}
                   strokeWidth={1.5}
-                  className="transition-[stroke-width] duration-80 group-hover:stroke-[2]"
+                  className="size-[var(--control-icon-glyph,16px)] transition-[stroke-width] duration-80 group-hover:stroke-[2]"
                 />
               )}
               {/* text-box only applies to block containers, so the trim lives
@@ -245,7 +257,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
                 <TrailingIcon
                   size={iconSize}
                   strokeWidth={1.5}
-                  className="transition-[stroke-width] duration-80 group-hover:stroke-[2]"
+                  className="size-[var(--control-icon-glyph,16px)] transition-[stroke-width] duration-80 group-hover:stroke-[2]"
                 />
               )}
             </>
@@ -261,9 +273,14 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         iconLeft: !isIconOnly && !!LeadingIcon,
         iconRight: !isIconOnly && !!TrailingIcon,
       }),
-      shape.button,
       className
     );
+    // An explicit compact size must win over whatever `--control-*` values an
+    // ambient data-size="compact" ancestor (or lack of one) would otherwise
+    // resolve to. Setting the attribute here — not just relying on the class
+    // above — makes the override apply on the element itself, where a plain
+    // attribute selector beats inheritance from any ancestor.
+    const dataSize = isCompact ? "compact" : undefined;
 
     if (asChildElement) {
       const childProps = asChildElement.props;
@@ -271,6 +288,11 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         asChildElement,
         {
           ...props,
+          // Spread, not a literal key: cloneElement's inferred config type is
+          // narrower than ButtonHTMLAttributes (it only knows the target
+          // element's own props), so a literal "data-size" key fails
+          // TypeScript's excess-property check the way a spread doesn't.
+          ...(dataSize ? { "data-size": dataSize } : {}),
           ref,
           className: cn(rootClassName, childProps.className),
           style: { ...style, ...childProps.style },
@@ -285,6 +307,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         // keep the public ref type narrow so consumers see the right type.
         ref={ref as React.Ref<HTMLButtonElement>}
         className={rootClassName}
+        data-size={dataSize}
         disabled={disabled || loading}
         style={style}
         {...props}

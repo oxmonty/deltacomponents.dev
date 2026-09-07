@@ -76,6 +76,14 @@ function useShapeContext() {
   return ctx;
 }
 
+/**
+ * Site-chrome only. Published registry components don't consume this — they
+ * read the `--radius-*` custom properties in globals.css directly, scoped by
+ * the `data-radius` attribute this provider writes onto `<html>`. This
+ * context exists so the docs site's own chrome (the Customise card, the
+ * sidebar, ComponentPreview, …) can read/set the live shape variant and get
+ * the matching Tailwind classes without re-deriving them from the attribute.
+ */
 function ShapeProvider({
   children,
   defaultShape = "pill",
@@ -83,6 +91,10 @@ function ShapeProvider({
   children: ReactNode;
   defaultShape?: ShapeVariant;
 }) {
+  // Mirrors SizeProvider's guard: only the outermost provider (no ambient
+  // ShapeContext above it) writes the document-level attribute, so a future
+  // nested/scoped ShapeProvider can't stomp the app-wide radius.
+  const isRoot = useContext(ShapeContext) === null;
   const [shape, setShapeState] = useState<ShapeVariant>(defaultShape);
   const transitionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -108,16 +120,16 @@ function ShapeProvider({
     [transitionShape]
   );
 
-  // Publish the current element radius as a CSS custom property so plain-CSS
-  // consumers that can't read React context stay in sync with the shape
-  // system — e.g. the @layer base :focus-visible fallback ring in
-  // globals.css. Set on <html> so portalled content sees it too.
+  // Mirrors the active shape onto `<html data-radius>` so the plain-CSS
+  // `--radius-*` tokens in globals.css (which registry components read
+  // directly) follow it. Set on <html> so portalled content sees it too.
   useEffect(() => {
-    document.documentElement.style.setProperty(
-      "--shape-input-radius",
-      `${shapeMap[shape].bgRadius}px`
-    );
-  }, [shape]);
+    if (!isRoot) return;
+    document.documentElement.dataset.radius = shape;
+    return () => {
+      delete document.documentElement.dataset.radius;
+    };
+  }, [isRoot, shape]);
 
   const value = useMemo(
     () => ({ shape, setShape, classes: shapeMap[shape] }),

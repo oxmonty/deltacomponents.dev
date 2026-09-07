@@ -25,7 +25,6 @@ export const triggerProps: PropDef[] = [
 export const contentProps: PropDef[] = [
   { name: "value", type: "string", description: "Matches the `value` of the trigger that reveals this panel." },
   { name: "forceMount", type: "boolean", default: "false", description: "Render this panel from the first render instead of waiting for it to become active." },
-  { name: "fadeIn", type: "boolean", default: "false", description: "Fade the panel in on entry." },
 ];
 
 export const fromArrayProps: PropDef[] = [

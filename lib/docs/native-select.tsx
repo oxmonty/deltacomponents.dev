@@ -3,7 +3,7 @@
 import type { ComponentProps, ReactNode } from "react";
 import { cn } from "@/registry/lib/utils";
 import { useIcon } from "@/registry/lib/icon-context";
-import { useShape } from "@/registry/lib/shape-context";
+import { useShape } from "@/lib/docs/shape-context";
 
 /**
  * A real `<select>`, dressed to sit in the properties card.

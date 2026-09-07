@@ -16,7 +16,7 @@ import {
 } from "react";
 import { ScrollArea as ScrollAreaPrimitive } from "@base-ui/react/scroll-area";
 import { cn } from "@/registry/lib/utils";
-import { useShape } from "@/registry/lib/shape-context";
+import { useShape } from "@/lib/docs/shape-context";
 import { useTouchPrimary } from "@/lib/hooks/use-touch-primary";
 
 // On touch-primary devices the Base UI machinery is skipped entirely in

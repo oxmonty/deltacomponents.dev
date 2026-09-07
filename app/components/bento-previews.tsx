@@ -100,7 +100,7 @@ function TabsPreview() {
         ))}
       </TabsList>
       {/* The panels differ only in one line, so the stage is pinned to a
-          single row's height and they cross-fade in the same spot rather than
+          single row's height and they swap in the same spot rather than
           resizing the card as the reader clicks through. */}
       <div className="relative min-h-[24px]">
         {TABS_ITEMS.map((tab) => (
@@ -108,7 +108,6 @@ function TabsPreview() {
             key={tab.value}
             value={tab.value}
             className="absolute inset-x-0 top-0"
-            fadeIn
           >
             <p className="text-caption text-muted-foreground">{tab.copy}</p>
           </TabsContent>

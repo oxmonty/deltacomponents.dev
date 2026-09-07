@@ -217,11 +217,6 @@ export const TOC: Record<string, TocEntry[]> = {
       "depth": 2
     },
     {
-      "id": "animated-panels",
-      "text": "Animated panels",
-      "depth": 2
-    },
-    {
       "id": "api-reference",
       "text": "API Reference",
       "depth": 2

@@ -4,6 +4,7 @@ import {
   createContext,
   useContext,
   useState,
+  useEffect,
   useCallback,
   useMemo,
   type ReactNode,
@@ -151,6 +152,14 @@ function useSizeContext() {
   return ctx;
 }
 
+/**
+ * Site-chrome only. Published registry components don't consume this — they
+ * read the `--control-*` custom properties in globals.css directly, scoped by
+ * the `data-size` attribute this provider writes onto `<html>`. This context
+ * exists so the docs site's own chrome (the Customise card, the sidebar,
+ * DocHeader, …) can read/set the live size variant and get the matching
+ * Tailwind classes without re-deriving them from the attribute.
+ */
 function SizeProvider({
   children,
   size,
@@ -162,6 +171,12 @@ function SizeProvider({
   size?: SizeVariant;
   defaultSize?: SizeVariant;
 }) {
+  // SidebarMenu nests a scoped SizeProvider per-instance to pin a subtree's
+  // *React consumers* (useSize/useSizeVariant) without touching <html> — only
+  // the outermost provider (no ambient SizeContext above it) owns the
+  // document-level attribute, so a nested one mounting/unmounting can't stomp
+  // the app-wide size the root provider is tracking.
+  const isRoot = useContext(SizeContext) === null;
   const [internalSize, setInternalSize] = useState<SizeVariant>(defaultSize);
   const isControlled = size !== undefined;
   const resolved = size ?? internalSize;
@@ -176,6 +191,17 @@ function SizeProvider({
     },
     [isControlled]
   );
+
+  // Mirrors the active size onto `<html data-size>` so the plain-CSS
+  // `--control-*`/`--fs-*` tokens in globals.css (which registry components
+  // and docs typography read directly) follow it.
+  useEffect(() => {
+    if (!isRoot) return;
+    document.documentElement.dataset.size = resolved;
+    return () => {
+      delete document.documentElement.dataset.size;
+    };
+  }, [isRoot, resolved]);
 
   const value = useMemo(
     () => ({ size: resolved, setSize, classes: sizeMap[resolved] }),
