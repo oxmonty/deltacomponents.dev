@@ -6,8 +6,7 @@ import { Switch as SwitchPrimitive } from "@base-ui/react/switch";
 import { cn } from "@/lib/utils";
 import { useSize, type SizeVariant } from "@/lib/size-context";
 
-/** Docs-chrome toggle: the Inspect switch on a preview header and the boolean
- *  controls in the right-panel playgrounds.
+/** Docs-chrome toggle: the boolean controls in the right-panel playgrounds.
  *
  *  Not a published component — it lives here rather than in `registry/` on
  *  purpose. The registry's Switch was retired with framer-motion, and nothing

@@ -315,7 +315,7 @@ export default function TabsDoc() {
         </DocSubSection>
 
         <DocSubSection title="TabsContent">
-          <p className="text-caption text-muted-foreground">
+          <p className="text-prose text-muted-foreground text-pretty">
             A panel mounts the first time its tab becomes active, then stays
             mounted — hidden, not unmounted, when another tab is selected —
             so content backed by an API doesn&apos;t refetch and flash empty
@@ -326,7 +326,7 @@ export default function TabsDoc() {
         </DocSubSection>
 
         <DocSubSection title="TabsFromArray">
-          <p className="text-caption text-muted-foreground">
+          <p className="text-prose text-muted-foreground text-pretty">
             The same tabs, driven by an array of <code>TabItem</code> objects
             instead of JSX — for a list that comes from a config or an API
             rather than being written out by hand.

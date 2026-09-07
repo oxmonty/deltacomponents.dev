@@ -1,13 +1,11 @@
 "use client";
 
-import { useState, useRef, type MouseEvent, type ReactNode } from "react";
+import { useRef, type MouseEvent, type ReactNode } from "react";
 import { routeKeyboardOnMouseDown } from "@/lib/click-to-focus";
 import { fontWeights } from "@/registry/default/lib/font-weight";
 import { useShape } from "@/registry/default/lib/shape-context";
 import { useIcon } from "@/registry/default/lib/icon-context";
 import { Tooltip } from "@/registry/base/tooltip";
-import { Switch } from "@/components/ui/switch";
-import { InspectOverlay } from "./InspectOverlay";
 import { Code } from "@/registry/default/code";
 import { useNarrowFrame } from "@/lib/use-narrow-frame";
 
@@ -63,17 +61,6 @@ interface ComponentPreviewProps {
    *  "top" suits content that grows downward — an accordion opening a panel
    *  shouldn't shift the rows above it. */
   align?: "top" | "center" | "bottom";
-  /** Show the Inspect toggle (pixel rulers + box-model inspector). Defaults to
-   *  true; set false for previews where an overlay would get in the way. */
-  inspectable?: boolean;
-  /** Start with Inspect already on — for previews whose subject IS the
-   *  geometry. The toggle still works. */
-  defaultInspect?: boolean;
-  /** Draw the inspector's top/left pixel rulers. Defaults to true; set false
-   *  for full-width/full-height demos where the rulers would overlap (or be
-   *  masked by) the component's own chrome — the crosshair, box model, and
-   *  measurement tooltip still work. */
-  inspectRulers?: boolean;
   /** Drop the header row entirely — the frame shows just the demo (and the
    *  code, if given). For gallery-style rows where the chrome would repeat
    *  three times for one code sample. */
@@ -93,19 +80,14 @@ export function ComponentPreview({
   expandLabel = "View code",
   minHeightClass = "min-h-[120px]",
   align = "center",
-  inspectable = true,
-  defaultInspect = false,
-  inspectRulers = true,
   hideHeader = false,
   caption,
   children,
 }: ComponentPreviewProps) {
-  const [inspect, setInspect] = useState(defaultInspect);
   const narrow = useNarrowFrame();
   const shape = useShape();
   const ReplayIcon = useIcon("rotate-ccw");
   const previewRef = useRef<HTMLDivElement>(null);
-  const frameRef = useRef<HTMLDivElement>(null);
 
   // Clicking an empty part of the preview routes keyboard control into the demo
   // (focuses its first interactive element). Clicking outside / Tab away hands
@@ -116,9 +98,10 @@ export function ComponentPreview({
     routeKeyboardOnMouseDown(e, previewRef.current);
 
   const showButton = !!playbackButton || !!onReplay;
-  // The header only carries the extras now that the tabs are gone, so it earns
-  // its 52px only when one of them is actually there.
-  const showHeader = !hideHeader && (!!title || inspectable || showButton);
+  // The header carries a title and the replay button and nothing else, so it
+  // earns its height only when one of them is actually there — most previews
+  // have neither and the demo owns the whole frame.
+  const showHeader = !hideHeader && (!!title || showButton);
   // Collapse the source only when there is enough of it to be worth hiding.
   // Most playground snippets are a line or two, and clipping those buries the
   // whole thing under the Expand gradient for no gain — the affordance would
@@ -130,19 +113,15 @@ export function ComponentPreview({
 
   const frame = (
     <div
-      ref={frameRef}
-      // `isolate` scopes the frame's internal z ladder (the z-[70] tab bar,
-      // the inspect overlay's layers) to its own stacking context, so a
-      // portalled dialog's z-50 overlay dims the WHOLE frame instead of
-      // sliding underneath the header.
+      // `isolate` scopes the frame's internal z ladder to its own stacking
+      // context, so a portalled dialog's z-50 overlay dims the WHOLE frame
+      // instead of sliding underneath the header.
       className={`relative isolate flex flex-col gap-0 w-full border border-border/60 ${shape.container}`}
     >
-      {/* Control strip. With the Preview/Code tabs gone it carries only the
-          extras, so it is slim and right-aligned rather than a tab bar; the
-          min-height still reserves the playback button's height so the header
-          doesn't shift when that button mounts. Its own opaque background sits
-          above the inspect overlay's ruler layer (z-[70] > z-[60]) so the ruler
-          ticks tuck cleanly under it. */}
+      {/* Control strip. It carries only the title and the replay button, so it
+          is slim and right-aligned rather than a tab bar; the min-height still
+          reserves the button's height so the header doesn't shift when that
+          button mounts. */}
       {showHeader && (
       <div
         className="relative z-[70] flex items-center gap-0 px-3 py-2 min-h-[44px] border-b border-border/60 bg-background"
@@ -157,32 +136,6 @@ export function ComponentPreview({
           </span>
         )}
         <div className="ml-auto flex items-center gap-1">
-          {inspectable && (
-            // Toggling Inspect must not dismiss whatever the preview has open
-            // (a dropdown, a popover) — inspecting THAT state is the point.
-            // The demos' menus are non-modal, so they dismiss on any outside
-            // pointerdown reaching the document and on focus moving outside.
-            // stopIMMEDIATEPropagation is what blocks them: the App Router
-            // hydrates React on `document`, so Radix's document listener sits
-            // on the same node as React's delegation and plain stopPropagation
-            // can't cut it off. preventDefault on mousedown keeps focus (and
-            // the focus-out dismissal) where it is; the Switch still toggles
-            // on click.
-            <span
-              onPointerDown={(e) => e.nativeEvent.stopImmediatePropagation()}
-              onMouseDown={(e) => {
-                e.preventDefault();
-                e.nativeEvent.stopImmediatePropagation();
-              }}
-            >
-              <Switch
-                label="Inspect"
-                checked={inspect}
-                onToggle={() => setInspect((v) => !v)}
-                className="h-8 px-2 rounded-md"
-              />
-            </span>
-          )}
           {showButton && (
             <Tooltip content={playbackButton?.tooltip ?? "Replay animation"} side="top">
               <button
@@ -258,22 +211,6 @@ export function ComponentPreview({
           />
         )}
       </div>
-
-      {/* Inspector — sits over the whole frame so its rulers reach the outer
-          border and clear the header toggles. Mounted once for the life of
-          any inspectable preview (rather than mounted/unmounted with the
-          toggle) so the Inspect switch fades it in/out with a plain CSS
-          transition instead of framer's exit animation — previews that opt
-          out of inspecting entirely (`inspectable={false}`) still never pay
-          for it. */}
-      {inspectable && (
-        <InspectOverlay
-          active={inspect}
-          frameRef={frameRef}
-          contentRef={previewRef}
-          rulers={inspectRulers}
-        />
-      )}
     </div>
   );
 

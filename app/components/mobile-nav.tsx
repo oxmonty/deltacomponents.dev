@@ -62,7 +62,12 @@ export function MobileNav() {
   }, [pathname]);
 
   return (
-    <Popover.Root open={open} onOpenChange={setOpen}>
+    // `modal` locks the document's scroll and stops pointer interaction
+    // reaching the page while the menu is open — without it the site scrolled
+    // freely behind a panel that covers the whole screen. Base UI only holds
+    // that lock on touch when the popup spans nearly the full viewport width,
+    // which this one does (`--available-width` with `collisionPadding={0}`).
+    <Popover.Root open={open} onOpenChange={setOpen} modal>
       <Popover.Trigger
         aria-label={open ? "Close menu" : "Open menu"}
         className="relative flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center"
@@ -110,6 +115,11 @@ export function MobileNav() {
               "data-[ending-style]:-translate-y-2 data-[ending-style]:opacity-0 data-[ending-style]:duration-(--motion-moderate-exit)"
             )}
           >
+            {/* Base UI enables focus trapping under `modal` only when a Close
+                is rendered inside the popup, and touch screen readers need one
+                to escape. Visually hidden: the hamburger above is the visible
+                way out. */}
+            <Popover.Close className="sr-only">Close menu</Popover.Close>
             <div className="flex flex-col gap-8 px-6 py-6">
               <NavGroup label="Menu">
                 {sectionList.map((section) => (
