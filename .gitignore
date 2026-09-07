@@ -33,8 +33,12 @@ pnpm-debug.log*
 # vercel
 .vercel
 
-# claude code agent state (local-only)
-.claude/
+# claude code agent state (local-only) — but not the skills, which are project
+# documentation and belong in the repo. The directory has to be excluded by its
+# contents rather than by itself: git will not re-include a path whose parent
+# directory is excluded.
+.claude/*
+!.claude/skills/
 
 # typescript
 *.tsbuildinfo

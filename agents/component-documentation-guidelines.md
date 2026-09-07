@@ -14,11 +14,10 @@ Checklist and conventions for documenting every new component in this project. F
 - [ ] CVA (`class-variance-authority`) for variant/size management if the component has visual variants
 - [ ] Named exports for the component, sub-components, variant helper, and props type
 - [ ] Any text that changes weight on state (selected/checked/active/open) uses the **ghost-span pattern** (see below) — never animate weight on text without reserving its width
-- [ ] Any animation uses a tier from `@/lib/springs` — `spring.<tier>` to enter, `spring.<tier>.exit` to leave (see [motion-guidelines.md](motion-guidelines.md))
+- [ ] Any animation is **CSS** — a duration tier and the shared easing, as custom properties. There is no animation library in this repo and nothing may add one (see [motion-guidelines.md](motion-guidelines.md))
 - [ ] Uses `@/` path aliases for all internal imports:
   ```ts
   import { cn } from "@/lib/utils";
-  import { springs } from "@/lib/springs";
   import { fontWeights } from "@/lib/font-weight";
   import { useShape } from "@/lib/shape-context";
   import { useIcon } from "@/lib/icon-context";
@@ -36,7 +35,7 @@ Add an item to the `items` array:
   "type": "registry:ui",               // or registry:lib / registry:hook
   "title": "Component Name",           // human-readable
   "description": "One-two sentence description of what it does and key features.",
-  "dependencies": ["framer-motion"],   // npm packages (only those not already in the project)
+  "dependencies": ["class-variance-authority"], // npm packages (only those not already in the project)
   "registryDependencies": ["utils"],   // other registry items this depends on
   "files": [
     { "path": "registry/default/component-name.tsx", "type": "registry:ui" }
@@ -46,8 +45,9 @@ Add an item to the `items` array:
 ```
 
 **Field rules:**
-- `dependencies` = external npm packages (framer-motion, @radix-ui/*, lucide-react, class-variance-authority)
-- `registryDependencies` = other items in this registry (utils, springs, font-weight, shape-context, icon-context, use-proximity-hover, or other components like button)
+- `dependencies` = external npm packages (`@base-ui/react`, `lucide-react`, `class-variance-authority`)
+- `registryDependencies` = other items in this registry (utils, motion, font-weight, shape-context, size-context, icon-context, use-proximity-hover, or other components like button)
+- **Every file needs a `target`** — where `shadcn add` writes it in the consumer's project. `scripts/build-demos.ts` reads these to rewrite the import paths shown in demo code panels, so a missing one makes the docs advertise this repo's internal path
 - Components that render icons depend on `icon-context` only — never add icon packages beyond `lucide-react` as `dependencies` (consumers bring their own via IconProvider)
 - Multi-file components list all files in the `files` array
 
@@ -65,62 +65,83 @@ Run the registry build script (`make registry`) to generate the JSON file. It mu
 Add an entry to `componentList`:
 
 ```ts
-{ slug: "component-name", name: "ComponentName", description: "Short description." }
+{ slug: "component-name", name: "ComponentName", isNew: true, gridSize: "medium" }
 ```
 
-- `slug` must match the folder name under `app/docs/`
-- `description` should be concise (one sentence)
+- `slug` must match the registry `name` and the MDX filename under `content/docs/`
+- `name` is the exported identifier in PascalCase; `labelOf` spaces it for display
+- **Position in the array is the reading order** — sidebar, prev/next arrows and
+  the ←/→ shortcuts all read it
+- `gridSize` (`large` / `medium` / `small`) sizes the showcase card
+- **No `description`** — that lives in the page's own frontmatter, next to the
+  prose it introduces
 
-### 5. Documentation Page (`app/docs/<component-name>/page.tsx`)
+Also add a preview to `previewMap` in `app/components/bento-previews.tsx`, keyed
+by slug. A component with no entry is silently skipped on the showcase.
 
-This is the main deliverable. Structure:
+### 5. Documentation Page (`content/docs/<component-name>.mdx`)
+
+The main deliverable, and it is **MDX** — there is no page component to write.
+`app/docs/[slug]/page.tsx` picks the page up from `componentList` and supplies
+the title, the prev/next arrows and the reading column.
+
+Three files:
+
+| File | Holds |
+| --- | --- |
+| `content/docs/<slug>.mdx` | Frontmatter `description`, headings, prose, demo tags |
+| `content/demos/<slug>/<slug>-<what>.tsx` | One default-exported component per demo |
+| `content/docs/<slug>.props.ts` | The `PropDef[]` arrays |
+
+````mdx
+---
+description: "One sentence: what it is and why you would reach for it."
+---
+
+import { componentProps } from "./component-name.props";
+
+<ComponentPreview name="component-name-demo" />
+
+## Installation
+
+<InstallTabs slug="component-name" />
+
+## Usage
 
 ```tsx
-"use client";
+import { ComponentName } from "@/components/ui/component-name";
 
-import { useState } from "react";
-import { ComponentName } from "@/registry/default/component-name";
-import { ComponentPreview } from "@/lib/docs/ComponentPreview";
-import { PropsTable, type PropDef } from "@/lib/docs/PropsTable";
-import { DocPage, DocSection } from "@/lib/docs/DocPage";
-
-// --- Code snippets as string constants ---
-const basicCode = `import { ComponentName } from "./components";
-
-<ComponentName />`;
-
-// --- Props table data ---
-const componentProps: PropDef[] = [
-  { name: "variant", type: '"a" | "b"', default: '"a"', description: "Visual style." },
-  // ...
-];
-
-export default function ComponentNameDoc() {
-  return (
-    <DocPage
-      title="ComponentName"
-      description="One-two sentence description matching the registry."
-    >
-      <DocSection title="Basic">
-        <ComponentPreview code={basicCode}>
-          {/* Live interactive preview */}
-          <ComponentName />
-        </ComponentPreview>
-      </DocSection>
-
-      {/* One DocSection per feature/variant */}
-
-      <DocSection title="API Reference">
-        <PropsTable props={componentProps} />
-      </DocSection>
-    </DocPage>
-  );
-}
+<ComponentName />
 ```
+
+## Basic
+
+<ComponentPreview name="component-name-basic" />
+
+## API Reference
+
+<PropsTable props={componentProps} />
+````
+
+`ComponentPreview`, `InstallTabs`, `Playground`, `PropsTable`, `Step` and
+`Steps` are in scope without importing them — only the props file needs an
+import.
+
+A demo imports from this repo's real path (`@/registry/default/...`); the build
+rewrites the *displayed* import to the consumer's `@/components/ui/...` using
+the `target` fields in `registry.json`. Fenced blocks are hand-written, so they
+use the consumer's path directly.
+
+Run `make demos` after adding or renaming a demo, and `make toc` after adding or
+renaming a heading.
+
+**See the [component-docs skill](/.claude/skills/component-docs/SKILL.md) for the
+full page structure** — heading order, which example sections exist, and the
+props-table rules.
 
 ### 6. Motion
 
-If the component animates, add it to the "Where each speed shows up" table in [motion-guidelines.md](motion-guidelines.md). Pick the spring tier by the component's headline motion (small state flip → `fast`; panel/indicator that travels → `moderate`; surface that takes over the view → `slow`), enter on that tier, and exit one tier faster. See [motion-guidelines.md](motion-guidelines.md) for the full motion checklist.
+If the component animates, add it to the "Where each speed shows up" table in [motion-guidelines.md](motion-guidelines.md). Pick the duration tier by the component's headline motion (small state flip → `fast`; panel/indicator that travels → `moderate`; surface that takes over the view → `slow`), enter on that tier, and exit one tier faster. See [motion-guidelines.md](motion-guidelines.md) for the full motion checklist.
 
 ---
 
@@ -278,8 +299,9 @@ interface PropDef {
 | Component file | kebab-case | `radio-group.tsx` |
 | Component export | PascalCase | `RadioGroup` |
 | Registry name | kebab-case | `radio-group` |
-| Doc page folder | kebab-case | `app/docs/radio-group/` |
-| Doc page file | `page.tsx` | `app/docs/radio-group/page.tsx` |
+| Doc page file | kebab-case `.mdx` | `content/docs/radio-group.mdx` |
+| Demo file | `<slug>-<what>.tsx` | `content/demos/radio-group/radio-group-basic.tsx` |
+| Props file | `<slug>.props.ts` | `content/docs/radio-group.props.ts` |
 | Doc component list slug | kebab-case | `radio-group` |
 | Props type | PascalCase + Props | `RadioGroupProps` |
 
@@ -291,26 +313,39 @@ interface PropDef {
 registry/default/
   component-name.tsx          ← component source
   lib/utils.ts                ← shared utilities
-  lib/springs.ts              ← animation tokens
+  lib/motion.ts               ← duration tiers + easing, as CSS custom properties
   lib/font-weight.ts          ← font weight tokens
   lib/shape-context.tsx        ← shape provider (no key shortcut — that's docs-only)
   lib/icon-context.tsx         ← icon slots, Lucide defaults, IconProvider override
   hooks/use-proximity-hover.ts ← proximity hook
 
+content/
+  docs/<slug>.mdx              ← the doc page body (frontmatter + markdown)
+  docs/<slug>.props.ts         ← PropDef[] arrays the API Reference renders
+  demos/<slug>/*.tsx           ← one default-exported component per demo
+
 lib/docs/
-  ComponentPreview.tsx         ← preview + code tabs
+  ComponentPreview.tsx         ← preview frame; resolves a demo by name
   PropsTable.tsx               ← props documentation table
-  DocPage.tsx                  ← DocPage + DocSection wrappers
-  components.ts                ← component list for sidebar nav
-  highlight.ts                 ← Shiki syntax highlighting
+  DocPage.tsx                  ← page chrome + the heading/prose roles
+  mdx-components.tsx           ← what every MDX element renders as
+  PlaygroundSection.tsx        ← <Playground slug="..." />, keyed sandboxes
+  components.ts                ← component list: order, labels, grid size, dots
+  demos.generated.ts           ← generated by `make demos` — do not edit
+  toc.generated.ts             ← generated by `make toc` — do not edit
   icon-map.tsx                 ← docs-only multi-library icon map (Tabler/Phosphor/…)
   icon-playground.tsx          ← docs-only library switcher provider + "I" shortcut
   shape-shortcut.tsx           ← docs-only "R" radius shortcut
 
 app/docs/
-  layout.tsx                   ← sidebar layout (reads componentList)
-  page.tsx                     ← index page (lists all components)
-  <component-name>/page.tsx    ← individual doc pages
+  layout.tsx                   ← the docs reading column
+  page.tsx                     ← the introduction
+  [slug]/page.tsx              ← every component page, from componentList
+  contributing/page.tsx        ← the contributing section
+
+scripts/
+  build-demos.ts               ← content/demos/**  -> lib/docs/demos.generated.ts
+  build-toc.ts                 ← content/docs/*.mdx -> lib/docs/toc.generated.ts
 
 registry.json                  ← shadcn registry source of truth
 public/r/<name>.json           ← generated registry JSONs

@@ -5,8 +5,9 @@ Start here, then read the guide that matches what you are about to change.
 
 | Guide | Read it before |
 | --- | --- |
-| [component-documentation-guidelines.md](/agents/component-documentation-guidelines.md) | Adding a component — its source, registry entry and props |
-| [component-docs skill](/.claude/skills/component-docs/SKILL.md) | Writing or restructuring a doc page under `app/docs/` |
+| [add-component skill](/.claude/skills/add-component/SKILL.md) | Adding a component — the end-to-end checklist, registry entry included |
+| [component-docs skill](/.claude/skills/component-docs/SKILL.md) | Writing or restructuring a doc page under `content/docs/`, or adding a demo |
+| [component-documentation-guidelines.md](/agents/component-documentation-guidelines.md) | The long-form mechanics — props tables, the ghost-span pattern, file locations |
 | [motion-guidelines.md](/agents/motion-guidelines.md) | Adding or changing any animation |
 
 ## Ground rules
@@ -21,7 +22,14 @@ Start here, then read the guide that matches what you are about to change.
 - **Two registry tiers.** `registry/base/` is primitive-backed (Base UI),
   `registry/default/` is primitive-agnostic. A new component goes in one of
   them, gets an entry in `registry.json`, a slug in `lib/docs/components.ts`, a
-  preview in `app/components/bento-previews.tsx`, and a page under `app/docs/`.
+  preview in `app/components/bento-previews.tsx`, and a page under
+  `content/docs/`. See the add-component skill for the full order.
+- **Doc pages are MDX.** `content/docs/<slug>.mdx` for the body,
+  `content/demos/<slug>/` for its demos, `content/docs/<slug>.props.ts` for the
+  prop tables. One route renders them all — there is no page component to write.
+- **`lib/docs/*.generated.ts` is generated.** `make demos` after touching
+  `content/demos/`, `make toc` after adding or renaming a heading. `make test`
+  fails if either has drifted.
 - **`components/ui/` is the site's own.** Not published, not in the registry —
   chrome the docs site needs for itself.
 - **Run `make registry` after touching `registry.json`** or any file it lists,
