@@ -7,8 +7,8 @@ system is `app/globals.css`, the single source of truth for every token.
 
 | Guide | Read it before |
 | --- | --- |
-| [add-component skill](/.claude/skills/add-component/SKILL.md) | Adding a component — the end-to-end checklist, registry entry included |
-| [component-docs skill](/.claude/skills/component-docs/SKILL.md) | Writing or restructuring a doc page under `content/docs/`, or adding a demo |
+| [add-component skill](/agents/skills/add-component/SKILL.md) | Adding a component — the end-to-end checklist, registry entry included |
+| [component-docs skill](/agents/skills/component-docs/SKILL.md) | Writing or restructuring a doc page under `content/docs/`, or adding a demo |
 | [component-documentation-guidelines.md](/agents/component-documentation-guidelines.md) | The long-form mechanics — props tables, the ghost-span pattern, file locations |
 | [motion-guidelines.md](/agents/motion-guidelines.md) | Adding or changing any animation |
 

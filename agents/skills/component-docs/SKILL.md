@@ -147,7 +147,7 @@ at render with the file it expected, rather than showing an empty frame.
 
 The playground is not a demo — it is a stateful sandbox whose controls drive a
 preview and a snippet together. Use `<Playground slug="button" />` and register
-it in `lib/docs/PlaygroundSection.tsx`.
+it in `lib/docs/playground-section.tsx`.
 
 ## Usage
 
@@ -204,7 +204,7 @@ the table.
 Props arrays live in `content/docs/<slug>.props.ts`:
 
 ```ts
-import type { PropDef } from "@/lib/docs/PropsTable";
+import type { PropDef } from "@/lib/docs/props-table";
 
 export const tabsProps: PropDef[] = [
   { name: "variant", type: '"default" | "underline"', default: '"default"', description: "Indicator style." },

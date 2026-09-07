@@ -33,10 +33,11 @@ pnpm-debug.log*
 # vercel
 .vercel
 
-# claude code agent state (local-only) — but not the skills, which are project
-# documentation and belong in the repo. The directory has to be excluded by its
-# contents rather than by itself: git will not re-include a path whose parent
-# directory is excluded.
+# claude code agent state (local-only). The skills themselves live in
+# agents/skills/ and are tracked there; .claude/skills only holds the symlinks
+# Claude Code discovers them through, and those are tracked too. The directory
+# has to be excluded by its contents rather than by itself: git will not
+# re-include a path whose parent directory is excluded.
 .claude/*
 !.claude/skills/
 
