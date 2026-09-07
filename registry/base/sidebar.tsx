@@ -19,7 +19,7 @@ import {
   type SidebarSide,
   type SidebarVariant,
   type SidebarCollapsible,
-} from "@/components/ui/sidebar-core";
+} from "@/registry/default/sidebar-core";
 
 // ─── Mobile sheet ────────────────────────────────────────────────────────────
 //
@@ -246,7 +246,7 @@ export {
   SIDEBAR_KEYBOARD_SHORTCUT_RIGHT,
   SIDEBAR_MIN_WIDTH,
   SIDEBAR_MAX_WIDTH,
-} from "@/components/ui/sidebar-core";
+} from "@/registry/default/sidebar-core";
 export type {
   SidebarContextValue,
   SidebarProviderProps,
@@ -260,7 +260,7 @@ export type {
   SidebarSide,
   SidebarVariant,
   SidebarCollapsible,
-} from "@/components/ui/sidebar-core";
+} from "@/registry/default/sidebar-core";
 export {
   SidebarMenu,
   SidebarMenuItem,
@@ -273,7 +273,7 @@ export {
   SidebarMenuSubItem,
   SidebarMenuSubButton,
   sidebarMenuButtonVariants,
-} from "@/components/ui/sidebar-menu";
+} from "@/registry/default/sidebar-menu";
 export type {
   SidebarMenuProps,
   SidebarMenuItemProps,
@@ -284,4 +284,4 @@ export type {
   SidebarMenuSubProps,
   SidebarMenuSubItemProps,
   SidebarMenuSubButtonProps,
-} from "@/components/ui/sidebar-menu";
+} from "@/registry/default/sidebar-menu";

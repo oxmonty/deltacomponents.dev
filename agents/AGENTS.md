@@ -30,11 +30,11 @@ Start here, then read the guide that matches what you are about to change.
 - **`lib/docs/*.generated.ts` is generated.** `make demos` after touching
   `content/demos/`, `make toc` after adding or renaming a heading. `make test`
   fails if either has drifted.
-- **`components/ui/` holds path shims, not components.** A published component
-  imports the path its files land at in a *consumer's* project
-  (`@/components/ui/sidebar-core`), so this directory forwards those names to
-  `registry/` to make them resolve here. One-line re-exports only. The docs
-  site's own chrome lives in `lib/docs/`.
+- **Registry source imports the real path.** A component that depends on a
+  sibling imports `@/registry/...` like anything else here; `make registry`
+  rewrites those to the paths `shadcn add` writes to, from the `target` fields
+  in `registry.json`. There is no `components/ui/` to keep in step, and the
+  docs site's own chrome lives in `lib/docs/`.
 - **Run `make registry` after touching `registry.json`** or any file it lists,
   and commit the regenerated `public/r`.
 - **`make check` is what CI runs** — lint, typecheck, test. Green before you

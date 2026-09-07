@@ -18,8 +18,9 @@ instead — this file sequences the whole job and links out for the mechanics.
 | `registry/base/` | Primitive-backed — wraps Base UI (`@base-ui/react`) |
 | `registry/default/` | Primitive-agnostic — owns its own behaviour |
 
-`components/ui/` is **not** an option: that is the docs site's own chrome, not
-published and not in the registry.
+Import siblings by their real path (`@/registry/default/...`). The registry
+build rewrites those to the consumer's `@/components/ui/...` on publish, so
+never hand-write a consumer path in source — it would not resolve here.
 
 Conventions live in `agents/component-documentation-guidelines.md` — read it
 before writing the source. The ones that bite: `"use client"`, `forwardRef`
@@ -129,7 +130,8 @@ make check   # lint, typecheck, test
 
 ## Checklist
 
-- [ ] Source in `registry/base/` or `registry/default/`, never `components/ui/`.
+- [ ] Source in `registry/base/` or `registry/default/`, importing siblings by
+      their real `@/registry/...` path.
 - [ ] `registry.json` entry with `dependencies`, `registryDependencies` and a
       `target` on every file.
 - [ ] `componentList` entry, positioned where it should read in the sidebar.

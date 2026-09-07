@@ -29,7 +29,7 @@ import { useShape } from "@/lib/shape-context";
 import { useSize, SizeProvider, type SizeVariant } from "@/lib/size-context";
 import { useProximityHover, type ItemRect } from "@/hooks/use-proximity-hover";
 import type { IconComponent } from "@/lib/icon-context";
-import { resolveSlotTemplate, slotElement } from "@/components/ui/sidebar-core";
+import { resolveSlotTemplate, slotElement } from "@/registry/default/sidebar-core";
 
 // SSR-safe layout effect (client components still server-render in Next).
 const useIsoLayoutEffect =

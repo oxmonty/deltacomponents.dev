@@ -15,6 +15,8 @@
 import { readdirSync, readFileSync, writeFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 
+import { registryPathMap, toConsumerPaths } from "./registry-paths";
+
 const ROOT = process.cwd();
 const DEMOS = join(ROOT, "content/demos");
 const OUT = join(ROOT, "lib/docs/demos.generated.ts");
@@ -33,38 +35,12 @@ function pascal(name: string): string {
     .join("");
 }
 
-/** `@/registry/...` -> `@/components/ui/...`, built from the registry's own
- *  `target` fields.
- *
- *  A demo has to import the path that exists in THIS repo to compile, but the
- *  reader copying it wants the path the CLI wrote the component to in THEIRS.
- *  Reading the mapping out of registry.json rather than hardcoding the two
- *  prefixes means the displayed import cannot drift from where `shadcn add`
- *  actually puts the file. */
-function registryPathMap(): [string, string][] {
-  const registry = JSON.parse(readFileSync(join(ROOT, "registry.json"), "utf8")) as {
-    items: { files?: { path: string; target?: string }[] }[];
-  };
-  const drop = (value: string) => value.replace(/\.(tsx?|jsx?)$/, "");
-
-  return registry.items
-    .flatMap((item) => item.files ?? [])
-    .filter((file) => file.target && drop(file.target) !== drop(file.path))
-    .map((file) => [`@/${drop(file.path)}`, `@/${drop(file.target as string)}`] as [string, string])
-    // Longest first, so a path that prefixes another cannot be partly rewritten.
-    .sort(([a], [b]) => b.length - a.length);
-}
-
-const pathMap = registryPathMap();
+const pathMap = registryPathMap(ROOT);
 
 function displaySource(source: string): string {
-  let out = source
-    // A compiler directive, not part of the sample - a reader copying the
-    // block does not want it, and every demo carries one.
-    .replace(/^"use client";\n\n?/, "")
-    .trimEnd();
-  for (const [from, to] of pathMap) out = out.replaceAll(from, to);
-  return out;
+  // A compiler directive, not part of the sample - a reader copying the block
+  // does not want it, and every demo carries one.
+  return toConsumerPaths(source.replace(/^"use client";\n\n?/, "").trimEnd(), pathMap);
 }
 
 const demos: Demo[] = [];
