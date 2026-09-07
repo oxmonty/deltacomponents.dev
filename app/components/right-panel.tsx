@@ -358,15 +358,6 @@ export function RightPanel() {
           under the mask, never outside pushing the gradient down. */}
       <ScrollArea viewportClassName="scroll-fade max-h-[calc(100svh-2rem)]">
       <div className="flex flex-col gap-3">
-        {/* Above the properties card. The contents list belongs to the page
-            the reader is on, so it tracks what they are reading and earns the
-            top of the rail; the card is the same on every page and can wait
-            below it. Deliberately not a card itself — a list of links to read
-            past, not a surface to act on — but padded to the card's inset so
-            both columns of text line up. Renders nothing on a page with fewer
-            than two headings. */}
-        <DocsToc className="px-4 pt-2" />
-
         <aside className="p-4 rounded-lg bg-muted">
           <SurfaceProvider value={2}>
             <div className="flex items-center justify-between pt-2 pb-2">
@@ -384,6 +375,14 @@ export function RightPanel() {
             <AuthorCredit />
           </SurfaceProvider>
         </aside>
+
+        {/* Under the properties card. The card is the panel's banner — on every
+            page, and the thing the reader reaches for — so it holds the top of
+            the rail and the page's own contents list follows it. Deliberately
+            not a card itself: a list of links to read past, not a surface to
+            act on, but padded to the card's inset so both columns of text line
+            up. Renders nothing on a page with fewer than two headings. */}
+        <DocsToc className="px-4 pt-2" />
 
         {/* Page-owned slot — e.g. the Card doc's Playground controls. */}
         <RightRailTarget />
