@@ -85,7 +85,11 @@ export function DocHeader({
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex items-start justify-between gap-4">
+      {/* Centred, not top-aligned: the controls are a 36px control row against
+          a 30px `leading-none` heading, so pinning the tops left them sitting
+          3px low. Centring also keeps them on the heading's optical line if a
+          long component name ever wraps. */}
+      <div className="flex items-center justify-between gap-4">
         <h1
           className="text-display text-foreground leading-none"
           style={{ fontVariationSettings: fontWeights.bold }}

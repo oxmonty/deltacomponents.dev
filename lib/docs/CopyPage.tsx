@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import { Button } from "@/registry/ui/button";
 import { useIcon } from "@/registry/lib/icon-context";
 import { useShape } from "@/registry/lib/shape-context";
+import { useSizeVariant } from "@/registry/lib/size-context";
 import { cn } from "@/registry/lib/utils";
 
 /** The prompt an assistant opens with. It carries the markdown URL rather than
@@ -66,7 +67,11 @@ export function CopyPage() {
   const pathname = usePathname();
   const [copied, setCopied] = useState(false);
   const [failed, setFailed] = useState(false);
+  // The arrows beside this derive their step the same way — a square button
+  // has no provider-following size, so it is asked for explicitly.
   const shape = useShape();
+  const size = useSizeVariant();
+  const iconSize = size === "compact" ? ("icon-compact" as const) : ("icon" as const);
   const CopyIcon = useIcon("copy");
   const CheckIcon = useIcon("check");
   const ChevronDown = useIcon("chevron-down");
@@ -110,30 +115,46 @@ export function CopyPage() {
   }
 
   return (
-    <div className="flex items-center">
-      {/* `leadingIcon`, not an icon child: Button lays the glyph and the label
+    <div className="flex items-center gap-1">
+      {/* Ghost, like the arrows it sits beside — the header's controls are one
+          row and should read as one set, not a filled call to action next to
+          two quiet ones.
+
+          `leadingIcon`, not an icon child: Button lays the glyph and the label
           out itself, and a child icon becomes a second flex item the label
           then wraps under. */}
       <Button
-        variant="secondary"
-        size="compact"
+        variant="ghost"
+        size={size}
         onClick={copy}
         aria-label="Copy this page as markdown"
         leadingIcon={copied ? CheckIcon : CopyIcon}
-        className={cn(shape.button, "rounded-r-none whitespace-nowrap")}
+        className="whitespace-nowrap"
       >
-        {failed ? "Copy failed" : copied ? "Copied" : "Copy page"}
+        {/* The ghost-span pattern from the component guidelines, for the same
+            reason it exists there: the label changes on click, and a button
+            that resizes shoves the arrows beside it sideways. A hidden copy of
+            the longest state reserves the width; the visible one sits in the
+            same grid cell. */}
+        <span className="inline-grid">
+          <span className="invisible col-start-1 row-start-1" aria-hidden="true">
+            Copy failed
+          </span>
+          <span className="col-start-1 row-start-1">
+            {failed ? "Copy failed" : copied ? "Copied" : "Copy page"}
+          </span>
+        </span>
       </Button>
       <Menu.Root>
         <Menu.Trigger
           aria-label="Open this page in an assistant"
           render={
-            <Button
-              variant="secondary"
-              size="compact"
-              leadingIcon={ChevronDown}
-              className={cn(shape.button, "rounded-l-none border-l border-border/60 px-2")}
-            />
+            // An icon-only Button takes its glyph as children — `leadingIcon`
+            // is deliberately ignored at that size, so passing it there
+            // renders an empty button.
+            <Button variant="ghost" size={iconSize}>
+              <ChevronDown />
+            </Button>
           }
         />
         <Menu.Portal>

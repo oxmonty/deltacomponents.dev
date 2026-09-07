@@ -24,6 +24,14 @@ function NavLink({
       aria-current={isActive ? "page" : undefined}
       className={cn(
         "flex items-center gap-2 text-2xl",
+        // Press feedback, ported from the previous site's mobile nav. A tap on
+        // a phone has no hover to confirm it landed, so the row answers with a
+        // slight dip and a jump to full contrast — the only acknowledgement
+        // before the route changes. `touch-manipulation` drops the browser's
+        // 300ms double-tap wait, which is what otherwise makes a correct tap
+        // feel ignored.
+        "touch-manipulation transition-all duration-(--motion-fast) ease-spring",
+        "active:scale-[0.99] active:text-foreground",
         isActive ? "text-foreground" : "text-muted-foreground"
       )}
       style={{
@@ -70,7 +78,13 @@ export function MobileNav() {
     <Popover.Root open={open} onOpenChange={setOpen} modal>
       <Popover.Trigger
         aria-label={open ? "Close menu" : "Open menu"}
-        className="relative flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center"
+        className={cn(
+          "relative flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center",
+          // The same press feedback as the rows it opens. Deeper, because the
+          // trigger is a 32px target with nothing else to show it was hit.
+          "touch-manipulation transition-all duration-(--motion-fast) ease-spring",
+          "active:scale-95 active:opacity-70"
+        )}
       >
         {/* Two bars that rotate into an X — shadcn's mobile-nav trigger, no
             third bar. aria-expanded/aria-haspopup come from Popover.Trigger
