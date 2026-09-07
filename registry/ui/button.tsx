@@ -275,12 +275,16 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       }),
       className
     );
-    // An explicit compact size must win over whatever `--control-*` values an
-    // ambient data-size="compact" ancestor (or lack of one) would otherwise
-    // resolve to. Setting the attribute here — not just relying on the class
-    // above — makes the override apply on the element itself, where a plain
-    // attribute selector beats inheritance from any ancestor.
-    const dataSize = isCompact ? "compact" : undefined;
+    // An explicit size must win over whatever `--control-*` values an ambient
+    // data-size ancestor (or lack of one) would otherwise resolve to. Setting
+    // the attribute here — not just relying on the class above — makes the
+    // override apply on the element itself, where a plain attribute selector
+    // beats inheritance from any ancestor.
+    //
+    // Both directions, not just compact: subtree scoping is the supported way
+    // to size a region, so `size="default"` inside a `data-size="compact"`
+    // wrapper has to climb back out. Only an omitted prop stays ambient.
+    const dataSize = size ? (isCompact ? "compact" : "default") : undefined;
 
     if (asChildElement) {
       const childProps = asChildElement.props;

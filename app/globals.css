@@ -551,6 +551,21 @@ html, body {
   --control-icon-pad: 6px;
 }
 
+/* The way back out. Custom properties inherit, so a control asking for the
+   default ladder inside a compact subtree has to restore the values on itself
+   — `data-size="default"` alone would resolve to whatever the ancestor set.
+   Only the control tokens: a Button setting this on its own root should not
+   also reset the page's type scale for its label. */
+[data-size="default"] {
+  --control-h: 36px;
+  --control-px: 16px;
+  --control-text: 13px;
+  --control-gap: 6px;
+  --control-icon-box: 36px;
+  --control-icon-glyph: 16px;
+  --control-icon-pad: 10px;
+}
+
 @media (min-width: 640px) {
   [data-size="compact"] {
     --fs-display: 26px;
