@@ -481,6 +481,13 @@ html, body {
    size (it has to fit a 36px button), and prose that a reader scans for a
    paragraph at a time wants more. Components never use it.
 
+   `table` is a props table's cells. It gets a role rather than borrowing one
+   because nothing else on the ladder is right: `subtitle` (15px) is one pixel
+   under prose, which no reader can see — and where a description column is
+   narrow the extra wrapping makes the denser block read as the LARGER of the
+   two — while `body` (13px) is the control-label size and drops a reference
+   table below comfortable reading. 14px is the gap those two leave.
+
    `heading` / `subheading` are the CONTENT headings (a doc page's h2 and h3).
    `title` / `subtitle` stay the CHROME sizes — panel headers, tab labels,
    table text — which is why they are separate roles: an h2 at the chrome
@@ -495,6 +502,7 @@ html, body {
   --fs-title: 18px;
   --fs-prose: 16px;
   --fs-subtitle: 15px;
+  --fs-table: 14px;
   --fs-body: 13px;
   --fs-caption: 13px;
 }
@@ -514,6 +522,7 @@ html[data-size="compact"] {
   --fs-title: 17px;
   --fs-prose: 15px;
   --fs-subtitle: 14px;
+  --fs-table: 13px;
   --fs-body: 12px;
   --fs-caption: 12px;
 }
@@ -543,6 +552,9 @@ html[data-size="compact"] {
 }
 @utility text-subtitle {
   font-size: var(--fs-subtitle, 15px);
+}
+@utility text-table {
+  font-size: var(--fs-table, 14px);
 }
 @utility text-body {
   font-size: var(--fs-body, 13px);
