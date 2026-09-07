@@ -13,9 +13,8 @@ interface DocPageProps {
    *  `componentList`, so the name is written once and spaced automatically.
    *  Pass this only for a page that has no entry. */
   title?: string;
-  /** Optional with a `slug`: the entry's own description is used, so the page
-   *  can't drift from the sidebar, the showcase card and the registry. Pass it
-   *  only on a page that has no `componentList` entry. */
+  /** The standfirst under the title. A component page passes its .mdx
+   *  frontmatter through; a section page passes its own. */
   description?: ReactNode;
   /** Slug used for prev/next navigation (must match a `componentList` entry). */
   slug?: string;
@@ -30,7 +29,7 @@ export function DocPage({
 }: DocPageProps) {
   const entry = slug ? componentList.find((c) => c.slug === slug) : undefined;
   const heading = title ? toLabel(title) : entry ? labelOf(entry) : "";
-  const blurb = description ?? entry?.description ?? "";
+  const blurb = description ?? "";
 
   const { prev, next } = neighbours(slug ? `/docs/${slug}` : "");
 

@@ -23,7 +23,6 @@
     "@next/mdx": "15.5.25",
     "@phosphor-icons/react": "^2.1.10",
     "@tabler/icons-react": "^3.41.1",
-    "@types/mdx": "^2.0.14",
     "@untitledui/icons": "^0.0.22",
     "@vercel/analytics": "^1.6.1",
     "@vercel/speed-insights": "^1.3.1",
@@ -37,7 +36,9 @@
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "rehype-slug": "^6.0.0",
+    "remark-frontmatter": "^5.0.0",
     "remark-gfm": "^4.0.1",
+    "remark-mdx-frontmatter": "^5.2.0",
     "shadcn": "^3.0.0",
     "sonner": "^2.0.8",
     "tailwind-merge": "^3.4.0"

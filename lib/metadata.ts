@@ -39,9 +39,11 @@ export function createMetadata({ title, description, path }: CreateMetadataOptio
   };
 }
 
-/** Metadata for a component's doc page, sourced from its `componentList`
- *  entry so the title/description live in one place. */
-export function componentMetadata(slug: string): Metadata {
+/** Metadata for a component's doc page. The title comes from the slug's
+ *  `componentList` entry, so the tab label and the sidebar row can't disagree;
+ *  the description comes from the page's own frontmatter, where it sits with
+ *  the prose it introduces. */
+export function componentMetadata(slug: string, description: string): Metadata {
   const entry = componentList.find((c) => c.slug === slug);
   if (!entry) {
     throw new Error(`componentMetadata: no entry for slug "${slug}" in componentList`);
@@ -49,7 +51,7 @@ export function componentMetadata(slug: string): Metadata {
 
   return createMetadata({
     title: labelOf(entry),
-    description: entry.description,
+    description,
     path: `/docs/${slug}`,
   });
 }

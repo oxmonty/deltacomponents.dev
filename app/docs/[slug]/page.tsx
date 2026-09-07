@@ -8,8 +8,9 @@ import { componentMetadata } from "@/lib/metadata";
 
 /**
  * Every component's doc page. The body is `content/docs/<slug>.mdx`; the
- * chrome around it — title, description, prev/next — comes from that slug's
- * entry in `componentList`, which the sidebar and showcase read too.
+ * The title and prev/next come from the slug's entry in `componentList`,
+ * which the sidebar and showcase read too; the description comes from the
+ * page's own frontmatter.
  *
  * One route replaces the seven page.tsx files this used to take, and the five
  * layout.tsx files that existed only to carry a `metadata` export past a
@@ -25,7 +26,8 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  return componentMetadata(slug);
+  const { frontmatter } = await import(`@/content/docs/${slug}.mdx`);
+  return componentMetadata(slug, frontmatter.description);
 }
 
 export default async function ComponentDoc({
@@ -40,10 +42,10 @@ export default async function ComponentDoc({
   // MDX is compiled at build time like any other import — no runtime MDX
   // compiler, and an unknown slug is caught by the guard above rather than by
   // a failed import.
-  const { default: Content } = await import(`@/content/docs/${slug}.mdx`);
+  const { default: Content, frontmatter } = await import(`@/content/docs/${slug}.mdx`);
 
   return (
-    <DocPage slug={slug}>
+    <DocPage slug={slug} description={frontmatter.description}>
       <div className={mdxBodyClass}>
         <Content />
       </div>
