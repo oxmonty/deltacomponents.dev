@@ -2,7 +2,7 @@
 
 // Docs-site icon playground data: the multi-library icon map behind the
 // "press I to cycle icon library" switcher. Only the default Lucide set
-// ships with installed components (see registry/default/lib/icon-context);
+// ships with installed components (see registry/lib/icon-context);
 // the four extra libraries below are docs-site dependencies only.
 
 import type { ComponentType } from "react";

@@ -5,7 +5,7 @@
  * install URLs.
  */
 import { describe, it, expect } from "vitest";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 const ROOT = new URL("..", import.meta.url).pathname;
@@ -21,11 +21,28 @@ describe("registry.json", () => {
     }
   });
 
-  it("every registryDependency resolves to another item or an external URL", () => {
+  it("every registryDependency resolves to another item", () => {
     for (const item of registry.items) {
       for (const dep of item.registryDependencies ?? []) {
         if (dep.startsWith("http")) continue;
         expect(names.has(dep), `${item.name} depends on missing "${dep}"`).toBe(true);
+      }
+    }
+  });
+
+  it("published items name our own dependencies by URL, never bare", () => {
+    // registry.json keeps bare names on purpose — they read better and carry
+    // no hostname. `make registry` turns them into absolute URLs in public/r,
+    // and that is the file a consumer's CLI fetches. A bare name surviving
+    // into it resolves against shadcn's registry instead of ours: it 404s for
+    // a name they do not have, and silently installs THEIR component for one
+    // they do. This guards the published artifact, not the source.
+    const out = join(ROOT, "public/r");
+    for (const file of readdirSync(out)) {
+      if (!file.endsWith(".json") || file === "registry.json") continue;
+      const item = JSON.parse(readFileSync(join(out, file), "utf-8"));
+      for (const dep of item.registryDependencies ?? []) {
+        expect(names.has(dep), `${file} names "${dep}" bare — make registry should have made it a URL`).toBe(false);
       }
     }
   });

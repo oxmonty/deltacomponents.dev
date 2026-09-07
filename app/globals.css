@@ -473,7 +473,7 @@ html, body {
    whole site follows the size ladder. The docs-only SizeAttribute component
    (lib/docs/size-attribute.tsx) mirrors the active step onto
    <html data-size>; values must stay in sync with `typeScale` in
-   registry/default/lib/size-context.tsx. `display` keeps its responsive
+   registry/lib/size-context.tsx. `display` keeps its responsive
    pair (mobile / ≥sm) from the old text-[22px] sm:text-[28px] titles.
 
    `prose` is the reading role — doc page descriptions, section copy, props
@@ -1080,7 +1080,7 @@ html.transitioning *::after {
 /* ============================================================================
    8. CODE SYNTAX PALETTE
    ----------------------------------------------------------------------------
-   Lives here, not in React state, so a Code block (registry/default/code.tsx)
+   Lives here, not in React state, so a Code block (registry/ui/code.tsx)
    paints the right colours on its very first frame — server render,
    hydration, and a fresh mount alike. Picking the palette in JS (a `mounted`
    flag flipped after paint, since SSR has no OS preference) guaranteed one
