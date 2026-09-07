@@ -20,7 +20,7 @@
 
 /** A tier's length in milliseconds. `fallback` covers the server, where there
  *  is no computed style to read. */
-export function motionMs(token: string, fallback: number): number {
+function motionMs(token: string, fallback: number): number {
   if (typeof window === "undefined") return fallback;
   const raw = getComputedStyle(document.documentElement)
     .getPropertyValue(token)

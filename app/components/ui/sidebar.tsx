@@ -99,7 +99,7 @@ function SidebarSheet({ side, open, onClose, children }: SidebarSheetProps) {
 
 // ─── Sidebar ─────────────────────────────────────────────────────────────────
 
-export interface SidebarProps extends HTMLAttributes<HTMLDivElement> {
+interface SidebarProps extends HTMLAttributes<HTMLDivElement> {
   side?: SidebarSide;
   variant?: SidebarVariant;
   /** `"icon"` collapse is intentionally not supported — offcanvas or none. */
@@ -177,7 +177,7 @@ Sidebar.displayName = "Sidebar";
 
 // ─── SidebarContent ──────────────────────────────────────────────────────────
 
-export interface SidebarContentProps extends HTMLAttributes<HTMLDivElement> {
+interface SidebarContentProps extends HTMLAttributes<HTMLDivElement> {
   viewportClassName?: string;
 }
 

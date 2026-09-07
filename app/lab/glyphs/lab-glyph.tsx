@@ -47,8 +47,8 @@ const ICONS: Record<string, string> = {
   bot: "M6 8H18A2 2 0 0 1 20 10V18A2 2 0 0 1 18 20H6A2 2 0 0 1 4 18V10A2 2 0 0 1 6 8ZM12 8V4H8M2 14h2M20 14h2M15 13v2M9 13v2",
 };
 
-export type LabShape = keyof typeof SHAPES;
-export type LabIcon = keyof typeof ICONS;
+type LabShape = keyof typeof SHAPES;
+type LabIcon = keyof typeof ICONS;
 
 export interface LabGlyphProps extends SVGAttributes<SVGSVGElement> {
   shape: LabShape;

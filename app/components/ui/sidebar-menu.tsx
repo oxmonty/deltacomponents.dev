@@ -1190,7 +1190,7 @@ SidebarMenuAction.displayName = "SidebarMenuAction";
 
 // ─── SidebarMenuActions ──────────────────────────────────────────────────────
 
-export interface SidebarMenuActionsProps extends HTMLAttributes<HTMLDivElement> {
+interface SidebarMenuActionsProps extends HTMLAttributes<HTMLDivElement> {
   /** Hide the cluster until the row is hovered or focused. */
   showOnHover?: boolean;
 }

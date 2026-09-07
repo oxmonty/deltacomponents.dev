@@ -48,7 +48,7 @@ export const SIDEBAR_MAX_WIDTH = 360;
 /** Dragging this far past the minimum width collapses the sidebar instead of
  *  bottoming out — the same "throw it at the edge to dismiss" affordance
  *  native apps use. */
-export const SIDEBAR_COLLAPSE_SLOP = 56;
+const SIDEBAR_COLLAPSE_SLOP = 56;
 
 // ─── Context ─────────────────────────────────────────────────────────────────
 
@@ -503,7 +503,7 @@ const BREAKPOINT_HIDDEN: Record<number, string> = {
   1280: "max-xl:hidden max-xl:opacity-0 max-xl:[--fade-duration:var(--motion-moderate)] xl:[--fade-duration:var(--motion-slow)] xl:starting:opacity-0",
 };
 
-export interface SidebarShellProps extends HTMLAttributes<HTMLDivElement> {
+interface SidebarShellProps extends HTMLAttributes<HTMLDivElement> {
   side: SidebarSide;
   variant: SidebarVariant;
   /** The `sidebar` variant's inner-edge border. Default true. */
@@ -1237,7 +1237,7 @@ interface SidebarGroupContextValue {
 
 const SidebarGroupContext = createContext<SidebarGroupContextValue | null>(null);
 
-export interface SidebarGroupProps extends SidebarSectionProps {
+interface SidebarGroupProps extends SidebarSectionProps {
   /** Makes the group's SidebarGroupLabel a toggle that collapses everything
    *  rendered after it — a group-level accordion. Uncontrolled by default;
    *  pass `open`/`onOpenChange` to control it. */
@@ -1586,7 +1586,7 @@ SidebarGroupAction.displayName = "SidebarGroupAction";
 /** Header action cluster: 1–3 SidebarGroupActions laid out in a row over the
  *  group label's right edge. Use instead of a lone SidebarGroupAction when a
  *  section needs several controls. */
-export type SidebarGroupActionsProps = HTMLAttributes<HTMLDivElement>;
+type SidebarGroupActionsProps = HTMLAttributes<HTMLDivElement>;
 
 const SidebarGroupActions = forwardRef<HTMLDivElement, SidebarGroupActionsProps>(
   ({ className, children, ...props }, ref) => {

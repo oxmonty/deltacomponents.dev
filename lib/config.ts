@@ -70,5 +70,3 @@ export const site = {
     threads: "https://www.threads.com/@pprunty97",
   },
 } as const;
-
-export type SiteConfig = typeof site;

@@ -5,7 +5,7 @@ import type { MouseEvent } from "react";
 // Anything that can hold keyboard focus. Used to (a) detect clicks that should
 // keep their native focus behaviour, and (b) find the element to focus when the
 // user clicks an empty part of a container.
-export const FOCUSABLE_SELECTOR = [
+const FOCUSABLE_SELECTOR = [
   "a[href]",
   "button:not([disabled])",
   "input:not([disabled])",
