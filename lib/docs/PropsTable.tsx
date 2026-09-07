@@ -38,10 +38,14 @@ export function PropsTable({ props }: PropsTableProps) {
       {/* Cell rhythm follows the www tables: px-3 py-2, a hairline under every
           row, headers left and semibold, cells top-aligned so a long
           description doesn't drag its neighbours down with it.
-          A step below prose, as www sets its tables a step below body copy: a
-          table is scanned across columns rather than read in lines, so the
-          denser face fits more of a description on one row without wrapping. */}
-      <table className="w-full min-w-[520px] border-collapse text-subtitle [&_th:first-child]:pl-0 [&_td:first-child]:pl-0">
+          Set at the site's dense size, well below prose: a table is scanned
+          across columns rather than read in lines, and the smaller face both
+          fits more of a description on one row and keeps the table from
+          reading as body copy that happens to have rules in it. One step down
+          (`subtitle`, a single pixel) was not enough to separate them — a
+          narrow description column wraps more, and the denser block then reads
+          as the LARGER text of the two. */}
+      <table className="w-full min-w-[520px] border-collapse text-body [&_th:first-child]:pl-0 [&_td:first-child]:pl-0">
         <thead>
           <tr className="border-b border-border">
             {["Prop", "Type", ...(showDefault ? ["Default"] : []), "Description"].map(
