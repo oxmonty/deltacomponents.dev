@@ -7,17 +7,17 @@
     "@base-ui/react"
   ],
   "registryDependencies": [
-    "utils",
-    "motion",
-    "font-weight",
-    "shape-context",
-    "surface-context",
-    "surface-classes",
-    "icon-context",
-    "use-proximity-hover",
-    "elevated",
-    "size-context",
-    "tokens"
+    "https://deltacomponentsdev.vercel.app/r/utils.json",
+    "https://deltacomponentsdev.vercel.app/r/motion.json",
+    "https://deltacomponentsdev.vercel.app/r/font-weight.json",
+    "https://deltacomponentsdev.vercel.app/r/shape-context.json",
+    "https://deltacomponentsdev.vercel.app/r/surface-context.json",
+    "https://deltacomponentsdev.vercel.app/r/surface-classes.json",
+    "https://deltacomponentsdev.vercel.app/r/icon-context.json",
+    "https://deltacomponentsdev.vercel.app/r/use-proximity-hover.json",
+    "https://deltacomponentsdev.vercel.app/r/elevated.json",
+    "https://deltacomponentsdev.vercel.app/r/size-context.json",
+    "https://deltacomponentsdev.vercel.app/r/tokens.json"
   ],
   "files": [
     {

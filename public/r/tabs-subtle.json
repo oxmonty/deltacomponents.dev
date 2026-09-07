@@ -8,13 +8,13 @@
     "lucide-react"
   ],
   "registryDependencies": [
-    "utils",
-    "motion",
-    "font-weight",
-    "icon-context",
-    "use-proximity-hover",
-    "size-context",
-    "tokens"
+    "https://deltacomponentsdev.vercel.app/r/utils.json",
+    "https://deltacomponentsdev.vercel.app/r/motion.json",
+    "https://deltacomponentsdev.vercel.app/r/font-weight.json",
+    "https://deltacomponentsdev.vercel.app/r/icon-context.json",
+    "https://deltacomponentsdev.vercel.app/r/use-proximity-hover.json",
+    "https://deltacomponentsdev.vercel.app/r/size-context.json",
+    "https://deltacomponentsdev.vercel.app/r/tokens.json"
   ],
   "files": [
     {

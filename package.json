@@ -10,7 +10,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "registry:build": "shadcn build",
+    "registry:build": "shadcn build && bun scripts/build-registry.ts",
     "toc:build": "bun scripts/build-toc.ts",
     "demos:build": "bun scripts/build-demos.ts"
   },

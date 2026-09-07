@@ -7,9 +7,9 @@
     "class-variance-authority"
   ],
   "registryDependencies": [
-    "utils",
-    "shape-context",
-    "size-context"
+    "https://deltacomponentsdev.vercel.app/r/utils.json",
+    "https://deltacomponentsdev.vercel.app/r/shape-context.json",
+    "https://deltacomponentsdev.vercel.app/r/size-context.json"
   ],
   "files": [
     {

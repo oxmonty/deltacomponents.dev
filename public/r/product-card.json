@@ -4,9 +4,9 @@
   "title": "Product Card",
   "description": "Compound card for commerce rows — image well, overlaid badge, and a title/subtitle/metric footer.",
   "registryDependencies": [
-    "utils",
-    "shape-context",
-    "tokens"
+    "https://deltacomponentsdev.vercel.app/r/utils.json",
+    "https://deltacomponentsdev.vercel.app/r/shape-context.json",
+    "https://deltacomponentsdev.vercel.app/r/tokens.json"
   ],
   "files": [
     {

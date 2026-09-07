@@ -1,4 +1,4 @@
-.PHONY: help install dev build start lint typecheck test check registry demos gacp
+.PHONY: help install dev build start lint typecheck test test-install check registry demos gacp
 
 # Default target - show help
 .DEFAULT_GOAL := help
@@ -38,6 +38,9 @@ test: ## Run Vitest unit tests
 	bun run test
 
 check: lint typecheck test ## Run every check CI runs
+
+test-install: ## Install a component with the real shadcn CLI and check where its files land
+	RUN_REGISTRY_INSTALL_TEST=1 bun run test tests/registry-install.test.ts
 
 ## Registry:
 toc: ## Rebuild lib/docs/toc.generated.ts from the doc pages

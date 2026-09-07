@@ -9,12 +9,12 @@
     "lucide-react"
   ],
   "registryDependencies": [
-    "utils",
-    "font-weight",
-    "shape-context",
-    "icon-context",
-    "size-context",
-    "tokens"
+    "https://deltacomponentsdev.vercel.app/r/utils.json",
+    "https://deltacomponentsdev.vercel.app/r/font-weight.json",
+    "https://deltacomponentsdev.vercel.app/r/shape-context.json",
+    "https://deltacomponentsdev.vercel.app/r/icon-context.json",
+    "https://deltacomponentsdev.vercel.app/r/size-context.json",
+    "https://deltacomponentsdev.vercel.app/r/tokens.json"
   ],
   "files": [
     {

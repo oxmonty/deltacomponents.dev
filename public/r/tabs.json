@@ -4,12 +4,12 @@
   "title": "Tabs",
   "description": "Tab navigation with underline, background, and ghost variants, and an indicator that follows the shape system.",
   "registryDependencies": [
-    "utils",
-    "motion",
-    "shape-context",
-    "tokens",
-    "surface-context",
-    "surface-classes"
+    "https://deltacomponentsdev.vercel.app/r/utils.json",
+    "https://deltacomponentsdev.vercel.app/r/motion.json",
+    "https://deltacomponentsdev.vercel.app/r/shape-context.json",
+    "https://deltacomponentsdev.vercel.app/r/tokens.json",
+    "https://deltacomponentsdev.vercel.app/r/surface-context.json",
+    "https://deltacomponentsdev.vercel.app/r/surface-classes.json"
   ],
   "files": [
     {

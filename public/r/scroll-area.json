@@ -7,10 +7,10 @@
     "@base-ui/react"
   ],
   "registryDependencies": [
-    "utils",
-    "shape-context",
-    "use-touch-primary",
-    "tokens"
+    "https://deltacomponentsdev.vercel.app/r/utils.json",
+    "https://deltacomponentsdev.vercel.app/r/shape-context.json",
+    "https://deltacomponentsdev.vercel.app/r/use-touch-primary.json",
+    "https://deltacomponentsdev.vercel.app/r/tokens.json"
   ],
   "files": [
     {

@@ -2,7 +2,6 @@
 
 import * as React from "react"
 import { useEffect, useState } from "react"
-import { CheckIcon, CopyIcon, TerminalIcon } from "lucide-react"
 import { Highlight } from "prism-react-renderer"
 import type { PrismTheme } from "prism-react-renderer"
 
@@ -204,6 +203,61 @@ function convertNpxToPackageManagers(npxCommand: string): {
   }
 }
 
+
+/* ------------------------------------------------------------------
+ * Icons
+ * ------------------------------------------------------------------
+ * Inlined rather than imported from lucide-react. Three glyphs are not worth
+ * an install-time dependency on a consumer's project: the registry item lists
+ * what `shadcn add` installs, and every package there is one the reader did
+ * not choose. The paths are lucide's own (ISC), drawn at its 24px grid so they
+ * sit correctly beside icons a consumer does bring from it.
+ */
+
+interface IconProps {
+  className?: string
+  style?: React.CSSProperties
+}
+
+function iconProps({ className, style }: IconProps) {
+  return {
+    className,
+    style,
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: 2,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+    "aria-hidden": true,
+  }
+}
+
+function CopyIcon(props: IconProps) {
+  return (
+    <svg {...iconProps(props)}>
+      <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
+      <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+    </svg>
+  )
+}
+
+function CheckIcon(props: IconProps) {
+  return (
+    <svg {...iconProps(props)}>
+      <path d="M20 6 9 17l-5-5" />
+    </svg>
+  )
+}
+
+function TerminalIcon(props: IconProps) {
+  return (
+    <svg {...iconProps(props)}>
+      <polyline points="4 17 10 11 4 5" />
+      <line x1="12" x2="20" y1="19" y2="19" />
+    </svg>
+  )
+}
 
 /** The tone every control sitting ON the code surface shares — the copy glyph
  *  and the expand affordance — so they read as one set rather than two

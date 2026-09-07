@@ -1,7 +1,7 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry.json",
   "name": "delta",
-  "homepage": "https://deltacomponents.dev",
+  "homepage": "https://deltacomponentsdev.vercel.app",
   "items": [
     {
       "name": "surfaces",
@@ -830,8 +830,7 @@
       "description": "Syntax-highlighted code with a copy button, a filename bar, and a package-manager tab strip.",
       "dependencies": [
         "prism-react-renderer",
-        "prismjs",
-        "lucide-react"
+        "prismjs"
       ],
       "registryDependencies": [
         "utils",

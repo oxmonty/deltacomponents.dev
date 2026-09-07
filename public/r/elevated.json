@@ -4,10 +4,10 @@
   "title": "Elevated",
   "description": "Elevation primitive. Wraps the read-substrate / compute-level / apply-classes / re-provide-context pattern into one component. Pulls in the surface theme tokens, substrate context, and class lookup so a single install drops in the whole elevation system.",
   "registryDependencies": [
-    "surfaces",
-    "utils",
-    "surface-context",
-    "surface-classes"
+    "https://deltacomponentsdev.vercel.app/r/surfaces.json",
+    "https://deltacomponentsdev.vercel.app/r/utils.json",
+    "https://deltacomponentsdev.vercel.app/r/surface-context.json",
+    "https://deltacomponentsdev.vercel.app/r/surface-classes.json"
   ],
   "files": [
     {
