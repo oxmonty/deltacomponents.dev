@@ -112,15 +112,18 @@ export function MobileNav() {
             scrolled page through the bar and in the strip above it. A backdrop
             in the same colour as the panel means there is nothing else to see,
             whatever height the panel lands on. `fixed inset-0` covers the
-            layout viewport, which under `viewport-fit=cover` is the whole
-            display.
+            layout viewport — but `inset-0` alone is not enough on iOS, where a
+            fixed element is laid out against the *small* viewport and so stops
+            exactly where the address bar starts, which is the gap it was meant
+            to cover. `100lvh` is the large viewport: the height with the chrome
+            retracted, i.e. including the strip the bar sits over.
 
             Below the header (`z-40`), not level with it: the backdrop portals
             to the end of the body, so at an equal index it painted over the
             header and took the hamburger with it — leaving no visible way to
             close the menu it had just opened. The header carries its own
             `bg-background`, so nothing shows through above it. */}
-        <Popover.Backdrop className="bg-background fixed inset-0 z-30" />
+        <Popover.Backdrop className="bg-background fixed inset-x-0 top-0 z-30 h-[100lvh]" />
         <Popover.Positioner
           side="bottom"
           align="start"

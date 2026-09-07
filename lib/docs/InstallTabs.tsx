@@ -78,6 +78,33 @@ export function InstallTabs({ slug, note }: { slug: string; note?: string }) {
     load();
   }, [tab, item, failed, load]);
 
+  // The prefetch on the Manual trigger keys off pointing at it, which a touch
+  // device never does — so there the tap is the first signal, the fetch starts
+  // then, and the panel flashes "Loading source…" on the way in. On a
+  // pointerless device the equivalent of pointing is the block arriving on
+  // screen: still not every reader and still not on page load, so the intent
+  // above survives, but early enough that the source is in hand before a thumb
+  // reaches the tab.
+  useEffect(() => {
+    if (item || failed) return;
+    if (typeof window === "undefined" || !window.matchMedia("(hover: none)").matches) return;
+    const node = blockRef.current;
+    if (!node) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) return;
+        observer.disconnect();
+        load();
+      },
+      // Start while the block is still a screen away, so scrolling to it and
+      // tapping straight through does not race the request.
+      { rootMargin: "400px" }
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [item, failed, load]);
+
   // Freeze the outgoing panel's height into the incoming one, but only while
   // there is nothing to show — once the source is in, the panel sizes to it.
   const openManual = () => {
