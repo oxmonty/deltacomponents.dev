@@ -299,9 +299,32 @@ function TabsList({ children, className }: TabsListProps) {
     [variant]
   );
 
-  const handlePointerLeave = React.useCallback(() => {
+  const handlePointerLeave = React.useCallback(
+    (e: React.PointerEvent<HTMLDivElement>) => {
+      if (variant !== "underline") return;
+      // Mouse only. A touch pointer fires pointerleave the instant the finger
+      // lifts, so on a phone the wash appeared and vanished inside the same
+      // tap — invisible, which is the whole reason it looked like touch had no
+      // press state at all. There it is dismissed by the next tap elsewhere
+      // instead, so the tapped tab keeps its ground the way a native control
+      // holds a press until you move on.
+      if (e.pointerType !== "mouse") return;
+      delete listRef.current?.dataset.tabHover;
+    },
+    [variant]
+  );
+
+  // The touch half of the above: a tap outside the strip puts the wash away.
+  React.useEffect(() => {
     if (variant !== "underline") return;
-    delete listRef.current?.dataset.tabHover;
+    const dismiss = (e: PointerEvent) => {
+      if (e.pointerType === "mouse") return;
+      const list = listRef.current;
+      if (!list || list.contains(e.target as Node)) return;
+      delete list.dataset.tabHover;
+    };
+    document.addEventListener("pointerdown", dismiss);
+    return () => document.removeEventListener("pointerdown", dismiss);
   }, [variant]);
 
   return (
