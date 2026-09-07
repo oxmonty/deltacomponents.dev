@@ -17,6 +17,7 @@ import { SidebarLayout } from "@/app/components/sidebar-layout";
 import { MetaThemeColor } from "@/app/components/meta-theme-color";
 import { site } from "@/lib/config";
 import { createMetadata } from "@/lib/metadata";
+import { inter } from "@/app/fonts";
 
 /** `--background` per theme, mirrored from globals.css. iOS paints its
  *  address bar with this, so a value off by a shade reads as a seam across
@@ -89,7 +90,7 @@ export default async function RootLayout({
     // `experimental.optimizeRouterScrolling` on — see next.config.ts) the
     // router scrolls without touching the style, so the smooth scroll in
     // globals.css applies and sidebar and pager navigation glide to the top.
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className={inter.variable}>
       <head>
         {/* iOS Safari tints its address bar with this and shows the page
             through it when it is unset — which left the site visible in the
@@ -108,7 +109,11 @@ export default async function RootLayout({
           }}
         />
       </head>
-      {/* Font smoothing (antialiased/grayscale) is set globally in globals.css */}
+      {/* Font smoothing (antialiased/grayscale) is set globally in globals.css.
+          next/font's variable is on <html>, not here: globals.css reads it from
+          :root, and a custom property is only visible to the element that
+          declares it and its descendants — declared on <body> it is invalid at
+          :root, and every font-family falls back to Times. */}
       <body>
         {/* The OS "reduce motion" setting is honored globally in CSS: section 7
             of globals.css zeroes every motion tier under
