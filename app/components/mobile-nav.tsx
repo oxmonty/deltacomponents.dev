@@ -105,26 +105,23 @@ export function MobileNav() {
         </span>
       </Popover.Trigger>
       <Popover.Portal>
-        {/* The panel is sized to `--available-height`, which stops at the
-            anchor's collision boundary — short of the bottom of the screen.
-            iOS Safari's floating address bar is translucent and composites
-            whatever the page draws underneath it, so that gap showed the
-            scrolled page through the bar and in the strip above it. A backdrop
-            in the same colour as the panel means there is nothing else to see,
-            whatever height the panel lands on. `fixed inset-0` covers the
-            layout viewport — but `inset-0` alone is not enough on iOS, where a
-            fixed element is laid out against the *small* viewport and so stops
-            exactly where the address bar starts, which is the gap it was meant
-            to cover. `100lvh` is the large viewport: the height with the chrome
-            retracted, i.e. including the strip the bar sits over.
-
-            Below the header (`z-40`), not level with it: the backdrop portals
-            to the end of the body, so at an equal index it painted over the
-            header and took the hamburger with it — leaving no visible way to
-            close the menu it had just opened. The header carries its own
-            `bg-background`, so nothing shows through above it. */}
-        <Popover.Backdrop className="bg-background fixed inset-x-0 top-0 z-30 h-[100lvh]" />
+        {/* Safari 26 tints its floating toolbars by sampling `position: fixed`
+            or `sticky` elements within a few pixels of the viewport edges,
+            reading their `background-color` and `backdrop-filter`; it falls
+            back to the root background only when it finds none. It also
+            refuses to render fixed content that extends *below* the controls,
+            so a taller element does not paint the strip — it disqualifies
+            itself. Hence `inset-0` rather than any large-viewport height: this
+            has to stop exactly at the bottom edge to be sampled. It carries a
+            backdrop-filter as well as a colour because Safari reads both.
+            `theme-color` plays no part any more — Safari 26 ignores it. */
+        }
+        <Popover.Backdrop className="bg-background fixed inset-0 z-30 backdrop-blur-sm" />
         <Popover.Positioner
+          // Fixed rather than Base UI's default absolute: an absolutely
+          // positioned panel is not a candidate for the edge sampling above,
+          // so the menu's own background never reached Safari's toolbar.
+          positionMethod="fixed"
           side="bottom"
           align="start"
           sideOffset={12}
