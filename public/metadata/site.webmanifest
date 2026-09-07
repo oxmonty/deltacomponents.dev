@@ -1,19 +1,51 @@
 {
   "name": "Delta Components",
-  "short_name": "Delta Components",
+  "short_name": "Delta",
   "icons": [
+    {
+      "src": "/metadata/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "/metadata/favicon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png"
+    },
+    {
+      "src": "/metadata/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
     {
       "src": "/metadata/android-chrome-192x192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "/metadata/android-chrome-512x512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/metadata/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ],
-  "theme_color": "#424242",
+  "theme_color": "#FAFAFA",
   "background_color": "#FAFAFA",
-  "display": "standalone"
+  "display": "standalone",
+  "description": "A curated collection of UI components, free and open source via the shadcn registry.",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "orientation": "any",
+  "categories": [
+    "developer",
+    "productivity"
+  ]
 }

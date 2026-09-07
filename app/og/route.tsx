@@ -9,6 +9,27 @@ import { site } from "@/lib/config";
 // before they reach Satori so a pathological query string can't blow up
 // render time or the image the way an unbounded title/description would.
 const MAX_TITLE_LENGTH = 100;
+
+/** The framing rules, inset from the card's edge.
+ *
+ *  48px sits outside everything the card draws — the text column starts at 80
+ *  and the logo is inset 80 from the bottom-right — so the frame reads as a
+ *  margin around the content rather than a line through it.
+ *
+ *  Dashed, like the previous site's card: a solid rule at this weight reads as
+ *  a crop mark, and the dashes keep it as a margin guide.
+ *
+ *  The dashes are a repeating gradient, not `border-style: dashed`. Satori
+ *  drops the dash pattern on a box with no thickness in the other axis and
+ *  renders it solid, so the rule has to paint its own. */
+const RULE_INSET = 48;
+const RULE_COLOR = "#D4D4D4";
+const DASH = 6;
+const GAP = 5;
+
+function dashes(direction: "to right" | "to bottom"): string {
+  return `repeating-linear-gradient(${direction}, ${RULE_COLOR} 0 ${DASH}px, transparent ${DASH}px ${DASH + GAP}px)`;
+}
 const MAX_DESCRIPTION_LENGTH = 110;
 
 function truncate(value: string, max: number): string {
@@ -61,6 +82,14 @@ export async function GET(request: Request) {
           fontFamily: "Inter",
         }}
       >
+        {[
+          { top: RULE_INSET, left: 0, right: 0, height: 1, backgroundImage: dashes("to right") },
+          { bottom: RULE_INSET, left: 0, right: 0, height: 1, backgroundImage: dashes("to right") },
+          { left: RULE_INSET, top: 0, bottom: 0, width: 1, backgroundImage: dashes("to bottom") },
+          { right: RULE_INSET, top: 0, bottom: 0, width: 1, backgroundImage: dashes("to bottom") },
+        ].map((rule, i) => (
+          <div key={i} style={{ display: "flex", position: "absolute", ...rule }} />
+        ))}
         <div
           style={{
             display: "flex",

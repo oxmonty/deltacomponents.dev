@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { cookies } from "next/headers";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/react";
@@ -27,6 +27,18 @@ const META_THEME_COLORS = { light: "#FAFAFA", dark: "#171717" };
 // supplies the dynamic OG card; the icons and manifest are site-wide and have
 // nowhere else to live. The title template is what turns a child page's plain
 // `title` ("Tabs") into the full tab label.
+/** `viewport-fit=cover` is the one that earns its place: without it iOS
+ *  resolves `env(safe-area-inset-*)` to 0, and the footer's bottom padding
+ *  (`calc(6rem + env(safe-area-inset-bottom))`) exists precisely to clear the
+ *  home indicator. Deliberately no `themeColor` here — the root `<head>`
+ *  writes that tag itself so the blocking script and MetaThemeColor can keep
+ *  it in step with the theme. */
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
+
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
   ...createMetadata({
@@ -46,7 +58,14 @@ export const metadata: Metadata = {
       { url: "/metadata/favicon-96x96.png", sizes: "96x96", type: "image/png" },
     ],
     shortcut: "/metadata/favicon.ico",
-    apple: "/metadata/apple-touch-icon.png",
+    apple: [
+      { url: "/metadata/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+    other: [
+      // Safari pinned tabs. The SVG is monochrome line art, which is the only
+      // thing this rel accepts.
+      { rel: "mask-icon", url: "/metadata/favicon.svg", color: "#171717" },
+    ],
   },
   manifest: "/metadata/site.webmanifest",
 };

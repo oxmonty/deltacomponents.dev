@@ -711,7 +711,7 @@ export function Code({
       {filename && (
         <figcaption
           className={cn(
-            "border-border/60 flex items-center justify-between border-b px-4 py-2.5 [&_svg]:size-4",
+            "border-border/60 flex items-center justify-between border-b px-4 py-2.5",
             !paintFromTheme && "bg-background"
           )}
           style={{
@@ -736,7 +736,7 @@ export function Code({
                 belongs to and pulls the eye off both the label and the copy
                 button. The token stays the same; a notch of transparency is
                 what evens the three optically. */}
-            <span className="flex items-center opacity-70">
+            <span className="flex items-center opacity-70 [&_svg]:size-3.5">
               {getIconForFile(filename)}
             </span>
             <span className="font-medium tracking-tight">{filename}</span>
