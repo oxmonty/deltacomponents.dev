@@ -10,7 +10,7 @@ import {
 import { Code } from "@/registry/default/code";
 import { ComponentPreview } from "@/lib/docs/ComponentPreview";
 import { PropsTable, type PropDef } from "@/lib/docs/PropsTable";
-import { DocPage, DocSection, DocSubSection } from "@/lib/docs/DocPage";
+import { DocPage, DocProse, DocSection, DocSubSection } from "@/lib/docs/DocPage";
 
 const PANELS = [
   { value: "account", copy: "Manage your account settings." },
@@ -315,22 +315,22 @@ export default function TabsDoc() {
         </DocSubSection>
 
         <DocSubSection title="TabsContent">
-          <p className="text-prose text-muted-foreground text-pretty">
+          <DocProse>
             A panel mounts the first time its tab becomes active, then stays
             mounted — hidden, not unmounted, when another tab is selected —
             so content backed by an API doesn&apos;t refetch and flash empty
             on every revisit. <code>forceMount</code> mounts every panel up
             front instead of waiting for a first visit.
-          </p>
+          </DocProse>
           <PropsTable props={contentProps} />
         </DocSubSection>
 
         <DocSubSection title="TabsFromArray">
-          <p className="text-prose text-muted-foreground text-pretty">
+          <DocProse>
             The same tabs, driven by an array of <code>TabItem</code> objects
             instead of JSX — for a list that comes from a config or an API
             rather than being written out by hand.
-          </p>
+          </DocProse>
           <PropsTable props={fromArrayProps} />
         </DocSubSection>
       </DocSection>

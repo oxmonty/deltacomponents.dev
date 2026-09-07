@@ -3,7 +3,7 @@
 import { neighbours } from "@/lib/docs/components";
 import { DocHeader } from "@/lib/docs/DocHeader";
 import { DocPager } from "@/lib/docs/DocPager";
-import { AnchoredHeading } from "@/lib/docs/DocPage";
+import { AnchoredHeading, DocProse } from "@/lib/docs/DocPage";
 
 export default function ContributingPage() {
   const { prev, next } = neighbours("/docs/contributing");
@@ -19,7 +19,7 @@ export default function ContributingPage() {
 
       {/* TBD: placeholder copy. The inherited criteria have been removed —
           write the real contribution guide here, then delete this block. */}
-      <section className="flex flex-col gap-6 text-prose text-foreground/90 leading-relaxed">
+      <section className="flex flex-col gap-6">
         <div className="flex flex-col gap-2">
           <AnchoredHeading
             as="h3"
@@ -27,18 +27,18 @@ export default function ContributingPage() {
           >
             TBD
           </AnchoredHeading>
-          <p>
+          <DocProse>
             Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
             eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim
             ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
             aliquip ex ea commodo consequat.
-          </p>
-          <p>
+          </DocProse>
+          <DocProse>
             Duis aute irure dolor in reprehenderit in voluptate velit esse
             cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat
             cupidatat non proident, sunt in culpa qui officia deserunt mollit
             anim id est laborum.
-          </p>
+          </DocProse>
         </div>
       </section>
 

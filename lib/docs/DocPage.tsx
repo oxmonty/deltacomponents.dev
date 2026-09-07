@@ -127,6 +127,32 @@ export function AnchoredHeading({
   );
 }
 
+/** A body paragraph on a doc page — the one treatment for running text,
+ *  wherever it appears.
+ *
+ *  This is the job an `mdx-components.tsx` map would do if these pages were
+ *  MDX; they are plain TSX, so the role lives here beside the heading ones
+ *  instead of being spelled out in class strings per page. It already drifted
+ *  once: the introduction set the type on a wrapper `<section>` while the API
+ *  reference's blurbs carried their own muted, tight-leading version, so the
+ *  same kind of sentence read two different ways on two pages.
+ *
+ *  Not the same thing as DocHeader's description, which is a standfirst under
+ *  the title and stays muted on purpose. */
+export function DocProse({
+  className,
+  children,
+}: {
+  className?: string;
+  children: ReactNode;
+}) {
+  return (
+    <p className={cn("text-prose text-foreground/90 leading-relaxed text-pretty", className)}>
+      {children}
+    </p>
+  );
+}
+
 interface DocSectionProps {
   title: string;
   /** Overrides the slug derived from `title` — for a heading whose text would
