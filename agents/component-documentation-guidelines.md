@@ -25,8 +25,10 @@ Checklist and conventions for documenting every new component in this project. F
   import { useShape } from "@/registry/lib/shape-context";
   import { useIcon } from "@/registry/lib/icon-context";
   import type { IconComponent } from "@/registry/lib/icon-context";
-  import { useProximityHover } from "@/lib/hooks/use-proximity-hover";
   ```
+  A published component may only import other **published** modules. Anything
+  under `lib/` or `app/` is the docs site's own and does not ship, so importing
+  it would install a file that references code the consumer never receives.
 
 ### 2. Registry Entry (`registry.json`)
 
@@ -42,14 +44,14 @@ Add an item to the `items` array:
   "registryDependencies": ["utils"],   // other registry items this depends on
   "files": [
     { "path": "registry/ui/component-name.tsx", "type": "registry:ui" }
-    // add sub-component files here if any (e.g., menu-item.tsx for dropdown)
+    // add sub-component files here if any (e.g., code-icons.tsx for code)
   ]
 }
 ```
 
 **Field rules:**
 - `dependencies` = external npm packages (`@base-ui/react`, `lucide-react`, `class-variance-authority`)
-- `registryDependencies` = other items in this registry (utils, motion, font-weight, shape-context, size-context, icon-context, use-proximity-hover, or other components like button)
+- `registryDependencies` = other items in this registry (utils, motion, font-weight, shape-context, size-context, icon-context, surface-context, surface-classes, tokens, surfaces, or another component like button)
 - **Every file needs a `target`** — where `shadcn add` writes it in the consumer's project. `scripts/build-demos.ts` reads these to rewrite the import paths shown in demo code panels, so a missing one makes the docs advertise this repo's internal path
 - Components that render icons depend on `icon-context` only — never add icon packages beyond `lucide-react` as `dependencies` (consumers bring their own via IconProvider)
 - Multi-file components list all files in the `files` array
@@ -188,7 +190,8 @@ When text gets heavier on an interactive state (selected, checked, active, open,
 - **Standard weight pairs:** resting `normal` → active `semibold` (400 → 550) is the default for selected/checked/active/open states. Use `medium` as the *resting* weight only when the component's default text is already medium and you want a smaller jump to `semibold` (e.g. ask-user options, 450 → 550). The slider's value readout is the lone `normal` → `medium` case. Don't invent new pairs — pick from these so the whole system animates at consistent magnitudes.
 - **If you change the weight tokens or introduce much larger text,** re-measure and re-tune the paired `opsz` values. Method: render the label in an offscreen `<span style="font-optical-sizing:none">`, measure `getBoundingClientRect().width` at the resting `wght/opsz` vs each candidate bold `opsz`, and pick the `opsz` that centers the closed→bold width delta on zero across representative labels (longer strings dominate the perceived shift). The current values were tuned this way against real component labels.
 
-Reference implementations: `menu-item.tsx`, `nav-item.tsx`, `tabs-subtle.tsx`, `accordion.tsx`, `checkbox-group.tsx`, `radio-group.tsx`, `color-picker.tsx`, `ask-user-questions.tsx`.
+Reference implementation: `app/components/ui/sidebar-menu.tsx` — the only
+place in the repo that animates weight, and the one to copy from.
 
 ---
 
@@ -198,8 +201,8 @@ When a component owns a **global** key (AskUserQuestions' 1-9 digits, Sidebar's
 `[` / `]` toggle), the listener must be window/document-level so the key works
 without focus in the component — but doc pages mount many instances, and the
 site may add its own. Without scoping, every instance answers the same
-keypress. The established pattern (source: `ask-user-questions.tsx`
-`mountedInstances`, replicated in `sidebar-core.tsx` `mountedProviders`):
+keypress. The established pattern (source: `app/components/ui/sidebar-core.tsx`
+`mountedProviders`, the only implementation left in the repo):
 
 1. **Module-level registry**: `const mountedInstances: HTMLElement[] = []`.
    Each instance pushes its root element in a mount effect and splices it out
@@ -299,28 +302,35 @@ interface PropDef {
 
 | Item | Format | Example |
 |---|---|---|
-| Component file | kebab-case | `radio-group.tsx` |
-| Component export | PascalCase | `RadioGroup` |
-| Registry name | kebab-case | `radio-group` |
-| Doc page file | kebab-case `.mdx` | `content/docs/radio-group.mdx` |
-| Demo file | `<slug>-<what>.tsx` | `content/demos/radio-group/radio-group-basic.tsx` |
-| Props file | `<slug>.props.ts` | `content/docs/radio-group.props.ts` |
-| Doc component list slug | kebab-case | `radio-group` |
-| Props type | PascalCase + Props | `RadioGroupProps` |
+| Component file | kebab-case | `registry/ui/product-card.tsx` |
+| Component export | PascalCase | `ProductCard` |
+| Registry name | kebab-case | `product-card` |
+| Doc page file | kebab-case `.mdx` | `content/docs/product-card.mdx` |
+| Demo file | `<slug>-<what>.tsx` | `content/demos/product-card/product-card-basic.tsx` |
+| Props file | `<slug>.props.ts` | `content/docs/product-card.props.ts` |
+| Doc component list slug | kebab-case | `product-card` |
+| Props type | PascalCase + Props | `ProductCardProps` |
 
 ---
 
 ## Quick Reference: File Locations
 
 ```
-registry/ui/
-  component-name.tsx          ← component source
-  lib/utils.ts                ← shared utilities
-  lib/motion.ts               ← duration tiers + easing, as CSS custom properties
-  lib/font-weight.ts          ← font weight tokens
+registry/                      ← everything `shadcn add` can install, nothing else
+  ui/component-name.tsx        ← a component            → consumer's components/ui/
+  lib/utils.ts                 ← `cn`                   → consumer's lib/
+  lib/motion.ts                ← duration tiers + easing, as CSS custom properties
+  lib/font-weight.ts           ← font weight tokens
   lib/shape-context.tsx        ← shape provider (no key shortcut — that's docs-only)
   lib/icon-context.tsx         ← icon slots, Lucide defaults, IconProvider override
-  hooks/use-proximity-hover.ts ← proximity hook
+
+app/components/                ← the site's own components, never published
+  ui/                          ← primitives it uses: sidebar, scroll-area, badge
+  *.tsx                        ← page chrome: header, footer, bento, right panel
+
+lib/                           ← the site's own modules, never published
+  hooks/                       ← hooks only the site uses
+  theme-context.tsx, elevated.tsx, config.ts, metadata.ts, logo.ts
 
 content/
   docs/<slug>.mdx              ← the doc page body (frontmatter + markdown)

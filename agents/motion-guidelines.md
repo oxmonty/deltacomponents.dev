@@ -164,11 +164,13 @@ changes. The full pattern and rules live in
 
 ## Where each speed shows up
 
-Which component *leads* with which tier. Add a row when you add a component.
+Which component *leads* with which tier. Add to a cell when you add a
+component, and remove from one when you delete a component — a table naming
+things that no longer exist is how this one went stale.
 
 | fast (80ms) | moderate (160ms) | slow (240ms) |
 |---|---|---|
-| Hover and focus rings, Tooltip, Input copy, Menu item tick, Dropdown open, Toast press | Dropdown highlight, Tabs indicator, Subtle tabs, Mobile drawer, Sidebar collapse, Selection merge / split | Right properties panel |
+| Hover and focus rings, Tooltip, Toast press, Copy button | Tabs indicator, Mobile nav panel, Sidebar collapse | Right properties panel |
 
 Most components also use `fast` for their hover and focus states on top of their
 headline tier — the table lists each component once, by its headline motion.

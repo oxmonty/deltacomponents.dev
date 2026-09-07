@@ -128,13 +128,23 @@ file has drifted — so run them before handing anything back.
 ## 7. Check
 
 ```sh
-make check   # lint, typecheck, test
+make check          # lint, typecheck, test
+make test-install   # installs a component with the real CLI, opt-in
 ```
+
+`make check` will not tell you whether the thing you published can actually be
+installed — it never runs the CLI. `make test-install` does: it serves the
+committed `public/r` on a local port and installs from it, which is what caught
+every registry item naming its dependencies in a form that resolved against
+shadcn's registry instead of ours.
 
 ## Checklist
 
 - [ ] Source in `registry/ui/`, importing siblings by their real
       `@/registry/...` path.
+- [ ] It imports **only published modules**. Anything under `lib/` or `app/` is
+      the site's own and does not ship, so a component reaching for it installs
+      a file referencing code the consumer never receives.
 - [ ] `registry.json` entry with `dependencies`, `registryDependencies` and a
       `target` on every file.
 - [ ] `componentList` entry, positioned where it should read in the sidebar.
@@ -145,5 +155,5 @@ make check   # lint, typecheck, test
       `@/registry/...`.
 - [ ] `content/docs/<slug>.props.ts` covering every public prop.
 - [ ] `make demos && make toc` run and the generated files committed.
-- [ ] `make check` green.
+- [ ] `make check` green, and `make test-install` if the registry entry changed.
 - [ ] The page loads, the demos render, and every contents-rail link resolves.
