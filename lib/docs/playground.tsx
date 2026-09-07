@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { fontWeights } from "@/registry/default/lib/font-weight";
 import { SurfaceProvider } from "@/lib/surface-context";
 import { useRightRailNode } from "@/lib/right-rail";
-import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
+import { NativeSelect, NativeSelectOption } from "@/lib/docs/native-select";
 
 // ---------------------------------------------------------------------------
 // Shared scaffolding for doc-page playgrounds (Card, Button, …): the control

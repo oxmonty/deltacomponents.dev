@@ -62,7 +62,7 @@ inline style keyed on a `data-*` attribute and let the browser interpolate.
 Nothing else is needed.
 
 **2. A Base UI primitive renders it** — anything in `registry/base/` built on
-`@base-ui/react`: Popover, Menu, Select, Tooltip, Dialog, Drawer. Base UI keeps
+`@base-ui/react`: Popover, Menu, Tooltip, Dialog, Drawer. Base UI keeps
 the element mounted for the duration of a CSS transition and unmounts it when
 the transition ends, so it replaces `AnimatePresence` outright:
 
@@ -168,7 +168,7 @@ Which component *leads* with which tier. Add a row when you add a component.
 
 | fast (80ms) | moderate (160ms) | slow (240ms) |
 |---|---|---|
-| Hover and focus rings, Tooltip, Input copy, Menu item tick, Select open, Dropdown open, Toast press | Dropdown / Select highlight, Tabs indicator, Subtle tabs, Mobile drawer, Sidebar collapse, Selection merge / split | Right properties panel |
+| Hover and focus rings, Tooltip, Input copy, Menu item tick, Dropdown open, Toast press | Dropdown highlight, Tabs indicator, Subtle tabs, Mobile drawer, Sidebar collapse, Selection merge / split | Right properties panel |
 
 Most components also use `fast` for their hover and focus states on top of their
 headline tier — the table lists each component once, by its headline motion.
