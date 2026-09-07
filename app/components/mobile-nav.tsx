@@ -113,8 +113,14 @@ export function MobileNav() {
             in the same colour as the panel means there is nothing else to see,
             whatever height the panel lands on. `fixed inset-0` covers the
             layout viewport, which under `viewport-fit=cover` is the whole
-            display. */}
-        <Popover.Backdrop className="bg-background fixed inset-0 z-40" />
+            display.
+
+            Below the header (`z-40`), not level with it: the backdrop portals
+            to the end of the body, so at an equal index it painted over the
+            header and took the hamburger with it — leaving no visible way to
+            close the menu it had just opened. The header carries its own
+            `bg-background`, so nothing shows through above it. */}
+        <Popover.Backdrop className="bg-background fixed inset-0 z-30" />
         <Popover.Positioner
           side="bottom"
           align="start"
