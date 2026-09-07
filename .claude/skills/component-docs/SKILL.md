@@ -16,6 +16,13 @@ A doc page is **MDX**, not TSX. Three files per component, and nothing else:
 The route (`app/docs/[slug]/page.tsx`) supplies the chrome: title, prev/next
 arrows, the reading column. You never write a page component.
 
+Each page is also served as plain markdown at `/docs/<slug>.md`, for an agent
+to read — `app/llm/[slug]/route.ts` replaces every component in the .mdx with
+what it stands for: a preview by the demo's source, the install block by the
+command, a props table by a markdown table. A new component gets that for free;
+a new *component tag* in MDX does not, so add a case there if you introduce
+one, or it will reach an agent as raw JSX.
+
 `agents/component-documentation-guidelines.md` is the companion to this file —
 it covers the *mechanics* (registry entry, props-table type, the ghost-span
 pattern). This file covers the *shape of the page*.

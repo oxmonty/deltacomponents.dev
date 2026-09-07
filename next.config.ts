@@ -8,6 +8,16 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     "/og": ["./app/og/*.ttf"],
   },
+  async rewrites() {
+    return [
+      // `/docs/tabs.md` serves the same page as plain markdown for an agent to
+      // read. An extension rather than a separate path, so the two URLs are
+      // obviously the same document. `.mdx` lands in the same place — it is
+      // what someone who knows the file extension will try.
+      { source: "/docs/:slug.md", destination: "/llm/:slug" },
+      { source: "/docs/:slug.mdx", destination: "/llm/:slug" },
+    ];
+  },
   experimental: {
     // Lets `scroll-behavior: smooth` survive a route change, so the sidebar
     // and the bottom pager glide back to the top instead of snapping. Without

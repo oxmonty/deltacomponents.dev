@@ -35,7 +35,7 @@ export function DocPage({
 
   return (
     <div className="flex flex-col gap-8 px-6">
-      <DocHeader title={heading} description={blurb} prev={prev} next={next} />
+      <DocHeader title={heading} description={blurb} prev={prev} next={next} copyable />
 
       {/* The body writes its own Installation section — it is content, and a
           page that injected it had to teach the contents generator about a

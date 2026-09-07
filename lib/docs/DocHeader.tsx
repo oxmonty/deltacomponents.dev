@@ -7,6 +7,7 @@ import { Tooltip } from "@/registry/ui/tooltip";
 import { fontWeights } from "@/registry/lib/font-weight";
 import { useIcon } from "@/registry/lib/icon-context";
 import { useSizeVariant } from "@/registry/lib/size-context";
+import { CopyPage } from "@/lib/docs/CopyPage";
 import type { PageLink } from "@/lib/docs/components";
 
 /** The title / description / arrows block every page opens with.
@@ -24,12 +25,15 @@ export function DocHeader({
   description,
   prev,
   next,
+  copyable = false,
   children,
 }: {
   title: string;
   description: ReactNode;
   prev?: PageLink | null;
   next?: PageLink | null;
+  /** Show the "Copy page" control — a component page, which has a `.md` route. */
+  copyable?: boolean;
   /** Anything that belongs under the description — the showcase's call to
    *  action, say. */
   children?: ReactNode;
@@ -88,9 +92,14 @@ export function DocHeader({
         >
           {title}
         </h1>
-        <div className="flex shrink-0 items-center gap-1">
-          {arrow(prev, "prev")}
-          {arrow(next, "next")}
+        <div className="flex shrink-0 items-center gap-2">
+          {/* Only where there is a page to copy: the showcase and the section
+              pages have no markdown route behind them. */}
+          {copyable && <CopyPage />}
+          <div className="flex items-center gap-1">
+            {arrow(prev, "prev")}
+            {arrow(next, "next")}
+          </div>
         </div>
       </div>
       {/* Full column width, not a percentage of it. shadcn caps its
