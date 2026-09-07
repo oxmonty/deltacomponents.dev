@@ -1,7 +1,9 @@
 # Agent guide
 
 Start here, then read the guide that matches what you are about to change.
-`README.md` at the repo root covers setup, commands, and the design system.
+`README.md` is a short front door — what this is, where the docs live, how to
+start it. Setup and commands are `make` (run it bare for the list); the design
+system is `app/globals.css`, the single source of truth for every token.
 
 | Guide | Read it before |
 | --- | --- |
