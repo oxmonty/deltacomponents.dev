@@ -1,3 +1,4 @@
+import createMDX from "@next/mdx";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
@@ -18,4 +19,21 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+const withMDX = createMDX({
+  extension: /\.mdx?$/,
+  options: {
+    // No frontmatter plugin: a page's title, description, order and status
+    // already live in `componentList`, which the sidebar, the showcase cards
+    // and the pager all read. Repeating them at the top of the .mdx would give
+    // the same facts two homes. The file holds the body and nothing else.
+    // Named, not imported: Turbopack passes loader options across a worker
+    // boundary and rejects anything that isn't plain JSON, so a plugin
+    // function here fails the build with "does not have serializable
+    // options". The strings are resolved on the loader's side.
+    remarkPlugins: [["remark-gfm", {}]],
+    // Stamps each heading with the id the contents rail links to.
+    rehypePlugins: [["rehype-slug", {}]],
+  },
+});
+
+export default withMDX(nextConfig);

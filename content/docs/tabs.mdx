@@ -1,0 +1,82 @@
+import { tabsProps, listProps, triggerProps, contentProps, fromArrayProps } from "./tabs.props";
+
+<ComponentPreview name="tabs-demo" padding="compact" />
+
+## Installation
+
+<InstallTabs slug="tabs" />
+
+## Usage
+
+```tsx
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+<Tabs defaultValue="account">
+  <TabsList>
+    <TabsTrigger value="account">Account</TabsTrigger>
+    <TabsTrigger value="password">Password</TabsTrigger>
+  </TabsList>
+  <TabsContent value="account">Manage your account settings.</TabsContent>
+  <TabsContent value="password">Change your password here.</TabsContent>
+</Tabs>
+```
+
+## Basic
+
+<ComponentPreview name="tabs-basic" />
+
+## Underline
+
+<ComponentPreview name="tabs-underline" />
+
+## Ghost
+
+<ComponentPreview name="tabs-ghost" />
+
+## Sizes
+
+<ComponentPreview name="tabs-sizes" align="top" minHeightClass="min-h-[280px]" />
+
+## With Icons
+
+<ComponentPreview name="tabs-with-icons" />
+
+## Concentric
+
+<ComponentPreview name="tabs-concentric" />
+
+## Animated panels
+
+<ComponentPreview name="tabs-animated-panels" />
+
+## API Reference
+
+### Tabs
+
+<PropsTable props={tabsProps} />
+
+### TabsList
+
+<PropsTable props={listProps} />
+
+### TabsTrigger
+
+<PropsTable props={triggerProps} />
+
+### TabsContent
+
+A panel mounts the first time its tab becomes active, then stays
+mounted — hidden, not unmounted, when another tab is selected — so
+content backed by an API doesn't refetch and flash empty on every
+revisit. `forceMount` mounts every panel up front instead of waiting
+for a first visit.
+
+<PropsTable props={contentProps} />
+
+### TabsFromArray
+
+The same tabs, driven by an array of `TabItem` objects instead of
+JSX — for a list that comes from a config or an API rather than
+being written out by hand.
+
+<PropsTable props={fromArrayProps} />

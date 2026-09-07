@@ -6,66 +6,292 @@ import type { TocEntry } from "@/lib/docs/heading-id";
 /** Every page's headings, in reading order, keyed by route. */
 export const TOC: Record<string, TocEntry[]> = {
   "/docs/button": [
-    { id: "installation", text: "Installation", depth: 2 },
-    { id: "usage", text: "Usage", depth: 2 },
-    { id: "basic", text: "Basic", depth: 2 },
-    { id: "playground", text: "Playground", depth: 2 },
-    { id: "variants", text: "Variants", depth: 2 },
-    { id: "loading-&-disabled", text: "Loading & Disabled", depth: 2 },
-    { id: "api-reference", text: "API Reference", depth: 2 },
+    {
+      "id": "installation",
+      "text": "Installation",
+      "depth": 2
+    },
+    {
+      "id": "usage",
+      "text": "Usage",
+      "depth": 2
+    },
+    {
+      "id": "basic",
+      "text": "Basic",
+      "depth": 2
+    },
+    {
+      "id": "playground",
+      "text": "Playground",
+      "depth": 2
+    },
+    {
+      "id": "variants",
+      "text": "Variants",
+      "depth": 2
+    },
+    {
+      "id": "loading--disabled",
+      "text": "Loading & Disabled",
+      "depth": 2
+    },
+    {
+      "id": "api-reference",
+      "text": "API Reference",
+      "depth": 2
+    }
   ],
   "/docs/code": [
-    { id: "installation", text: "Installation", depth: 2 },
-    { id: "usage", text: "Usage", depth: 2 },
-    { id: "basic", text: "Basic", depth: 2 },
-    { id: "package-managers", text: "Package managers", depth: 2 },
-    { id: "custom-theme", text: "Custom theme", depth: 2 },
-    { id: "expandable", text: "Expandable", depth: 2 },
-    { id: "api-reference", text: "API Reference", depth: 2 },
+    {
+      "id": "installation",
+      "text": "Installation",
+      "depth": 2
+    },
+    {
+      "id": "usage",
+      "text": "Usage",
+      "depth": 2
+    },
+    {
+      "id": "basic",
+      "text": "Basic",
+      "depth": 2
+    },
+    {
+      "id": "package-managers",
+      "text": "Package managers",
+      "depth": 2
+    },
+    {
+      "id": "custom-theme",
+      "text": "Custom theme",
+      "depth": 2
+    },
+    {
+      "id": "expandable",
+      "text": "Expandable",
+      "depth": 2
+    },
+    {
+      "id": "api-reference",
+      "text": "API Reference",
+      "depth": 2
+    }
+  ],
+  "/docs/contributing": [
+    {
+      "id": "tbd",
+      "text": "TBD",
+      "depth": 3
+    }
+  ],
+  "/docs": [
+    {
+      "id": "tbd",
+      "text": "TBD",
+      "depth": 3
+    }
   ],
   "/docs/product-card": [
-    { id: "installation", text: "Installation", depth: 2 },
-    { id: "usage", text: "Usage", depth: 2 },
-    { id: "basic", text: "Basic", depth: 2 },
-    { id: "inner-layout", text: "Inner layout", depth: 2 },
-    { id: "sizes", text: "Sizes", depth: 2 },
-    { id: "badge", text: "Badge", depth: 2 },
-    { id: "grid", text: "Grid", depth: 2 },
-    { id: "api-reference", text: "API Reference", depth: 2 },
-    { id: "productcard", text: "ProductCard", depth: 3 },
-    { id: "productcardimage", text: "ProductCardImage", depth: 3 },
-    { id: "productcardbadge", text: "ProductCardBadge", depth: 3 },
-    { id: "productcardcontent", text: "ProductCardContent", depth: 3 },
-    { id: "productcardheader", text: "ProductCardHeader", depth: 3 },
-    { id: "productcardtitle", text: "ProductCardTitle", depth: 3 },
-    { id: "productcardsubtitle", text: "ProductCardSubtitle", depth: 3 },
-    { id: "productcardmetric", text: "ProductCardMetric", depth: 3 },
+    {
+      "id": "installation",
+      "text": "Installation",
+      "depth": 2
+    },
+    {
+      "id": "usage",
+      "text": "Usage",
+      "depth": 2
+    },
+    {
+      "id": "basic",
+      "text": "Basic",
+      "depth": 2
+    },
+    {
+      "id": "inner-layout",
+      "text": "Inner layout",
+      "depth": 2
+    },
+    {
+      "id": "sizes",
+      "text": "Sizes",
+      "depth": 2
+    },
+    {
+      "id": "badge",
+      "text": "Badge",
+      "depth": 2
+    },
+    {
+      "id": "grid",
+      "text": "Grid",
+      "depth": 2
+    },
+    {
+      "id": "api-reference",
+      "text": "API Reference",
+      "depth": 2
+    },
+    {
+      "id": "productcard",
+      "text": "ProductCard",
+      "depth": 3
+    },
+    {
+      "id": "productcardimage",
+      "text": "ProductCardImage",
+      "depth": 3
+    },
+    {
+      "id": "productcardbadge",
+      "text": "ProductCardBadge",
+      "depth": 3
+    },
+    {
+      "id": "productcardcontent",
+      "text": "ProductCardContent",
+      "depth": 3
+    },
+    {
+      "id": "productcardheader",
+      "text": "ProductCardHeader",
+      "depth": 3
+    },
+    {
+      "id": "productcardtitle",
+      "text": "ProductCardTitle",
+      "depth": 3
+    },
+    {
+      "id": "productcardsubtitle",
+      "text": "ProductCardSubtitle",
+      "depth": 3
+    },
+    {
+      "id": "productcardmetric",
+      "text": "ProductCardMetric",
+      "depth": 3
+    }
   ],
   "/docs/tabs": [
-    { id: "installation", text: "Installation", depth: 2 },
-    { id: "usage", text: "Usage", depth: 2 },
-    { id: "basic", text: "Basic", depth: 2 },
-    { id: "underline", text: "Underline", depth: 2 },
-    { id: "ghost", text: "Ghost", depth: 2 },
-    { id: "sizes", text: "Sizes", depth: 2 },
-    { id: "with-icons", text: "With Icons", depth: 2 },
-    { id: "concentric", text: "Concentric", depth: 2 },
-    { id: "animated-panels", text: "Animated panels", depth: 2 },
-    { id: "api-reference", text: "API Reference", depth: 2 },
-    { id: "tabs", text: "Tabs", depth: 3 },
-    { id: "tabslist", text: "TabsList", depth: 3 },
-    { id: "tabstrigger", text: "TabsTrigger", depth: 3 },
-    { id: "tabscontent", text: "TabsContent", depth: 3 },
-    { id: "tabsfromarray", text: "TabsFromArray", depth: 3 },
+    {
+      "id": "installation",
+      "text": "Installation",
+      "depth": 2
+    },
+    {
+      "id": "usage",
+      "text": "Usage",
+      "depth": 2
+    },
+    {
+      "id": "basic",
+      "text": "Basic",
+      "depth": 2
+    },
+    {
+      "id": "underline",
+      "text": "Underline",
+      "depth": 2
+    },
+    {
+      "id": "ghost",
+      "text": "Ghost",
+      "depth": 2
+    },
+    {
+      "id": "sizes",
+      "text": "Sizes",
+      "depth": 2
+    },
+    {
+      "id": "with-icons",
+      "text": "With Icons",
+      "depth": 2
+    },
+    {
+      "id": "concentric",
+      "text": "Concentric",
+      "depth": 2
+    },
+    {
+      "id": "animated-panels",
+      "text": "Animated panels",
+      "depth": 2
+    },
+    {
+      "id": "api-reference",
+      "text": "API Reference",
+      "depth": 2
+    },
+    {
+      "id": "tabs",
+      "text": "Tabs",
+      "depth": 3
+    },
+    {
+      "id": "tabslist",
+      "text": "TabsList",
+      "depth": 3
+    },
+    {
+      "id": "tabstrigger",
+      "text": "TabsTrigger",
+      "depth": 3
+    },
+    {
+      "id": "tabscontent",
+      "text": "TabsContent",
+      "depth": 3
+    },
+    {
+      "id": "tabsfromarray",
+      "text": "TabsFromArray",
+      "depth": 3
+    }
   ],
   "/docs/tooltip": [
-    { id: "installation", text: "Installation", depth: 2 },
-    { id: "usage", text: "Usage", depth: 2 },
-    { id: "basic", text: "Basic", depth: 2 },
-    { id: "placement", text: "Placement", depth: 2 },
-    { id: "rich-content", text: "Rich Content", depth: 2 },
-    { id: "follow-cursor", text: "Follow cursor", depth: 2 },
-    { id: "delay", text: "Delay", depth: 2 },
-    { id: "api-reference", text: "API Reference", depth: 2 },
-  ],
+    {
+      "id": "installation",
+      "text": "Installation",
+      "depth": 2
+    },
+    {
+      "id": "usage",
+      "text": "Usage",
+      "depth": 2
+    },
+    {
+      "id": "basic",
+      "text": "Basic",
+      "depth": 2
+    },
+    {
+      "id": "placement",
+      "text": "Placement",
+      "depth": 2
+    },
+    {
+      "id": "rich-content",
+      "text": "Rich Content",
+      "depth": 2
+    },
+    {
+      "id": "follow-cursor",
+      "text": "Follow cursor",
+      "depth": 2
+    },
+    {
+      "id": "delay",
+      "text": "Delay",
+      "depth": 2
+    },
+    {
+      "id": "api-reference",
+      "text": "API Reference",
+      "depth": 2
+    }
+  ]
 };

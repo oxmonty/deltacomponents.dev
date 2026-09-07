@@ -7,7 +7,6 @@ import { componentList, labelOf, neighbours, toLabel } from "@/lib/docs/componen
 import { DocPager } from "@/lib/docs/DocPager";
 import { DocHeader } from "@/lib/docs/DocHeader";
 import { headingId } from "@/lib/docs/heading-id";
-import { InstallTabs } from "@/lib/docs/InstallTabs";
 
 interface DocPageProps {
   /** Optional: with a `slug`, the heading comes from that component's entry in
@@ -20,19 +19,6 @@ interface DocPageProps {
   description?: ReactNode;
   /** Slug used for prev/next navigation (must match a `componentList` entry). */
   slug?: string;
-  /** Registry slug used for the auto-injected Installation snippet. Defaults to `slug`.
-   *  Set when the install advertises a bundled registry item different from the page slug
-   *  (e.g. `slug="surfaces"` but `installSlug="elevated"`). */
-  installSlug?: string;
-  /** Set to false to skip the auto-injected Installation block (when the page provides its own). */
-  showInstall?: boolean;
-  /** Optional note rendered under the install command. */
-  installNote?: string;
-  /** The page's lead demo, rendered above Installation and deliberately
-   *  without a heading — a reader should see what the component *is* before
-   *  they are told how to install it, and a heading over the first thing on
-   *  the page is a label for something they can already see. */
-  demo?: ReactNode;
   children: ReactNode;
 }
 
@@ -40,10 +26,6 @@ export function DocPage({
   title,
   description,
   slug,
-  installSlug,
-  showInstall = true,
-  installNote,
-  demo,
   children,
 }: DocPageProps) {
   const entry = slug ? componentList.find((c) => c.slug === slug) : undefined;
@@ -56,16 +38,9 @@ export function DocPage({
     <div className="flex flex-col gap-8 px-6">
       <DocHeader title={heading} description={blurb} prev={prev} next={next} />
 
-      {demo}
-
-      {slug && showInstall && (
-        <div className="flex flex-col gap-3">
-          <AnchoredHeading className="text-heading text-foreground leading-none">
-            Installation
-          </AnchoredHeading>
-          <InstallTabs slug={installSlug ?? slug} note={installNote} />
-        </div>
-      )}
+      {/* The body writes its own Installation section — it is content, and a
+          page that injected it had to teach the contents generator about a
+          heading that appeared in no file. */}
       {children}
 
       {slug && <DocPager prev={prev} next={next} />}

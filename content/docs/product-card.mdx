@@ -1,0 +1,93 @@
+import {
+  productCardProps,
+  productCardImageProps,
+  productCardBadgeProps,
+  productCardContentProps,
+  productCardHeaderProps,
+  productCardTitleProps,
+  productCardSubtitleProps,
+  productCardMetricProps,
+} from "./product-card.props";
+
+<ComponentPreview name="product-card-demo" padding="compact" />
+
+## Installation
+
+<InstallTabs slug="product-card" />
+
+## Usage
+
+```tsx
+import {
+  ProductCard,
+  ProductCardContent,
+  ProductCardHeader,
+  ProductCardMetric,
+  ProductCardSubtitle,
+  ProductCardTitle,
+} from "@/components/ui/product-card";
+
+<ProductCard>
+  <ProductCardContent>
+    <ProductCardHeader>
+      <ProductCardTitle>Twemco Clock</ProductCardTitle>
+      <ProductCardSubtitle>Clock</ProductCardSubtitle>
+    </ProductCardHeader>
+    <ProductCardMetric>$219</ProductCardMetric>
+  </ProductCardContent>
+</ProductCard>
+```
+
+## Basic
+
+<ComponentPreview name="product-card-basic" padding="compact" />
+
+## Inner layout
+
+<ComponentPreview name="product-card-inner" padding="compact" />
+
+## Sizes
+
+<ComponentPreview name="product-card-sizes" padding="compact" />
+
+## Badge
+
+<ComponentPreview name="product-card-badge" padding="compact" />
+
+## Grid
+
+<ComponentPreview name="product-card-grid" padding="compact" />
+
+## API Reference
+
+### ProductCard
+
+<PropsTable props={productCardProps} />
+
+### ProductCardImage
+
+<PropsTable props={productCardImageProps} />
+
+### ProductCardBadge
+
+<PropsTable props={productCardBadgeProps} />
+
+### ProductCardContent
+
+<PropsTable props={productCardContentProps} />
+
+### ProductCardHeader
+
+<PropsTable props={productCardHeaderProps} />
+
+### ProductCardTitle
+
+<PropsTable props={productCardTitleProps} />
+
+### ProductCardSubtitle
+
+<PropsTable props={productCardSubtitleProps} />
+
+### ProductCardMetric
+
+<PropsTable props={productCardMetricProps} />

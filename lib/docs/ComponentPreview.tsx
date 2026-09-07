@@ -7,6 +7,7 @@ import { useShape } from "@/registry/default/lib/shape-context";
 import { useIcon } from "@/registry/default/lib/icon-context";
 import { Tooltip } from "@/registry/base/tooltip";
 import { Code } from "@/registry/default/code";
+import { demos } from "@/lib/docs/demos.generated";
 import { useNarrowFrame } from "@/lib/use-narrow-frame";
 
 /** Snippets longer than this collapse behind an Expand affordance; shorter
@@ -27,6 +28,11 @@ export interface PlaybackButton {
 }
 
 interface ComponentPreviewProps {
+  /** The demo to render, by the name of its file under `content/demos/`.
+   *  Brings its own source with it, so the code panel shows the demo rather
+   *  than a copy of it kept alongside by hand. A page passes this instead of
+   *  `children` + `code`. */
+  name?: string;
   title?: string;
   /** Source snippet rendered under the demo. Omit to show the demo alone —
    *  gallery rows do that, where one sample covers several frames. */
@@ -67,10 +73,12 @@ interface ComponentPreviewProps {
   hideHeader?: boolean;
   /** Centered label rendered under the frame — the gallery rows' captions. */
   caption?: string;
-  children: ReactNode;
+  /** Inline demo, for a caller that isn't naming one from the registry. */
+  children?: ReactNode;
 }
 
 export function ComponentPreview({
+  name,
   title,
   code,
   onReplay,
@@ -86,6 +94,17 @@ export function ComponentPreview({
 }: ComponentPreviewProps) {
   const narrow = useNarrowFrame();
   const shape = useShape();
+  // A named demo supplies both halves of the frame. An unknown name is a hard
+  // error rather than an empty frame: a typo in a doc page should fail loudly
+  // where it is written, not render a blank box in production.
+  const demo = name ? demos[name] : undefined;
+  if (name && !demo) {
+    throw new Error(
+      `ComponentPreview: no demo named "${name}". Add content/demos/<component>/${name}.tsx and run \`make demos\`.`
+    );
+  }
+  const DemoComponent = demo?.Component;
+  const resolvedCode = code ?? demo?.source;
   const ReplayIcon = useIcon("rotate-ccw");
   const previewRef = useRef<HTMLDivElement>(null);
 
@@ -108,7 +127,7 @@ export function ComponentPreview({
   // be taller than the code it covers. A one- or two-line sample stays open on
   // a phone for the same reason.
   const collapsible =
-    (code?.trim().split("\n").length ?? 0) >
+    (resolvedCode?.trim().split("\n").length ?? 0) >
     (narrow ? COLLAPSE_AFTER_LINES_NARROW : COLLAPSE_AFTER_LINES);
 
   const frame = (
@@ -189,7 +208,7 @@ export function ComponentPreview({
                   : "px-8 py-12"
           }`}
         >
-          {children}
+          {DemoComponent ? <DemoComponent /> : children}
         </div>
 
         {/* The source sits UNDER the demo rather than behind a tab, clipped to a
@@ -198,9 +217,9 @@ export function ComponentPreview({
             rather than reimplementing the collapse. Its own border and corners
             come off: the frame around it supplies both, and only the hairline
             separating it from the demo is kept. */}
-        {code && (
+        {resolvedCode && (
           <Code
-            code={code}
+            code={resolvedCode}
             language="tsx"
             showLineNumbers={false}
             expandable={collapsible}

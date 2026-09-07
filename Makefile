@@ -1,4 +1,4 @@
-.PHONY: help install dev build start lint typecheck test check registry gacp
+.PHONY: help install dev build start lint typecheck test check registry demos gacp
 
 # Default target - show help
 .DEFAULT_GOAL := help
@@ -42,6 +42,9 @@ check: lint typecheck test ## Run every check CI runs
 ## Registry:
 toc: ## Rebuild lib/docs/toc.generated.ts from the doc pages
 	bun run toc:build
+
+demos: ## Rebuild lib/docs/demos.generated.ts from content/demos
+	bun run demos:build
 
 registry: ## Rebuild public/r from registry.json
 	bun run registry:build
