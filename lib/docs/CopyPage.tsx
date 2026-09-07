@@ -5,6 +5,7 @@ import { Menu } from "@base-ui/react/menu";
 import { usePathname } from "next/navigation";
 
 import { Button } from "@/registry/ui/button";
+import { Tooltip } from "@/registry/ui/tooltip";
 import { useIcon } from "@/registry/lib/icon-context";
 import { useShape } from "@/registry/lib/shape-context";
 import { useSizeVariant } from "@/registry/lib/size-context";
@@ -116,44 +117,19 @@ export function CopyPage() {
 
   return (
     <div className="flex items-center gap-1">
-      {/* Ghost, like the arrows it sits beside — the header's controls are one
-          row and should read as one set, not a filled call to action next to
-          two quiet ones.
-
-          `leadingIcon`, not an icon child: Button lays the glyph and the label
-          out itself, and a child icon becomes a second flex item the label
-          then wraps under. */}
-      <Button
-        variant="ghost"
-        size={size}
-        onClick={copy}
-        aria-label="Copy this page as markdown"
-        leadingIcon={copied ? CheckIcon : CopyIcon}
-        className="whitespace-nowrap"
-      >
-        {/* The ghost-span pattern from the component guidelines, for the same
-            reason it exists there: the label changes on click, and a button
-            that resizes shoves the arrows beside it sideways. A hidden copy of
-            the longest state reserves the width; the visible one sits in the
-            same grid cell. */}
-        <span className="inline-grid">
-          <span className="invisible col-start-1 row-start-1" aria-hidden="true">
-            Copy failed
-          </span>
-          <span className="col-start-1 row-start-1">
-            {failed ? "Copy failed" : copied ? "Copied" : "Copy page"}
-          </span>
-        </span>
-      </Button>
       <Menu.Root>
+        {/* The labelled control is the menu, not the copy: handing the page
+            to an assistant is the thing worth naming, and "Open with" says
+            what the chevron is about to offer. */}
         <Menu.Trigger
-          aria-label="Open this page in an assistant"
           render={
-            // An icon-only Button takes its glyph as children — `leadingIcon`
-            // is deliberately ignored at that size, so passing it there
-            // renders an empty button.
-            <Button variant="ghost" size={iconSize}>
-              <ChevronDown />
+            <Button
+              variant="ghost"
+              size={size}
+              trailingIcon={ChevronDown}
+              className="whitespace-nowrap"
+            >
+              Open with
             </Button>
           }
         />
@@ -168,19 +144,44 @@ export function CopyPage() {
                 shape.container
               )}
             >
-              {assistant("Claude", "https://claude.ai/new", <ClaudeIcon />)}
-              {assistant("ChatGPT", "https://chatgpt.com", <ChatGPTIcon />)}
+              {/* Markdown first: it is the one entry that needs no third party
+                  and no round trip, and the one a reader picks when they just
+                  want the page's source. */}
               <Menu.Item
                 className={item}
                 render={<a href={markdownPath} target="_blank" rel="noopener noreferrer" />}
               >
                 <MarkdownIcon />
-                View as Markdown
+                Open in Markdown
               </Menu.Item>
+              {assistant("Claude", "https://claude.ai/new", <ClaudeIcon />)}
+              {assistant("ChatGPT", "https://chatgpt.com", <ChatGPTIcon />)}
             </Menu.Popup>
           </Menu.Positioner>
         </Menu.Portal>
       </Menu.Root>
+      <Tooltip content={failed ? "Copy failed" : copied ? "Copied" : "Copy page as markdown"}>
+        {/* Icon-only, so the label swap on copy cannot resize it — the glyph
+            carries the state instead, and the tooltip carries the name, like
+            the arrows beside it. An icon-only Button takes its glyph as
+            children; `leadingIcon` is ignored at that size. */}
+        <Button
+          variant="ghost"
+          size={iconSize}
+          onClick={copy}
+          aria-label={failed ? "Copy failed" : copied ? "Copied" : "Copy this page as markdown"}
+          // Both glyphs sit in the same 16px box as the arrows, but a copy
+          // mark fills far more of its viewBox than an arrow does — 13.3px of
+          // drawing against 9.3px — so at the shared box size it reads as the
+          // bigger icon. Clipping the box to 12px lands it at the arrows'
+          // drawn size; the stroke steps up to 2 to hold the same 1px weight
+          // once the box is smaller. `!` because Button's own `[&_svg]:size-4`
+          // has equal specificity and would otherwise win on source order.
+          className="[&_svg]:!size-3 [&_svg]:!stroke-[2]"
+        >
+          {copied ? <CheckIcon /> : <CopyIcon />}
+        </Button>
+      </Tooltip>
     </div>
   );
 }

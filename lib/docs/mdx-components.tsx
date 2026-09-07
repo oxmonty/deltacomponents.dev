@@ -19,7 +19,7 @@ import { cn } from "@/registry/lib/utils";
  *  elements, and a bigger one above a heading so it reads as opening what
  *  follows rather than captioning what came before. */
 export const mdxBodyClass =
-  "flex flex-col [&>*]:mt-4 [&>*:first-child]:mt-0 [&>h2]:mt-10 [&>h3]:mt-6";
+  "flex flex-col [&>*]:mt-4 [&>*:first-child]:mt-0 [&>h2]:mt-10 [&>h3]:mt-6 [&>h4]:mt-5";
 
 /**
  * What every element in a `.mdx` doc page renders as.
@@ -40,6 +40,14 @@ export const mdxComponents: MDXComponents = {
   // and its content in one flex column, and MDX emits the two as flat
   // siblings. The rhythm moves to margins on the body wrapper instead (see
   // `mdxBodyClass`), which is the only way to space a flat run of elements.
+  // A page's h1 is the route's own title, so markdown should not normally
+  // carry one — but an unmapped heading renders as raw browser default, which
+  // is worse than a duplicate. Mapped for completeness, at the same role.
+  h1: ({ id, children }: ComponentProps<"h1">) => (
+    <AnchoredHeading as="h2" id={id} className="text-display text-foreground leading-none">
+      {String(children)}
+    </AnchoredHeading>
+  ),
   h2: ({ id, children }: ComponentProps<"h2">) => (
     <AnchoredHeading id={id} className="text-heading text-foreground leading-none">
       {String(children)}
@@ -47,6 +55,11 @@ export const mdxComponents: MDXComponents = {
   ),
   h3: ({ id, children }: ComponentProps<"h3">) => (
     <AnchoredHeading as="h3" id={id} className="text-subheading text-foreground leading-none">
+      {String(children)}
+    </AnchoredHeading>
+  ),
+  h4: ({ id, children }: ComponentProps<"h4">) => (
+    <AnchoredHeading as="h3" id={id} className="text-prose text-foreground leading-none">
       {String(children)}
     </AnchoredHeading>
   ),

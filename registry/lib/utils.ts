@@ -8,10 +8,19 @@ import { extendTailwindMerge } from "tailwind-merge";
 const twMerge = extendTailwindMerge({
   extend: {
     classGroups: {
+      // EVERY role in the ladder has to be listed. One that is missing is not
+      // a styling nit: tailwind-merge classifies it as a colour, drops it
+      // against the `text-foreground` beside it, and the element falls back to
+      // preflight's `font-size: inherit` — 16px, which silently matches the
+      // prose role and hides the bug until a heading looks like body copy.
       "font-size": [
         "text-display",
+        "text-heading",
+        "text-subheading",
         "text-title",
+        "text-prose",
         "text-subtitle",
+        "text-table",
         "text-body",
         "text-caption",
       ],
