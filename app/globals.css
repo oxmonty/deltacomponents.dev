@@ -488,17 +488,16 @@ html, body {
    `title` / `subtitle` stay the CHROME sizes — panel headers, tab labels,
    table text — which is why they are separate roles: an h2 at the chrome
    size read as a bold paragraph rather than as a section break. The ladder
-   The desktop ladder is 36 / 26 / 20 over a 16px prose, so each step is about
-   a major third and the steps widen slightly toward the top — a display size
-   wants more air above it than a sub-heading does. The old 19px h3 sat only
-   1.19x over body, close enough to read as emphasised prose rather than as a
-   heading; 20 over 16 is a clean 1.25. Stepped down on mobile so h1 never
-   meets the desktop h2. Docs-only, so they have no counterpart
+   The desktop ladder is 32 / 24 / 19 over a 16px prose. A wider ladder was
+   tried (36 / 26 / 20, a cleaner ratio all the way down) and read as too loud
+   for a reference page — a doc is scanned, and an h1 that shouts pushes the
+   thing being documented further down the screen. Stepped down on mobile so
+   h1 never meets the desktop h2. Docs-only, so they have no counterpart
    in `typeScale` — components never set a content heading. */
 :root {
-  --fs-display: 28px;
-  --fs-heading: 22px;
-  --fs-subheading: 18px;
+  --fs-display: 25px;
+  --fs-heading: 20px;
+  --fs-subheading: 17px;
   --fs-title: 18px;
   --fs-prose: 16px;
   --fs-subtitle: 15px;
@@ -509,16 +508,16 @@ html, body {
 
 @media (min-width: 640px) {
   :root {
-    --fs-display: 36px;
-    --fs-heading: 26px;
-    --fs-subheading: 20px;
+    --fs-display: 30px;
+    --fs-heading: 22px;
+    --fs-subheading: 18px;
   }
 }
 
 html[data-size="compact"] {
-  --fs-display: 26px;
-  --fs-heading: 20px;
-  --fs-subheading: 17px;
+  --fs-display: 23px;
+  --fs-heading: 18px;
+  --fs-subheading: 16px;
   --fs-title: 17px;
   --fs-prose: 15px;
   --fs-subtitle: 14px;
@@ -529,20 +528,20 @@ html[data-size="compact"] {
 
 @media (min-width: 640px) {
   html[data-size="compact"] {
-    --fs-display: 31px;
-    --fs-heading: 23px;
-    --fs-subheading: 18px;
+    --fs-display: 26px;
+    --fs-heading: 21px;
+    --fs-subheading: 17px;
   }
 }
 
 @utility text-display {
-  font-size: var(--fs-display, 36px);
+  font-size: var(--fs-display, 30px);
 }
 @utility text-heading {
-  font-size: var(--fs-heading, 26px);
+  font-size: var(--fs-heading, 22px);
 }
 @utility text-subheading {
-  font-size: var(--fs-subheading, 20px);
+  font-size: var(--fs-subheading, 18px);
 }
 @utility text-title {
   font-size: var(--fs-title, 18px);
