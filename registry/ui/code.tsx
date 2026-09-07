@@ -11,6 +11,7 @@ import type { PrismTheme } from "prism-react-renderer"
 import "@/registry/lib/prism-languages"
 
 import { cn } from "@/registry/lib/utils"
+import { copyToClipboard } from "@/registry/lib/clipboard"
 import { getIconForFile } from "@/registry/ui/code-icons"
 import { Button } from "@/registry/ui/button"
 
@@ -268,14 +269,28 @@ function TerminalIcon(props: IconProps) {
  *  the block paints from its own palette (a dark theme on a light page) those
  *  tokens read wrong against it, so the chrome rides the theme's own colour and
  *  varies by opacity instead. `hover` for a control you point at directly,
- *  `group-hover` for a glyph inside one. */
+ *  `group-hover` for a glyph inside one.
+ *
+ *  Rest is `chromeRestingTone`, the same tone the filename bar uses, so the
+ *  glyph and the name beside it sit at one weight. Hover is the only thing
+ *  that brightens it — deliberately not touch. A phone never hovers, so
+ *  pinning it to full strength there (which is what this used to do) left the
+ *  copy glyph permanently darker than the filename it shares a row with. */
 function chromeTone(onTheme: boolean, within: "self" | "group") {
-  const hover = within === "self" ? "hover" : "group-hover"
-  // A touch device never hovers, so the glyph would sit at its resting tone
-  // forever — it is shown at full strength there instead.
+  // Every variant is written out rather than assembled from a `hover` variable.
+  // Tailwind generates utilities by scanning source text, so a class built as
+  // `${modifier}:text-foreground` never reaches the stylesheet — this hover had
+  // silently done nothing at all, and the glyph only ever changed weight
+  // through a `[@media(hover:none)]` rule that fired on touch and never on a
+  // pointer. Keep these literal.
+  if (within === "self") {
+    return onTheme
+      ? `${chromeRestingTone(onTheme)} hover:opacity-100`
+      : `${chromeRestingTone(onTheme)} hover:text-foreground`
+  }
   return onTheme
-    ? `${chromeRestingTone(onTheme)} ${hover}:opacity-100 [@media(hover:none)]:opacity-100`
-    : `${chromeRestingTone(onTheme)} ${hover}:text-foreground [@media(hover:none)]:text-foreground`
+    ? `${chromeRestingTone(onTheme)} group-hover:opacity-100`
+    : `${chromeRestingTone(onTheme)} group-hover:text-foreground`
 }
 
 /** `chromeTone`'s resting half on its own, for the chrome that never lights
@@ -287,68 +302,6 @@ function chromeTone(onTheme: boolean, within: "self" | "group") {
  *  the label rides the theme's colour at the glyph's opacity instead. */
 function chromeRestingTone(onTheme: boolean) {
   return onTheme ? "opacity-60" : "text-muted-foreground"
-}
-
-/** Copy `value`, falling back when the async Clipboard API is unavailable.
- *
- *  `navigator.clipboard` only exists in a secure context — HTTPS, or localhost.
- *  Opening the docs from a phone on the LAN (http://192.168.x.x) is plain
- *  HTTP, so the object is simply absent and reading `.writeText` off it
- *  throws. The same applies to any consumer serving this component over HTTP
- *  on an internal network.
- *
- *  The fallback selects the text in an off-screen node and runs the legacy
- *  `execCommand("copy")`. It is deprecated but universally implemented, and it
- *  is the only path available without TLS. Returns whether the copy landed, so
- *  the button only claims success when it actually copied.
- *
- *  The node is a span, not a focused textarea. `execCommand("copy")` takes
- *  whatever is selected, and a selection needs no focus — while focusing a
- *  field (the usual recipe, which has to flip `contentEditable` on to make iOS
- *  select it at all) reads to iOS as "about to type": Safari collapses its
- *  bottom address bar for a keyboard that never arrives, then puts it back a
- *  frame later when the node is removed. Selecting a plain node skips the
- *  whole performance. `white-space: pre` keeps the newlines, which the copy
- *  takes from the rendered text rather than the string. */
-async function copyToClipboard(value: string): Promise<boolean> {
-  try {
-    if (navigator.clipboard?.writeText) {
-      await navigator.clipboard.writeText(value)
-      return true
-    }
-  } catch {
-    // Present but refused (permissions policy, denied prompt) — try the node.
-  }
-
-  // Off-screen rather than invisible: text under `display:none` or
-  // `visibility:hidden` is not selectable, so the copy would silently do
-  // nothing. Parked at the viewport's top-left rather than off at -9999px —
-  // selecting something makes the browser reveal it, and revealing a node
-  // 9999px to the left is what made mobile lurch sideways on every copy.
-  const holder = document.createElement("span")
-  holder.textContent = value
-  holder.style.cssText =
-    "position:fixed;top:0;left:0;width:1px;height:1px;overflow:hidden;opacity:0;white-space:pre;user-select:text;-webkit-user-select:text"
-  document.body.appendChild(holder)
-
-  // Put whatever the reader had highlighted back afterwards.
-  const selection = document.getSelection()
-  const previous =
-    selection && selection.rangeCount > 0 ? selection.getRangeAt(0) : null
-
-  try {
-    const range = document.createRange()
-    range.selectNodeContents(holder)
-    selection?.removeAllRanges()
-    selection?.addRange(range)
-    return document.execCommand("copy")
-  } catch {
-    return false
-  } finally {
-    selection?.removeAllRanges()
-    holder.remove()
-    if (previous) selection?.addRange(previous)
-  }
 }
 
 /** Copy-to-clipboard control for a code surface.
@@ -619,7 +572,7 @@ export function Code({
     return (
       <div
         className={cn(
-          "bg-card text-card-foreground border-border/60 overflow-hidden rounded-lg border [background-clip:padding-box]",
+          "bg-card text-card-foreground border-border/60 overflow-hidden rounded-[var(--radius-bg,var(--radius,0.5rem))] border [background-clip:padding-box]",
           adaptiveTheme && "code-adaptive-theme",
           className
         )}
@@ -651,7 +604,7 @@ export function Code({
                   data-state={active === key ? "active" : "inactive"}
                   onClick={() => setPackageManager(key)}
                   className={cn(
-                    "text-muted-foreground data-[state=active]:text-foreground h-7 rounded-md px-2.5 font-medium transition-colors",
+                    "text-muted-foreground data-[state=active]:text-foreground h-7 rounded-[var(--radius-item,var(--radius,0.5rem))] px-2.5 font-medium transition-colors",
                     "outline-none focus-visible:ring-1 focus-visible:ring-[color:var(--focus-ring,#6B97FF)]",
                     textClassName
                   )}
@@ -756,7 +709,7 @@ export function Code({
       className={cn(
         "pointer-events-auto w-full max-w-full overflow-hidden",
         !hasClassPrefix("border") && "border-border/60 border [background-clip:padding-box]",
-        !hasClassPrefix("rounded") && "rounded-lg",
+        !hasClassPrefix("rounded") && "rounded-[var(--radius-bg,var(--radius,0.5rem))]",
         adaptiveTheme && "code-adaptive-theme",
         className
       )}
@@ -848,7 +801,7 @@ export function Code({
 
         {expandable && !isExpanded && (
           <div
-            className="absolute inset-x-0 bottom-0 z-20 flex h-24 items-end justify-center rounded-b-lg pb-4"
+            className="absolute inset-x-0 bottom-0 z-20 flex h-24 items-end justify-center rounded-b-[var(--radius-bg,var(--radius,0.5rem))] pb-4"
             style={{
               background: `linear-gradient(to top, ${
                 paintFromTheme && selectedTheme.plain?.backgroundColor

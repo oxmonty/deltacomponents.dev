@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import { Button } from "@/registry/ui/button";
 import { Tooltip } from "@/registry/ui/tooltip";
 import { useIcon } from "@/registry/lib/icon-context";
+import { copyToClipboard } from "@/registry/lib/clipboard";
 // import { useShape } from "@/lib/docs/shape-context";
 import { useSizeVariant } from "@/lib/docs/size-context";
 // import { cn } from "@/registry/lib/utils";
@@ -81,19 +82,42 @@ export function CopyPage() {
 
   const markdownPath = `${pathname}.md`;
 
+  // Fetched up front rather than on click. Two things broke when the click
+  // handler did the fetch itself: the tap did nothing visible until the
+  // network came back, and — worse — the clipboard write then happened after
+  // an `await`, outside the user gesture, which Safari refuses. So the button
+  // looked dead on a phone and copied nothing. The `.md` route is static and
+  // small, so paying for it on mount buys a copy that is synchronous at the
+  // moment it matters.
+  const markdown = useRef<string | null>(null);
+
+  useEffect(() => {
+    markdown.current = null;
+    let cancelled = false;
+    fetch(markdownPath)
+      .then((r) => (r.ok ? r.text() : null))
+      .then((text) => {
+        if (!cancelled) markdown.current = text;
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [markdownPath]);
+
   async function copy() {
-    try {
-      const markdown = await fetch(markdownPath).then((r) => {
-        if (!r.ok) throw new Error(String(r.status));
-        return r.text();
-      });
-      await navigator.clipboard.writeText(markdown);
-      setCopied(true);
-      setFailed(false);
-    } catch {
-      // Say so rather than showing a tick for something that never landed.
-      setFailed(true);
-    }
+    // If the prefetch has not landed (a slow connection, a tap the instant the
+    // page renders) fall back to fetching now. That path loses the gesture on
+    // Safari, but `copyToClipboard`'s `execCommand` branch still works, and a
+    // late copy beats none.
+    const text = markdown.current ?? (await fetch(markdownPath).then((r) => (r.ok ? r.text() : null)));
+    if (text) markdown.current = text;
+
+    const ok = text ? await copyToClipboard(text) : false;
+    setCopied(ok);
+    setFailed(!ok);
+
+    if (timer.current) clearTimeout(timer.current);
     timer.current = setTimeout(() => {
       setCopied(false);
       setFailed(false);
@@ -177,14 +201,6 @@ export function CopyPage() {
           size={iconSize}
           onClick={copy}
           aria-label={failed ? "Copy failed" : copied ? "Copied" : "Copy this page as markdown"}
-          // Both glyphs sit in the same 16px box as the arrows, but a copy
-          // mark fills far more of its viewBox than an arrow does — 13.3px of
-          // drawing against 9.3px — so at the shared box size it reads as the
-          // bigger icon. Clipping the box to 12px lands it at the arrows'
-          // drawn size; the stroke steps up to 2 to hold the same 1px weight
-          // once the box is smaller. `!` because Button's own `[&_svg]:size-4`
-          // has equal specificity and would otherwise win on source order.
-          className="[&_svg]:!size-3 [&_svg]:!stroke-[2]"
         >
           {copied ? <CheckIcon /> : <CopyIcon />}
         </Button>

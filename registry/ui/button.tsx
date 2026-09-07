@@ -29,7 +29,7 @@ const iconOnlySize =
 const buttonVariants = cva(
   [
     "group relative isolate inline-flex items-center justify-center outline-none cursor-pointer",
-    "rounded-[var(--radius-button,8px)]",
+    "rounded-[var(--radius-button,var(--radius,0.5rem))]",
     "transition-colors duration-80",
     "disabled:opacity-50 disabled:pointer-events-none",
     "focus-visible:ring-1 focus-visible:ring-[color:var(--focus-ring,#6B97FF)]",

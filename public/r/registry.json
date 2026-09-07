@@ -253,6 +253,21 @@
       ]
     },
     {
+      "name": "clipboard",
+      "type": "registry:lib",
+      "title": "Clipboard",
+      "description": "Copy text to the clipboard, falling back to a selection and execCommand where the async Clipboard API is unavailable \u2014 which includes any page served over plain HTTP, such as opening a dev server from a phone on the LAN. Returns whether the copy landed.",
+      "files": [
+        {
+          "path": "registry/lib/clipboard.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "categories": [
+        "lib"
+      ]
+    },
+    {
       "name": "button",
       "type": "registry:ui",
       "title": "Button",
@@ -356,7 +371,8 @@
       "registryDependencies": [
         "utils",
         "button",
-        "tokens"
+        "tokens",
+        "clipboard"
       ],
       "cssVars": {
         "light": {

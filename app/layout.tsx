@@ -36,6 +36,8 @@ const META_THEME_COLORS = { light: "#FAFAFA", dark: "#171717" };
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
+  // `cover` so the page owns the full display — the mobile footer's
+  // `env(safe-area-inset-bottom)` is zero without it.
   viewportFit: "cover",
 };
 

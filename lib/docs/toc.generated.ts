@@ -103,8 +103,8 @@ export const TOC: Record<string, TocEntry[]> = {
       "depth": 2
     },
     {
-      "id": "colors",
-      "text": "Colors",
+      "id": "variants",
+      "text": "Variants",
       "depth": 2
     },
     {

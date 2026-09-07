@@ -1,0 +1,17 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "clipboard",
+  "title": "Clipboard",
+  "description": "Copy text to the clipboard, falling back to a selection and execCommand where the async Clipboard API is unavailable — which includes any page served over plain HTTP, such as opening a dev server from a phone on the LAN. Returns whether the copy landed.",
+  "files": [
+    {
+      "path": "registry/lib/clipboard.ts",
+      "content": "/** Copy `value`, falling back when the async Clipboard API is unavailable.\n *\n *  `navigator.clipboard` only exists in a secure context — HTTPS, or localhost.\n *  Opening the docs from a phone on the LAN (http://192.168.x.x) is plain\n *  HTTP, so the object is simply absent and reading `.writeText` off it\n *  throws. The same applies to any consumer serving this component over HTTP\n *  on an internal network.\n *\n *  The fallback selects the text in an off-screen node and runs the legacy\n *  `execCommand(\"copy\")`. It is deprecated but universally implemented, and it\n *  is the only path available without TLS. Returns whether the copy landed, so\n *  the button only claims success when it actually copied.\n *\n *  The node is a span, not a focused textarea. `execCommand(\"copy\")` takes\n *  whatever is selected, and a selection needs no focus — while focusing a\n *  field (the usual recipe, which has to flip `contentEditable` on to make iOS\n *  select it at all) reads to iOS as \"about to type\": Safari collapses its\n *  bottom address bar for a keyboard that never arrives, then puts it back a\n *  frame later when the node is removed. Selecting a plain node skips the\n *  whole performance. `white-space: pre` keeps the newlines, which the copy\n *  takes from the rendered text rather than the string. */\nexport async function copyToClipboard(value: string): Promise<boolean> {\n  try {\n    if (navigator.clipboard?.writeText) {\n      await navigator.clipboard.writeText(value)\n      return true\n    }\n  } catch {\n    // Present but refused (permissions policy, denied prompt) — try the node.\n  }\n\n  // Off-screen rather than invisible: text under `display:none` or\n  // `visibility:hidden` is not selectable, so the copy would silently do\n  // nothing. Parked at the viewport's top-left rather than off at -9999px —\n  // selecting something makes the browser reveal it, and revealing a node\n  // 9999px to the left is what made mobile lurch sideways on every copy.\n  const holder = document.createElement(\"span\")\n  holder.textContent = value\n  holder.style.cssText =\n    \"position:fixed;top:0;left:0;width:1px;height:1px;overflow:hidden;opacity:0;white-space:pre;user-select:text;-webkit-user-select:text\"\n  document.body.appendChild(holder)\n\n  // Put whatever the reader had highlighted back afterwards.\n  const selection = document.getSelection()\n  const previous =\n    selection && selection.rangeCount > 0 ? selection.getRangeAt(0) : null\n\n  try {\n    const range = document.createRange()\n    range.selectNodeContents(holder)\n    selection?.removeAllRanges()\n    selection?.addRange(range)\n    return document.execCommand(\"copy\")\n  } catch {\n    return false\n  } finally {\n    selection?.removeAllRanges()\n    holder.remove()\n    if (previous) selection?.addRange(previous)\n  }\n}\n",
+      "type": "registry:lib"
+    }
+  ],
+  "categories": [
+    "lib"
+  ],
+  "type": "registry:lib"
+}

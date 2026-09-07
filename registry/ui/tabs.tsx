@@ -171,8 +171,8 @@ const indicatorHeight: Record<TabSize, string> = {
  *  list's padding: outer = inner + padding, which is the whole rule. */
 function radii(concentric: boolean) {
   return {
-    outer: concentric ? "rounded-[var(--radius-container,12px)]" : "rounded-[var(--radius-bg,8px)]",
-    inner: "rounded-[var(--radius-bg,8px)]",
+    outer: concentric ? "rounded-[var(--radius-container,calc(var(--radius,0.5rem)_+_4px))]" : "rounded-[var(--radius-bg,var(--radius,0.5rem))]",
+    inner: "rounded-[var(--radius-bg,var(--radius,0.5rem))]",
   };
 }
 

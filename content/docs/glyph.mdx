@@ -1,16 +1,21 @@
 ---
-description: "The Twitter/X-style verified checkmark, with the check cut out of the rosette as a real hole so whatever sits behind it shows through."
+description: "A shape with an arbitrary icon cut out of it as a real hole, via an SVG mask, so whatever sits behind it shows through."
 ---
 
 import { glyphProps } from "./glyph.props";
 
-<ComponentPreview name="glyph-demo" />
+<ComponentPreview name="glyph-basic" padding="compact" />
 
-The check isn't drawn on top of the rosette in a matching color — it's cut
-out of it with an SVG `mask`, leaving a genuine hole. Painting the check
-white (or whatever the surrounding background happens to be) only works on a
-flat card; the moment the badge sits over a photo or a gradient, the paint
-seams. A real hole never does, because there's nothing to match.
+The icon isn't drawn on top of the shape in a matching color — it's cut out
+of it with an SVG `mask`, leaving a genuine hole. Painting the icon white (or
+whatever the surrounding background happens to be) only works on a flat card;
+the moment the badge sits over a photo or a gradient, the paint seams. A real
+hole never does, because there's nothing to match.
+
+Glyph only owns the shape. The icon is whatever element you pass as
+`children` — lucide, phosphor, a hand-rolled `<svg>` — as long as it colors
+itself with `currentColor`, which is the default for nearly every icon
+library.
 
 ## Installation
 
@@ -19,20 +24,29 @@ seams. A real hole never does, because there's nothing to match.
 ## Usage
 
 ```tsx
+import { Check } from "lucide-react";
 import { Glyph } from "@/components/ui/glyph";
 
-<Glyph />
+<Glyph mask="rosette" className="text-[#1d9bf0]">
+  <Check />
+</Glyph>
 ```
 
 ## Basic
 
 <ComponentPreview name="glyph-basic" />
 
-## Colors
+## Variants
 
-<ComponentPreview name="glyph-colors" />
+Shape and icon are both open — pick a `mask` and pass whatever icon reads as
+the badge's meaning.
+
+<ComponentPreview name="glyph-variants" />
 
 ## Sizes
+
+Size is a `className`, the same as a lucide icon — pass `size-*` (or
+`h-*`/`w-*`) and the shape scales with it.
 
 <ComponentPreview name="glyph-sizes" />
 

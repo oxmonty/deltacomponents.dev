@@ -191,7 +191,7 @@ function Tooltip({
               // height (~26px) as untrimmed browsers.
               "bg-foreground text-background text-[12px] px-2 py-1",
               "[text-box:trim-both_cap_alphabetic] supports-[text-box:trim-both]:py-2",
-              "rounded-[var(--radius-bg,8px)]",
+              "rounded-[var(--radius-bg,var(--radius,0.5rem))]",
               "transition-[opacity,transform] duration-(--motion-fast) ease-spring",
               "data-[ending-style]:duration-(--motion-fast-exit)",
               "data-[starting-style]:opacity-0 data-[ending-style]:opacity-0",

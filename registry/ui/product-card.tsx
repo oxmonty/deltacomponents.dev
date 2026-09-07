@@ -72,7 +72,7 @@ const ProductCard = React.forwardRef<HTMLDivElement, ProductCardProps>(
           ref={ref}
           className={cn(
             "w-full cursor-pointer overflow-hidden",
-            "rounded-[var(--radius-container,12px)]",
+            "rounded-[var(--radius-container,calc(var(--radius,0.5rem)_+_4px))]",
             // The size step caps the card's own width as well as scaling what
             // is inside it, so `size` reads as a size rather than only as
             // padding. `w-full` keeps it from overflowing a narrower box — in
@@ -119,7 +119,7 @@ const ProductCardImage = React.forwardRef<
       ref={ref}
       className={cn(
         "relative aspect-square w-full overflow-hidden transition-colors duration-300",
-        "rounded-[var(--radius-container,12px)]",
+        "rounded-[var(--radius-container,calc(var(--radius,0.5rem)_+_4px))]",
         "bg-muted",
         "[&:hover]:bg-muted/80 [&:active]:bg-muted/80",
         animated &&
@@ -185,7 +185,7 @@ const ProductCardBadge = React.forwardRef<
       }}
       className={cn(
         "absolute flex items-center gap-1 font-medium transition-colors",
-        "rounded-[var(--radius-button,8px)]",
+        "rounded-[var(--radius-button,var(--radius,0.5rem))]",
         normalizedSize === "sm" &&
           "top-1.5 right-1.5 px-1.5 py-0.5 text-[10px]",
         normalizedSize === "default" && "top-2 right-2 px-2 py-1 text-xs",

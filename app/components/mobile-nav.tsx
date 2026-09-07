@@ -105,6 +105,16 @@ export function MobileNav() {
         </span>
       </Popover.Trigger>
       <Popover.Portal>
+        {/* The panel is sized to `--available-height`, which stops at the
+            anchor's collision boundary — short of the bottom of the screen.
+            iOS Safari's floating address bar is translucent and composites
+            whatever the page draws underneath it, so that gap showed the
+            scrolled page through the bar and in the strip above it. A backdrop
+            in the same colour as the panel means there is nothing else to see,
+            whatever height the panel lands on. `fixed inset-0` covers the
+            layout viewport, which under `viewport-fit=cover` is the whole
+            display. */}
+        <Popover.Backdrop className="bg-background fixed inset-0 z-40" />
         <Popover.Positioner
           side="bottom"
           align="start"

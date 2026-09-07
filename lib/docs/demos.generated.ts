@@ -13,10 +13,9 @@ import DemoCodeCodeDemo from "@/content/demos/code/code-demo";
 import DemoCodeCodeExpandable from "@/content/demos/code/code-expandable";
 import DemoCodeCodePackageManagers from "@/content/demos/code/code-package-managers";
 import DemoGlyphGlyphBasic from "@/content/demos/glyph/glyph-basic";
-import DemoGlyphGlyphColors from "@/content/demos/glyph/glyph-colors";
-import DemoGlyphGlyphDemo from "@/content/demos/glyph/glyph-demo";
 import DemoGlyphGlyphLabel from "@/content/demos/glyph/glyph-label";
 import DemoGlyphGlyphSizes from "@/content/demos/glyph/glyph-sizes";
+import DemoGlyphGlyphVariants from "@/content/demos/glyph/glyph-variants";
 import DemoProductCardProductCardBadge from "@/content/demos/product-card/product-card-badge";
 import DemoProductCardProductCardBasic from "@/content/demos/product-card/product-card-basic";
 import DemoProductCardProductCardDemo from "@/content/demos/product-card/product-card-demo";
@@ -82,23 +81,19 @@ export const demos: Record<string, DemoEntry> = {
   },
   "glyph-basic": {
     Component: DemoGlyphGlyphBasic,
-    source: "import { Glyph } from \"@/components/ui/glyph\";\n\nexport default function GlyphBasic() {\n  return (\n    <div className=\"flex items-center gap-1.5\">\n      <span style={{ fontVariationSettings: \"'wght' 550\" }}>Ada Lovelace</span>\n      <Glyph />\n    </div>\n  );\n}",
-  },
-  "glyph-colors": {
-    Component: DemoGlyphGlyphColors,
-    source: "import { Glyph } from \"@/components/ui/glyph\";\n\nexport default function GlyphColors() {\n  return (\n    <div className=\"flex items-center gap-4\">\n      <Glyph color=\"#1d9bf0\" />\n      <Glyph color=\"#22c55e\" />\n      <Glyph color=\"#f59e0b\" />\n      <Glyph color=\"#8b5cf6\" />\n      <Glyph color=\"#000000\" />\n    </div>\n  );\n}",
-  },
-  "glyph-demo": {
-    Component: DemoGlyphGlyphDemo,
-    source: "import { BadgeCheck } from \"lucide-react\";\nimport { Glyph } from \"@/components/ui/glyph\";\n\n// A gradient tile, not a flat card: the knockout only reads as a hole when\n// what sits behind the badge isn't a solid color.\nfunction Tile({ children }: { children: React.ReactNode }) {\n  return (\n    <div className=\"flex size-24 items-center justify-center rounded-2xl bg-[conic-gradient(from_180deg,#f97316,#ec4899,#8b5cf6,#f97316)]\">\n      {children}\n    </div>\n  );\n}\n\nexport default function GlyphDemo() {\n  return (\n    <div className=\"flex items-center gap-10\">\n      <div className=\"flex flex-col items-center gap-2\">\n        <Tile>\n          <Glyph size={40} />\n        </Tile>\n        <span className=\"text-caption text-muted-foreground\">Knockout</span>\n      </div>\n      {/* The conventional approach: a solid icon painted on top. It matches\n          on a flat card, then seams the moment it sits over anything else. */}\n      <div className=\"flex flex-col items-center gap-2\">\n        <Tile>\n          <BadgeCheck\n            size={40}\n            fill=\"#1d9bf0\"\n            stroke=\"white\"\n            strokeWidth={2}\n          />\n        </Tile>\n        <span className=\"text-caption text-muted-foreground\">Painted</span>\n      </div>\n    </div>\n  );\n}",
+    source: "import { Check } from \"lucide-react\";\nimport { Glyph } from \"@/components/ui/glyph\";\n\nexport default function GlyphBasic() {\n  return (\n    <div className=\"flex items-center gap-1.5\">\n      <span style={{ fontVariationSettings: \"'wght' 550\" }}>Ada Lovelace</span>\n      <Glyph className=\"text-[#1d9bf0]\">\n        <Check />\n      </Glyph>\n    </div>\n  );\n}",
   },
   "glyph-label": {
     Component: DemoGlyphGlyphLabel,
-    source: "import { Glyph } from \"@/components/ui/glyph\";\n\nexport default function GlyphLabel() {\n  return (\n    <div className=\"flex items-center gap-1.5\">\n      <Glyph label=\"Verified account\" />\n      <span className=\"text-caption text-muted-foreground\">\n        Announced to screen readers instead of hidden.\n      </span>\n    </div>\n  );\n}",
+    source: "import { Check } from \"lucide-react\";\nimport { Glyph } from \"@/components/ui/glyph\";\n\nexport default function GlyphLabel() {\n  return (\n    <div className=\"flex items-center gap-1.5\">\n      <Glyph label=\"Verified account\" className=\"text-[#1d9bf0]\">\n        <Check />\n      </Glyph>\n      <span className=\"text-caption text-muted-foreground\">\n        Announced to screen readers instead of hidden.\n      </span>\n    </div>\n  );\n}",
   },
   "glyph-sizes": {
     Component: DemoGlyphGlyphSizes,
-    source: "import { Glyph } from \"@/components/ui/glyph\";\n\nexport default function GlyphSizes() {\n  return (\n    <div className=\"flex items-end gap-4\">\n      <Glyph size={14} />\n      <Glyph size={20} />\n      <Glyph size={32} />\n      <Glyph size={48} />\n    </div>\n  );\n}",
+    source: "import { Check } from \"lucide-react\";\nimport { Glyph } from \"@/components/ui/glyph\";\n\nconst SIZES = [\"size-4\", \"size-5\", \"size-6\", \"size-8\"] as const;\n\n// Sizing is a className, not a prop — Glyph takes whatever box the utility\n// gives it and scales the shape and the knockout to match, the same way any\n// icon in this codebase behaves.\nexport default function GlyphSizes() {\n  return (\n    <div className=\"flex items-end gap-8\">\n      {SIZES.map((size) => (\n        <div key={size} className=\"flex flex-col items-center gap-2\">\n          <Glyph className={`${size} text-[#1d9bf0]`}>\n            <Check />\n          </Glyph>\n          <span className=\"text-caption text-muted-foreground font-mono\">{size}</span>\n        </div>\n      ))}\n    </div>\n  );\n}",
+  },
+  "glyph-variants": {
+    Component: DemoGlyphGlyphVariants,
+    source: "import { Check, Flame, Zap } from \"lucide-react\";\nimport { Glyph } from \"@/components/ui/glyph\";\n\nfunction Specimen({\n  children,\n  caption,\n}: {\n  children: React.ReactNode;\n  caption: string;\n}) {\n  return (\n    <div className=\"flex flex-col items-center gap-2\">\n      {children}\n      <span className=\"text-caption text-muted-foreground\">{caption}</span>\n    </div>\n  );\n}\n\n// Icons come from lucide here, which is the point: Glyph only owns the\n// shape, the consumer brings whatever icon library they already use.\nexport default function GlyphVariants() {\n  return (\n    <div className=\"flex items-center gap-8\">\n      <Specimen caption=\"Verified\">\n        <Glyph mask=\"rosette\" className=\"size-8 text-[#1d9bf0]\">\n          <Check />\n        </Glyph>\n      </Specimen>\n      <Specimen caption=\"Streak\">\n        <Glyph mask=\"circle\" className=\"size-8 text-orange-500\">\n          <Flame />\n        </Glyph>\n      </Specimen>\n      <Specimen caption=\"Premium\">\n        <Glyph mask=\"squircle\" className=\"size-8 text-violet-500\">\n          <Zap />\n        </Glyph>\n      </Specimen>\n    </div>\n  );\n}",
   },
   "product-card-badge": {
     Component: DemoProductCardProductCardBadge,
