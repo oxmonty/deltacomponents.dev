@@ -8,6 +8,7 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     "/og": ["./app/og/*.ttf"],
   },
+  poweredByHeader: false,
   async rewrites() {
     return [
       // `/docs/tabs.md` serves the same page as plain markdown for an agent to
@@ -16,6 +17,18 @@ const nextConfig: NextConfig = {
       // what someone who knows the file extension will try.
       { source: "/docs/:slug.md", destination: "/llm/:slug" },
       { source: "/docs/:slug.mdx", destination: "/llm/:slug" },
+    ];
+  },
+  async headers() {
+    return [
+      {
+        source: "/(.*)",
+        headers: [
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "X-Frame-Options", value: "DENY" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+        ],
+      },
     ];
   },
   experimental: {
