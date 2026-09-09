@@ -808,11 +808,12 @@ html.transitioning *::after {
 }
 
 /* ── Responsive side-panel cross-fade ──
-   The left sidebar and right panel switch in/out at xl (1280px). Rather than
-   snapping via `display`, these classes fade them: `display` is animated with
-   `allow-discrete` so the element stays visible across the none↔shown flip,
-   while opacity tweens. Durations mirror the `spring.slow` motion token —
-   appear in 0.24s, disappear in 0.16s (exit one tier quicker, matching the
+   The right panel is visible from xl (1280px) up, the same width at which the
+   left sidebar switches rail↔sheet and the mobile header/footer take over.
+   Rather than snapping via `display`, this class fades it:
+   `display` is animated with `allow-discrete` so the element stays visible
+   across the none↔shown flip while opacity tweens. Durations mirror the
+   `spring.slow` motion token — appear in 0.24s, disappear in 0.16s (exit one tier quicker, matching the
    token's faster `.exit`). The `@starting-style` gives the appear transition a
    starting opacity — required for an element to animate *out of* `display:none`
    (otherwise it would pop in). Because the panel's space is already reserved at
@@ -820,8 +821,7 @@ html.transitioning *::after {
    fades in once on initial wide-screen load). Browsers without
    `transition-behavior` degrade gracefully to the old instant switch. */
 
-.xl-fade-flex,
-.xl-fade-block {
+.fade-block-xl {
   display: none;
   opacity: 0;
   transition:
@@ -830,30 +830,22 @@ html.transitioning *::after {
 }
 
 @media (min-width: 1280px) {
-  .xl-fade-flex {
-    display: flex;
-  }
-  .xl-fade-block {
+  .fade-block-xl {
     display: block;
-  }
-  .xl-fade-flex,
-  .xl-fade-block {
     opacity: 1;
     transition:
       opacity 0.24s ease-out,
       display 0.24s allow-discrete;
   }
   @starting-style {
-    .xl-fade-flex,
-    .xl-fade-block {
+    .fade-block-xl {
       opacity: 0;
     }
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .xl-fade-flex,
-  .xl-fade-block {
+  .fade-block-xl {
     transition: none;
   }
 }

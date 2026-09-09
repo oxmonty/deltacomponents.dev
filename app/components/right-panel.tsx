@@ -308,7 +308,7 @@ export function RightPanel() {
           </Button>
         </Tooltip>
       </div>
-    {/* max-xl:fixed — during the xl-fade-block fade-out the panel keeps
+    {/* max-xl:fixed — during the fade-block-xl fade-out the panel keeps
         display:block for the transition (allow-discrete), which would hold its
         264px of flex space and make the content reflow a second time when
         display finally flips to none. Fixed positioning below xl removes it
@@ -316,7 +316,7 @@ export function RightPanel() {
         top-0/right-0 + mt-4 and the animated 16px marginRight land on the
         same 16px inset as the pinned sticky state. The wrapper carries the fade/sticky so pages can stack a
         second panel (RightRailTarget) below the settings.
-        xl-fade-block sets display:block at ≥xl, so the flex column lives on an
+        fade-block-xl sets display:block at ≥xl, so the flex column lives on an
         inner wrapper (else it would override `flex` and drop the gap).
         The "]" toggle animates width/margin (the sidebar-shell technique: the
         outer collapses while the inner keeps its true width) so the page
@@ -327,7 +327,7 @@ export function RightPanel() {
         opacities multiply, so the panel is only visible when BOTH are 1. The
         breakpoint fade stays on this outer element; the "]" toggle's
         width/margin/opacity collapse moves to the wrapper just inside it. */}
-    <div className="shrink-0 sticky top-4 self-start mt-4 xl-fade-block max-xl:fixed max-xl:top-0 max-xl:right-0 max-xl:z-40 max-xl:pointer-events-none">
+    <div className="shrink-0 sticky top-4 self-start mt-4 fade-block-xl max-xl:fixed max-xl:top-0 max-xl:right-0 max-xl:z-40 max-xl:pointer-events-none">
       <div
         data-open={open}
         className={cn(
@@ -349,7 +349,18 @@ export function RightPanel() {
           panel's true edge — any breathing room lives INSIDE the scroller,
           under the mask, never outside pushing the gradient down. */}
       <ScrollArea viewportClassName="scroll-fade max-h-[calc(100svh-2rem)]">
-      <div className="flex flex-col gap-3">
+      {/* pr-2.5 reserves the vertical scrollbar's own w-2.5 track (see
+          ScrollBar in ui/scroll-area.tsx) so the absolutely-positioned thumb
+          sits flush against the card's right edge instead of over it —
+          shadcn's own ScrollArea avoids this by laying the track out in flow
+          next to the viewport (a permanent border-l-transparent reserving its
+          width); ours overlays instead, so the inset has to move to the
+          content. Applied here rather than widening the w-64 panel, so every
+          child (card, ToC, rail slot) shifts left together and keeps lining
+          up. It's unconditional — always reserved, whether or not the thumb
+          is currently visible — so the card sits at the same inset whether
+          or not there's anything to scroll. */}
+      <div className="flex flex-col gap-3 pr-2.5">
         <aside className="p-4 rounded-lg bg-muted">
           <SurfaceProvider value={2}>
             <div className="flex items-center justify-between pt-2 pb-2">
