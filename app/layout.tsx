@@ -12,6 +12,7 @@ import { SizeShortcut } from "@/lib/docs/size-shortcut";
 import { SettingsToast } from "@/lib/docs/settings-toast";
 import { HashScroll } from "@/lib/docs/hash-scroll";
 import { RouteScrollTop } from "@/lib/docs/route-scroll";
+import { TooltipProvider } from "@/registry/ui/tooltip";
 import { SidebarLayout } from "@/app/components/sidebar-layout";
 import { MetaThemeColor } from "@/app/components/meta-theme-color";
 import { site } from "@/lib/config";
@@ -127,13 +128,20 @@ export default async function RootLayout({
             <SizeShortcut />
             <ThemeProvider>
               <IconPlaygroundProvider defaultLibrary="untitledui">
-                <SidebarLayout defaultOpen={sidebarDefaultOpen}>{children}</SidebarLayout>
-                <SettingsToast />
-                <HashScroll />
-                <RouteScrollTop />
-                <MetaThemeColor colors={META_THEME_COLORS} />
-                <Analytics />
-                <SpeedInsights />
+                {/* One provider for the whole site so the tooltips share a
+                    skip-delay group: after the first one opens, moving along a
+                    row of icon buttons shows the rest instantly instead of
+                    re-waiting the hover delay. Without it every Tooltip falls
+                    back to its own provider and the grouping is lost. */}
+                <TooltipProvider>
+                  <SidebarLayout defaultOpen={sidebarDefaultOpen}>{children}</SidebarLayout>
+                  <SettingsToast />
+                  <HashScroll />
+                  <RouteScrollTop />
+                  <MetaThemeColor colors={META_THEME_COLORS} />
+                  <Analytics />
+                  <SpeedInsights />
+                </TooltipProvider>
               </IconPlaygroundProvider>
             </ThemeProvider>
           </SizeProvider>

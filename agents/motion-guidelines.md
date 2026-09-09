@@ -12,8 +12,8 @@ and nothing may reintroduce it or a replacement.
 
 | Token | Value | Use for |
 |---|---|---|
-| `--motion-fast` | 80ms | Hover, focus rings, fades, tooltips, selection indicators |
-| `--motion-moderate` | 160ms | Short travel and small expansions — dropdown and tab indicators, panels and sheets that must land exactly |
+| `--motion-fast` | 80ms | Hover, focus rings, fades, selection indicators |
+| `--motion-moderate` | 160ms | Short travel and small expansions — dropdown and tab indicators, tooltips, panels and sheets that must land exactly |
 | `--motion-slow` | 240ms | Large surfaces: dialogs, side panels, stepped flows |
 
 Each has a matching exit, one tier quicker, so a dismissal reads as crisp and
@@ -170,7 +170,7 @@ things that no longer exist is how this one went stale.
 
 | fast (80ms) | moderate (160ms) | slow (240ms) |
 |---|---|---|
-| Hover and focus rings, Tooltip, Toast press, Copy button | Tabs indicator, Mobile nav panel, Sidebar collapse | Right properties panel |
+| Hover and focus rings, Toast press, Copy button | Tabs indicator, Tooltip, Mobile nav panel, Sidebar collapse | Right properties panel |
 
 Most components also use `fast` for their hover and focus states on top of their
 headline tier — the table lists each component once, by its headline motion.

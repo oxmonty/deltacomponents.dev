@@ -36,7 +36,7 @@ function TooltipPortalContainer({
 // Provider
 // ---------------------------------------------------------------------------
 
-const DEFAULT_DELAY = 200;
+const DEFAULT_DELAY = 300;
 
 // Tracks whether an app-level <TooltipProvider> is above us. Each Tooltip
 // only wraps itself in a local primitive Provider when there isn't one —
@@ -46,7 +46,7 @@ const TooltipGroupContext = createContext(false);
 
 interface TooltipProviderProps {
   children: ReactNode;
-  /** Hover delay before tooltips open, in ms. Defaults to 200. */
+  /** Hover delay before tooltips open, in ms. Defaults to 300. */
   delayDuration?: number;
   /** After a tooltip closes, adjacent tooltips opened within this window
    *  skip the hover delay, in ms. Defaults to 300. */
@@ -85,7 +85,7 @@ interface TooltipProps {
   children: React.ReactElement;
   side?: TooltipSide;
   sideOffset?: number;
-  /** Hover delay before this tooltip opens, in ms. Defaults to 200, or to the
+  /** Hover delay before this tooltip opens, in ms. Defaults to 300, or to the
    *  ambient TooltipProvider's delayDuration when one is present. */
   delayDuration?: number;
   className?: string;
@@ -106,7 +106,8 @@ interface TooltipProps {
 // Animation helpers
 // ---------------------------------------------------------------------------
 
-// The tooltip slides in 4px from this direction and back out on exit.
+// The tooltip slides 4px from the side it is anchored to, and back out the
+// same way on exit.
 function getSlideClasses(side: TooltipSide) {
   switch (side) {
     case "top":
@@ -192,10 +193,32 @@ function Tooltip({
               "bg-foreground text-background text-[12px] px-2 py-1",
               "[text-box:trim-both_cap_alphabetic] supports-[text-box:trim-both]:py-2",
               "rounded-[var(--radius-bg,var(--radius,0.5rem))]",
-              "transition-[opacity,transform] duration-(--motion-fast) ease-spring",
-              "data-[ending-style]:duration-(--motion-fast-exit)",
-              "data-[starting-style]:opacity-0 data-[ending-style]:opacity-0",
-              getSlideClasses(side),
+              // Zooms out of the trigger rather than its own centre — Base UI
+              // resolves the anchor point onto `--transform-origin`.
+              "origin-(--transform-origin)",
+              // Fade + a 4px slide off the anchored edge + a 95% zoom, on the
+              // moderate tier and the site's one easing, exit a tier quicker.
+              //
+              // Moderate rather than fast: 80ms lands under the ~100ms mark
+              // where a change stops reading as movement at all, so the slide
+              // and zoom were running but arriving invisibly. 160ms is also
+              // the ceiling — an entrance that fires on every hover has to
+              // stay around 150ms or the attention cost repeats all day.
+              //
+              // `translate` and `scale` are named individually because
+              // Tailwind v4 compiles them to standalone properties: the
+              // long-standing `transition-[opacity,transform]` here animated
+              // neither, so the slide snapped and only the opacity moved.
+              //
+              // followCursor writes `translate` inline on every pointer move
+              // and has to track the pointer 1:1, so it sits out the slide.
+              followCursor
+                ? "transition-[opacity,scale] duration-(--motion-moderate) ease-spring"
+                : "transition-[opacity,translate,scale] duration-(--motion-moderate) ease-spring",
+              "data-[ending-style]:duration-(--motion-moderate-exit)",
+              "data-[starting-style]:opacity-0 data-[starting-style]:scale-95",
+              "data-[ending-style]:opacity-0 data-[ending-style]:scale-95",
+              followCursor ? null : getSlideClasses(side),
               className
             )}
             style={{
