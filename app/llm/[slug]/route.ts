@@ -1,4 +1,4 @@
-import { componentList } from "@/lib/docs/components";
+import { visibleComponents } from "@/lib/docs/components";
 import { docPageAsMarkdown } from "@/lib/docs/llm-markdown";
 
 /**
@@ -13,8 +13,13 @@ import { docPageAsMarkdown } from "@/lib/docs/llm-markdown";
  */
 export const dynamic = "force-static";
 
+// Serve only what generateStaticParams prerendered. Without this a slug it
+// omits — a draft component — would still render on demand, publishing the
+// page's source and props for a component the site otherwise hides.
+export const dynamicParams = false;
+
 export function generateStaticParams() {
-  return componentList.map((entry) => ({ slug: entry.slug }));
+  return visibleComponents.map((entry) => ({ slug: entry.slug }));
 }
 
 export async function GET(_request: Request, { params }: { params: Promise<{ slug: string }> }) {

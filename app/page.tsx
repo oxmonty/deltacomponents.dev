@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { componentList, neighbours } from "@/lib/docs/components";
+import { neighbours, visibleComponents } from "@/lib/docs/components";
 import { DocPager } from "@/lib/docs/doc-pager";
 import { DocHeader } from "@/lib/docs/doc-header";
 import { BentoGrid } from "@/app/components/bento-grid";
@@ -23,7 +23,7 @@ export default function Page() {
         >
           <div className="mt-2 flex items-center gap-2">
             <Link href="/docs" className="outline-none" tabIndex={-1}>
-              <Button variant="primary" size="sm">
+              <Button variant="primary">
                 Learn more
               </Button>
             </Link>
@@ -31,7 +31,7 @@ export default function Page() {
         </DocHeader>
       </div>
       <div className="w-full max-w-[1200px] mx-auto px-6">
-        <BentoGrid components={componentList} />
+        <BentoGrid components={visibleComponents} />
       </div>
       {/* Tracks the bento grid's width, not the 680px reading column the header
           uses — the rule above the pager reads as the end of the grid, so

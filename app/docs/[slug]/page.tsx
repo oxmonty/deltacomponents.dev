@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-import { componentList } from "@/lib/docs/components";
+import { visibleComponents } from "@/lib/docs/components";
 import { DocPage } from "@/lib/docs/doc-page";
 import { mdxBodyClass } from "@/lib/docs/mdx-components";
 import { componentMetadata } from "@/lib/metadata";
@@ -17,7 +17,7 @@ import { componentMetadata } from "@/lib/metadata";
  * `"use client"` page. A server route can export `generateMetadata` itself.
  */
 export function generateStaticParams() {
-  return componentList.map((entry) => ({ slug: entry.slug }));
+  return visibleComponents.map((entry) => ({ slug: entry.slug }));
 }
 
 export async function generateMetadata({
@@ -36,7 +36,7 @@ export default async function ComponentDoc({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  if (!componentList.some((entry) => entry.slug === slug)) notFound();
+  if (!visibleComponents.some((entry) => entry.slug === slug)) notFound();
 
   // Turbopack resolves this as a context module over `content/docs`, so the
   // MDX is compiled at build time like any other import — no runtime MDX

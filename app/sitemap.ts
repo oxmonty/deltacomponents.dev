@@ -1,35 +1,16 @@
 import type { MetadataRoute } from "next";
-import { readdirSync } from "node:fs";
-import { join } from "node:path";
 
 import { site } from "@/lib/config";
+import { sectionList, visibleComponents } from "@/lib/docs/components";
 
 const SITE_URL = site.url;
 
-// API routes carry no pages of their own.
-const EXCLUDE = ["/api"];
-
-function collectRoutes(dir: string, base = ""): string[] {
-  const routes: string[] = [];
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    if (!entry.isDirectory()) continue;
-    if (entry.name.startsWith("_") || entry.name.startsWith("(")) continue;
-    const route = `${base}/${entry.name}`;
-    const childDir = join(dir, entry.name);
-    if (readdirSync(childDir).includes("page.tsx")) routes.push(route);
-    routes.push(...collectRoutes(childDir, route));
-  }
-  return routes;
-}
-
 export default function sitemap(): MetadataRoute.Sitemap {
-  const appDir = join(process.cwd(), "app");
   const lastModified = new Date();
-
-  const routes = ["/", ...collectRoutes(appDir)].filter(
-    (route) =>
-      !EXCLUDE.some((prefix) => route === prefix || route.startsWith(`${prefix}/`)),
-  );
+  const routes = [
+    ...sectionList.map((section) => section.href),
+    ...visibleComponents.map((c) => `/docs/${c.slug}`),
+  ];
 
   return routes.map((route) => ({
     url: `${SITE_URL}${route}`,

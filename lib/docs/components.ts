@@ -13,6 +13,8 @@ export interface ComponentEntry {
   /** Tailwind bg class overriding the default blue `isNew` dot in the sidebar. */
   dotColor?: string;
   gridSize?: "large" | "medium" | "small";
+  /** Visible while developing, absent from a production build. */
+  draft?: boolean;
 }
 
 /** "CodeBlock" → "Code Block", "AskUserQuestions" → "Ask User Questions",
@@ -39,8 +41,14 @@ export const componentList: ComponentEntry[] = [
   { slug: "tabs", name: "Tabs", isNew: true, gridSize: "medium" },
   { slug: "button", name: "Button", gridSize: "small" },
   { slug: "tooltip", name: "Tooltip", gridSize: "small" },
-  { slug: "glyph", name: "Glyph", isNew: true, gridSize: "small" },
+  { slug: "glyph", name: "Glyph", isNew: true, gridSize: "small", draft: true },
 ];
+
+/** Drafts survive `next dev` so they can be worked on, and disappear from
+ *  `next build` so nothing half-finished reaches production. */
+export const visibleComponents = componentList.filter(
+  (c) => !c.draft || process.env.NODE_ENV !== "production",
+);
 
 export interface PageLink {
   href: string;
@@ -61,7 +69,7 @@ export const sectionList: PageLink[] = [
  *  next. */
 export const pageOrder: PageLink[] = [
   ...sectionList,
-  ...componentList.map((c) => ({ href: `/docs/${c.slug}`, name: labelOf(c) })),
+  ...visibleComponents.map((c) => ({ href: `/docs/${c.slug}`, name: labelOf(c) })),
 ];
 
 /** The pages either side of `href`, or null at the ends. */

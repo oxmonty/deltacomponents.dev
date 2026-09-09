@@ -11,7 +11,7 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
 } from "@/app/components/ui/sidebar";
-import { componentList, labelOf, sectionList } from "@/lib/docs/components";
+import { labelOf, sectionList, visibleComponents } from "@/lib/docs/components";
 
 interface NavEntry {
   slug: string;
@@ -20,14 +20,29 @@ interface NavEntry {
   isNew?: boolean;
   isUpdated?: boolean;
   dotColor?: string;
+  draft?: boolean;
 }
 
-/** The isNew/isUpdated dot, rendered as a trailing child inside the row's
+/** The draft/isNew/isUpdated dot, rendered as a trailing child inside the row's
  *  weight-animated label span (same markup the old NavItem used). Exported
  *  for the mobile header's nav popover, which lists the same components. */
 export function StatusDot({ entry }: { entry: NavEntry }) {
   // Rendered as a flex sibling of the weight-animated label (the row's gap
   // provides the spacing), matching the old NavItem dot's visual position.
+
+  // Draft outranks new: a row only reaches this branch in `next dev` (the
+  // production build filters drafts out entirely), and "this one will not
+  // ship" is the more useful fact about it than "this one is recent". Amber
+  // rather than the blue both other states share, so the two read apart, and
+  // titled because a bare colour swap does not say which state it means.
+  if (entry.draft) {
+    return (
+      <span
+        title="Draft — hidden from the production build"
+        className="inline-block size-1.5 shrink-0 rounded-full bg-amber-500"
+      />
+    );
+  }
   if (entry.isUpdated) {
     return <span className="inline-block size-1.5 shrink-0 rounded-full bg-blue-500" />;
   }
@@ -108,7 +123,7 @@ export function SiteSidebar() {
 
         <NavGroup
           label="Components"
-          entries={componentList}
+          entries={visibleComponents}
           pathname={pathname}
           ariaLabel="Component navigation"
         />

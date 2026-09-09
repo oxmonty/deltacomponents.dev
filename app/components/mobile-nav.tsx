@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { Popover } from "@base-ui/react/popover";
 import { cn } from "@/registry/lib/utils";
 import { fontWeights } from "@/registry/lib/font-weight";
-import { componentList, labelOf, sectionList } from "@/lib/docs/components";
+import { labelOf, sectionList, visibleComponents } from "@/lib/docs/components";
 import { StatusDot } from "@/app/components/sidebar";
 
 function NavLink({
@@ -164,7 +164,7 @@ export function MobileNav() {
               </NavGroup>
 
               <NavGroup label="Components">
-                {componentList.map((entry) => {
+                {visibleComponents.map((entry) => {
                   const href = `/docs/${entry.slug}`;
                   return (
                     <NavLink key={entry.slug} href={href} isActive={pathname === href}>
