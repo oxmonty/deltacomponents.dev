@@ -499,11 +499,20 @@ export function Code({
   // designed to sit flush with --card, so only that one defaults to the token.
   const paintFromTheme = useThemeBackground ?? Boolean(theme || adaptiveTheme)
 
+  const pageSurfaceVars = { color: "var(--foreground)", backgroundColor: "var(--card)" }
+
   // `adaptiveTheme` is the one case that still varies by resolved theme, but
   // the choice is made by the `.dark` class (see `wrapperVars` below), not by
   // reading which theme is on screen — so `selectedTheme` itself never
   // branches on light vs. dark.
-  const selectedTheme = theme || builtinTheme
+  //
+  // Without the theme's ground, its plain colour can't be trusted against the
+  // page surface either — a dark palette's near-white body text would land on
+  // a light card. Tokens keep their colours; unstyled text falls back.
+  const selectedTheme =
+    theme && !paintFromTheme
+      ? { ...theme, plain: { ...theme.plain, ...pageSurfaceVars } }
+      : theme || builtinTheme
 
   // The palette's foreground/background, set once on the outer wrapper so the
   // copy button's resting/hover ground (globals.css §8) can mix against a
@@ -527,6 +536,15 @@ export function Code({
         "--code-fg": theme?.plain?.color ?? "var(--foreground)",
         "--code-bg": theme?.plain?.backgroundColor ?? "var(--card)",
       }
+
+  // The code surface paints straight from `--code-bg`, so turning the theme
+  // ground off has to move the variable itself — the header alone would leave
+  // the two halves of the block on different surfaces. Inline vars outrank the
+  // `.code-adaptive-theme` class rules, so this covers the adaptive pair too.
+  if (!paintFromTheme) {
+    wrapperVars["--code-fg"] = pageSurfaceVars.color
+    wrapperVars["--code-bg"] = pageSurfaceVars.backgroundColor
+  }
 
   const packageManagerFromMarkdown = code
     ? detectPackageManagerFromMarkdown(code)

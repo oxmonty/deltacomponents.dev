@@ -7,6 +7,7 @@ import DemoButtonButtonBasic from "@/content/demos/button/button-basic";
 import DemoButtonButtonDemo from "@/content/demos/button/button-demo";
 import DemoButtonButtonLoading from "@/content/demos/button/button-loading";
 import DemoButtonButtonVariants from "@/content/demos/button/button-variants";
+import DemoCodeCodeAdaptiveTheme from "@/content/demos/code/code-adaptive-theme";
 import DemoCodeCodeBasic from "@/content/demos/code/code-basic";
 import DemoCodeCodeCustomTheme from "@/content/demos/code/code-custom-theme";
 import DemoCodeCodeDemo from "@/content/demos/code/code-demo";
@@ -58,6 +59,10 @@ export const demos: Record<string, DemoEntry> = {
   "button-variants": {
     Component: DemoButtonButtonVariants,
     source: "import { Button } from \"@/components/ui/button\";\n\nexport default function ButtonVariants() {\n  return (\n    <div className=\"flex flex-wrap items-center gap-2\">\n      <Button variant=\"primary\">Primary</Button>\n      <Button variant=\"secondary\">Secondary</Button>\n      <Button variant=\"tertiary\">Tertiary</Button>\n      <Button variant=\"ghost\">Ghost</Button>\n    </div>\n  );\n}",
+  },
+  "code-adaptive-theme": {
+    Component: DemoCodeCodeAdaptiveTheme,
+    source: "import { useState } from \"react\";\nimport { Code } from \"@/components/ui/code\";\nimport { Button } from \"@/components/ui/button\";\nimport { PIERRE } from \"@/lib/docs/code-themes\";\n\nconst SAMPLE = `type BadgeProps = {\n  label: string;\n  tone?: \"neutral\" | \"positive\";\n};\n\nexport function Badge({ label, tone = \"neutral\" }: BadgeProps) {\n  const count = label.length;\n  return (\n    <span className={tone === \"positive\" ? \"ok\" : \"muted\"} data-count={count}>\n      {label}\n    </span>\n  );\n}`;\n\nexport default function CodeAdaptiveTheme() {\n  const [useThemeBackground, setUseThemeBackground] = useState(true);\n\n  return (\n    <div className=\"flex w-full max-w-[520px] flex-col gap-3\">\n      <Button\n        size=\"compact\"\n        variant=\"secondary\"\n        className=\"self-start\"\n        onClick={() => setUseThemeBackground((on) => !on)}\n      >\n        useThemeBackground: {useThemeBackground ? \"on\" : \"off\"}\n      </Button>\n      <Code\n        filename=\"badge.tsx\"\n        language=\"tsx\"\n        adaptiveTheme={PIERRE}\n        useThemeBackground={useThemeBackground}\n        code={SAMPLE}\n      />\n    </div>\n  );\n}",
   },
   "code-basic": {
     Component: DemoCodeCodeBasic,
