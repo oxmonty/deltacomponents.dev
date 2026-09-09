@@ -12,6 +12,7 @@ import { Button as ButtonPrimitive } from "@base-ui/react/button";
 import { cva, type VariantProps } from "class-variance-authority";
 import type { IconComponent } from "@/registry/lib/icon-context";
 import { cn } from "@/registry/lib/utils";
+import { fontWeights } from "@/registry/lib/font-weight";
 
 // The two-step size ladder shared by every control (default = 36px control
 // height, compact = 28px for dense surfaces) rides `--control-*` custom
@@ -188,6 +189,15 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     // font) — accurate whenever `size` was passed explicitly, otherwise just
     // the default-tier glyph size until CSS corrects it.
     const iconSize = isCompact ? 14 : 16;
+    // A control label is an affordance, not prose: at the 13px control size
+    // regular reads too light, most visibly on `primary`, where light-on-dark
+    // optically thins. `medium`'s opsz pairing is calibrated at this size, so
+    // the extra weight costs no advance width (see registry/lib/font-weight.ts).
+    // Spread last so a caller's own `style` still wins.
+    const labelStyle: React.CSSProperties = {
+      fontVariationSettings: fontWeights.medium,
+      ...style,
+    };
     const bgClass = active
       ? activeBgVariants[variant ?? "primary"]
       : bgVariants[variant ?? "primary"];
@@ -299,7 +309,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           ...(dataSize ? { "data-size": dataSize } : {}),
           ref,
           className: cn(rootClassName, childProps.className),
-          style: { ...style, ...childProps.style },
+          style: { ...labelStyle, ...childProps.style },
         },
         internals
       );
@@ -313,7 +323,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         className={rootClassName}
         data-size={dataSize}
         disabled={disabled || loading}
-        style={style}
+        style={labelStyle}
         {...props}
       >
         {internals}
