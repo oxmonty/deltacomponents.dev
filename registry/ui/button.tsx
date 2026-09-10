@@ -251,7 +251,18 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
               // A touch screen has no hover, so the press has to raise the
               // ground itself — without this the only feedback on a phone is
               // the 1px collapse, which is far too quiet to register.
-              "group-active:scale-100 group-active:opacity-100",
+              //
+              // Instantly, not on a tier. The enter duration rides
+              // `group-hover:`, which Tailwind wraps in @media (hover: hover)
+              // and a phone therefore never gets, so a press was blooming on
+              // the 120ms exit duration — and a tap holds :active for less
+              // than that, so the ground was still on its way up when the
+              // finger lifted and it reversed. Ghost feels it worst: with no
+              // resting ground the wash IS the entire press feedback. Landing
+              // it at once means the ground is simply there for as long as
+              // the finger is, and only the release animates — the same shape
+              // as the Tabs hover wash, which appears instantly and fades.
+              "group-active:scale-100 group-active:opacity-100 group-active:duration-0",
               "group-active:shadow-[0_0_0_0px_var(--btn-wash)]",
               washVariants[variant ?? "primary"]
             )}
