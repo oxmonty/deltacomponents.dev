@@ -267,49 +267,32 @@ function TerminalIcon(props: IconProps) {
   )
 }
 
-/** The tone every control sitting ON the code surface shares — the copy glyph
- *  and the expand affordance — so they read as one set rather than two
- *  separately-tuned greys.
+/** The tone every piece of chrome sitting ON the code surface shares — the
+ *  copy glyph, the filename and its file badge, the package-manager tabs — so
+ *  they read as one set rather than several separately-tuned greys.
  *
- *  Two branches, because the surface underneath differs. Normally the block
- *  sits on the page's card, so the app's muted → foreground pair is right. When
- *  the block paints from its own palette (a dark theme on a light page) those
- *  tokens read wrong against it, so the chrome rides the theme's own colour and
- *  varies by opacity instead. `hover` for a control you point at directly,
- *  `group-hover` for a glyph inside one.
+ *  Opacity on the INHERITED colour, never a colour of its own. 60% of a
+ *  surface's own foreground IS the muted token: measured against both
+ *  palettes it lands within 1/255 of `--muted-foreground` over `--card`, in
+ *  light and in dark alike. This used to be two branches saying the same
+ *  thing twice — the app's muted token when the block sat on the page's card,
+ *  an opacity when it painted from its own palette — and only the opacity
+ *  form follows the surface underneath it. Riding the inherited colour means
+ *  a palette brought from elsewhere, AND a consumer recolouring the header
+ *  with a className, both carry the chrome with them rather than stranding it
+ *  on the page's grey.
  *
- *  Rest is `chromeRestingTone`, the same tone the filename bar uses, so the
- *  glyph and the name beside it sit at one weight. Hover is the only thing
- *  that brightens it — deliberately not touch. A phone never hovers, so
- *  pinning it to full strength there (which is what this used to do) left the
- *  copy glyph permanently darker than the filename it shares a row with. */
-function chromeTone(onTheme: boolean, within: "self" | "group") {
-  // Every variant is written out rather than assembled from a `hover` variable.
-  // Tailwind generates utilities by scanning source text, so a class built as
-  // `${modifier}:text-foreground` never reaches the stylesheet — this hover had
-  // silently done nothing at all, and the glyph only ever changed weight
-  // through a `[@media(hover:none)]` rule that fired on touch and never on a
-  // pointer. Keep these literal.
-  if (within === "self") {
-    return onTheme
-      ? `${chromeRestingTone(onTheme)} hover:opacity-100`
-      : `${chromeRestingTone(onTheme)} hover:text-foreground`
-  }
-  return onTheme
-    ? `${chromeRestingTone(onTheme)} group-hover:opacity-100`
-    : `${chromeRestingTone(onTheme)} group-hover:text-foreground`
-}
-
-/** `chromeTone`'s resting half on its own, for the chrome that never lights
- *  up: the filename bar's file icon and label. They sit in the same row as the
- *  copy button, so anything brighter than the glyph it sits beside reads as the
- *  filename shouting over the control — which is what `text-foreground/75` did.
- *  Both branches are here for the same reason as in `chromeTone`: on a block
- *  painting from its own palette the app's muted token is the wrong grey, so
- *  the label rides the theme's colour at the glyph's opacity instead. */
-function chromeRestingTone(onTheme: boolean) {
-  return onTheme ? "opacity-60" : "text-muted-foreground"
-}
+ *  Hover is the only thing that brightens it — deliberately not touch. A phone
+ *  never hovers, so pinning it to full strength there (which is what this used
+ *  to do) left the copy glyph permanently darker than the filename it shares a
+ *  row with.
+ *
+ *  Both are complete literal class strings. Tailwind generates utilities by
+ *  scanning source text, so a class assembled as `${modifier}:opacity-100`
+ *  never reaches the stylesheet — a hover written that way here once did
+ *  nothing at all. Keep them literal. */
+const CHROME_REST = "opacity-60"
+const CHROME_HOVER = "group-hover:opacity-100"
 
 /** Copy-to-clipboard control for a code surface.
  *
@@ -329,14 +312,11 @@ function CopyButton({
   value,
   className,
   floating = false,
-  onTheme = false,
 }: {
   value: string
   className?: string
   /** Floats over the code with no header/figcaption underneath it. */
   floating?: boolean
-  /** The block is painting from its own palette — see `chromeTone`. */
-  onTheme?: boolean
 }) {
   const [hasCopied, setHasCopied] = useState(false)
 
@@ -356,15 +336,21 @@ function CopyButton({
       className={cn(
         "group size-7 border-none shadow-none transition-colors",
         "bg-transparent hover:bg-[var(--copy-button-hover-bg)] active:bg-[var(--copy-button-hover-bg)]",
+        // Opt out of the ghost variant's own muted/foreground pair. The glyph
+        // takes its colour from the bar it sits in, so recolouring the header
+        // carries it too — tailwind-merge drops the variant's classes for
+        // these, and the hover half has to be named or it snaps back on hover.
+        "text-inherit hover:text-inherit",
         // No hover on a phone, so only the floating button — the one with no
         // ground under it already — gets a resting chip there.
         floating && "[@media(hover:none)]:bg-[var(--copy-button-rest-bg)]",
         className
       )}
       style={
-        // Only when the chrome rides the theme colour; otherwise the
-        // muted/foreground classes own it.
-        onTheme ? ({ color: "var(--code-fg)" } as React.CSSProperties) : undefined
+        // Only the floating button, which has no header to take a colour
+        // from. In a header bar it inherits — which is what lets a caller
+        // recolour the bar and carry this glyph along with it.
+        floating ? ({ color: "var(--code-fg)" } as React.CSSProperties) : undefined
       }
       onClick={async () => {
         // Only claim success when the copy actually landed.
@@ -372,15 +358,10 @@ function CopyButton({
       }}
     >
       {hasCopied ? (
-        <CheckIcon
-          className={cn("size-3.5", onTheme ? "opacity-100" : "text-foreground")}
-        />
+        <CheckIcon className="size-3.5 opacity-100" />
       ) : (
         <CopyIcon
-          className={cn(
-            "size-3.5 transition-[color,opacity]",
-            chromeTone(onTheme, "group")
-          )}
+          className={cn("size-3.5 transition-opacity", CHROME_REST, CHROME_HOVER)}
         />
       )}
     </Button>
@@ -616,14 +597,7 @@ export function Code({
           style={surfaceStyle}
         >
           <div className="flex items-center gap-2.5">
-            <TerminalIcon
-              className="text-muted-foreground size-4"
-              style={
-                paintFromTheme
-                  ? { color: selectedTheme.plain?.color, opacity: 0.7 }
-                  : undefined
-              }
-            />
+            <TerminalIcon className={cn("size-4", CHROME_REST)} />
             <div
               role="tablist"
               aria-label="Package manager"
@@ -640,29 +614,19 @@ export function Code({
                   data-slot="code-tab"
                   onClick={() => setPackageManager(key)}
                   className={cn(
-                    "text-muted-foreground data-[state=active]:text-foreground h-7 rounded-[var(--radius-item,var(--radius,0.5rem))] px-2.5 font-medium transition-colors",
+                    "h-7 rounded-[var(--radius-item,var(--radius,0.5rem))] px-2.5 font-medium transition-opacity",
+                    CHROME_REST,
+                    "data-[state=active]:opacity-100",
                     "outline-none focus-visible:ring-1 focus-visible:ring-[color:var(--focus-ring,#6B97FF)]"
                   )}
-                  style={{
-                    fontFamily: monoFontFamily,
-                    ...(paintFromTheme
-                      ? {
-                          color: selectedTheme.plain?.color,
-                          opacity: active === key ? 1 : 0.7,
-                        }
-                      : {}),
-                  }}
+                  style={{ fontFamily: monoFontFamily }}
                 >
                   {key}
                 </button>
               ))}
             </div>
           </div>
-          <CopyButton
-            value={pmCommands[active] || ""}
-            className="size-7"
-            onTheme={paintFromTheme}
-          />
+          <CopyButton value={pmCommands[active] || ""} className="size-7" />
         </div>
         <div
           data-slot="code-body"
@@ -764,10 +728,7 @@ export function Code({
         >
           <div
             data-slot="code-filename"
-            className={cn(
-              "flex items-center gap-2",
-              chromeRestingTone(paintFromTheme)
-            )}
+            className={cn("flex items-center gap-2", CHROME_REST)}
           >
             {/* The file badge is a solid shape where the name beside it is
                 13px text, so at one shared colour it out-weighs the name it
@@ -780,10 +741,7 @@ export function Code({
             <span className="font-medium tracking-tight">{filename}</span>
           </div>
           <div className="flex items-center gap-2">
-            <CopyButton
-              value={actualCode}
-              onTheme={paintFromTheme}
-            />
+            <CopyButton value={actualCode} />
           </div>
         </figcaption>
       )}
@@ -795,11 +753,7 @@ export function Code({
         {!filename && (
           <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex justify-end">
             <div className="pointer-events-auto flex items-center gap-2 p-3">
-              <CopyButton
-                value={actualCode}
-                floating
-                onTheme={paintFromTheme}
-              />
+              <CopyButton value={actualCode} floating />
             </div>
           </div>
         )}

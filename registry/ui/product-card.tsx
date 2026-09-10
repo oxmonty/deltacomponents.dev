@@ -9,7 +9,7 @@ import { cn } from "@/registry/lib/utils"
  * ------------------------------------------------------------------ */
 
 type ProductCardVariant = "default" | "inner"
-type ProductCardSize = "default" | "sm" | "small" | "lg" | "large"
+type ProductCardSize = "sm" | "default" | "lg"
 
 interface ProductCardContextValue {
   variant: ProductCardVariant
@@ -31,99 +31,150 @@ function useProductCardContext() {
   return context
 }
 
-function normalizeSize(size: ProductCardSize): "default" | "sm" | "lg" {
-  if (size === "small") return "sm"
-  if (size === "large") return "lg"
-  return size as "default" | "sm" | "lg"
+/* ------------------------------------------------------------------
+ * Size tables
+ * ------------------------------------------------------------------
+ * Only the values that cannot be derived. The card's TYPE size is set once
+ * on the root and inherited by the title, subtitle and metric, so a single
+ * `text-*` in the root's className resizes all of them together — where
+ * three separate per-part tables meant a caller had to override each one and
+ * keep them in step by hand.
+ */
+
+const cardWidth: Record<ProductCardSize, string> = {
+  sm: "max-w-[200px]",
+  default: "max-w-[320px]",
+  lg: "max-w-[460px]",
+}
+
+const cardText: Record<ProductCardSize, string> = {
+  sm: "text-xs",
+  default: "text-sm",
+  lg: "text-base",
+}
+
+const imagePadding: Record<ProductCardSize, string> = {
+  sm: "p-4",
+  default: "p-8",
+  lg: "p-12",
+}
+
+// The inner variant parks the title/metric row over the bottom of the same
+// square, so the object-contain subject has to clear it — otherwise the text
+// lands on the product. Extra bottom padding lifts the subject by roughly the
+// height of that row.
+const imagePaddingInner: Record<ProductCardSize, string> = {
+  sm: "pb-14",
+  default: "pb-20",
+  lg: "pb-24",
+}
+
+const contentPadding: Record<ProductCardSize, string> = {
+  sm: "px-0.5 py-2",
+  default: "px-1 py-3",
+  lg: "px-2 py-4",
+}
+
+const contentPaddingInner: Record<ProductCardSize, string> = {
+  sm: "p-2",
+  default: "p-3",
+  lg: "p-4",
+}
+
+const badgePosition: Record<ProductCardSize, string> = {
+  sm: "top-1.5 right-1.5 px-1.5 py-0.5",
+  default: "top-2 right-2 px-2 py-1",
+  lg: "top-3 right-3 px-3 py-1.5",
 }
 
 /* ------------------------------------------------------------------
  * ProductCard (root)
  * ------------------------------------------------------------------ */
 
-interface ProductCardProps extends React.HTMLAttributes<HTMLDivElement> {
-  /** Card variant - "default" shows content below image, "inner" shows content inside */
+interface ProductCardProps extends React.ComponentProps<"div"> {
+  /** `default` puts the content below the image, `inner` lays it over it. */
   variant?: ProductCardVariant
-  /** Card size - "sm" | "small", "default", or "lg" | "large" */
   size?: ProductCardSize
-  /** Enable hover/active animation on image - defaults to true */
+  /** Lift the image on hover and press. Defaults to true. */
   animated?: boolean
-  /** Callback when the card is clicked */
-  onCardClick?: () => void
 }
 
-const ProductCard = React.forwardRef<HTMLDivElement, ProductCardProps>(
-  (
-    {
-      className,
-      variant = "default",
-      size = "default",
-      animated = true,
-      onCardClick,
-      children,
-      ...props
-    },
-    ref
-  ) => {
-    const normalizedSize = normalizeSize(size)
-    return (
-      <ProductCardContext.Provider value={{ variant, size, animated }}>
-        <div
-          ref={ref}
-          className={cn(
-            "w-full cursor-pointer overflow-hidden",
-            "rounded-[var(--radius-container,calc(var(--radius,0.5rem)_+_4px))]",
-            // The size step caps the card's own width as well as scaling what
-            // is inside it, so `size` reads as a size rather than only as
-            // padding. `w-full` keeps it from overflowing a narrower box — in
-            // a grid cell it still fills the cell — and a `w-*`/`max-w-*` in
-            // className overrides the cap outright.
-            normalizedSize === "sm" && "max-w-[200px]",
-            normalizedSize === "default" && "max-w-[320px]",
-            normalizedSize === "lg" && "max-w-[460px]",
-            className
-          )}
-          onClick={onCardClick}
-          {...props}
-        >
-          {children}
-        </div>
-      </ProductCardContext.Provider>
-    )
-  }
-)
-ProductCard.displayName = "ProductCard"
+function ProductCard({
+  className,
+  variant = "default",
+  size = "default",
+  animated = true,
+  children,
+  ...props
+}: ProductCardProps) {
+  // A card is not a control. It only claims to be clickable when a handler
+  // actually arrives, so a plain card no longer shows a pointer cursor it
+  // cannot honour. A card that has to be keyboard-reachable should put a real
+  // <a>/<button> on its title and stretch it (`after:absolute after:inset-0`)
+  // rather than making this div interactive — that keeps the badge inside it
+  // legal, which nesting a control inside role="button" would not.
+  const interactive = Boolean(props.onClick)
+
+  return (
+    <ProductCardContext.Provider value={{ variant, size, animated }}>
+      <div
+        data-slot="product-card"
+        className={cn(
+          "w-full overflow-hidden",
+          "rounded-[var(--radius-container,calc(var(--radius,0.5rem)_+_4px))]",
+          cardText[size],
+          // The size step caps the card's own width as well as scaling what is
+          // inside it, so `size` reads as a size rather than only as padding.
+          // `w-full` keeps it from overflowing a narrower box — in a grid cell
+          // it still fills the cell — and a `w-*`/`max-w-*` in className
+          // overrides the cap outright.
+          cardWidth[size],
+          interactive && "cursor-pointer",
+          className
+        )}
+        {...props}
+      >
+        {children}
+      </div>
+    </ProductCardContext.Provider>
+  )
+}
 
 /* ------------------------------------------------------------------
  * ProductCardImage
  * ------------------------------------------------------------------ */
 
-interface ProductCardImageProps extends React.HTMLAttributes<HTMLDivElement> {
-  /** Image source URL */
+interface ProductCardImageProps extends React.ComponentProps<"div"> {
   src: string
-  /** Image alt text for accessibility */
   alt: string
-  /** Custom class for the image element itself */
+  /** Classes for the `<img>` itself — the one element in the card a caller
+   *  cannot reach with a className of its own. */
   imageClassName?: string
 }
 
-const ProductCardImage = React.forwardRef<
-  HTMLDivElement,
-  ProductCardImageProps
->(({ className, src, alt, imageClassName, children, ...props }, ref) => {
+function ProductCardImage({
+  className,
+  src,
+  alt,
+  imageClassName,
+  children,
+  ...props
+}: ProductCardImageProps) {
   const { variant, size, animated } = useProductCardContext()
-  const normalizedSize = normalizeSize(size)
 
   return (
     <div
-      ref={ref}
+      data-slot="product-card-image"
       className={cn(
-        "relative aspect-square w-full overflow-hidden transition-colors duration-300",
+        "group/card-image relative aspect-square w-full overflow-hidden",
+        "transition-colors duration-(--motion-fast) ease-spring",
         "rounded-[var(--radius-container,calc(var(--radius,0.5rem)_+_4px))]",
-        "bg-muted",
-        "[&:hover]:bg-muted/80 [&:active]:bg-muted/80",
-        animated &&
-          "[&:active>img]:-translate-y-2 [&:hover>img]:-translate-y-2",
+        // Plain `hover:`/`active:` variants, not the `[&:hover]:` arbitrary
+        // ones this used to carry. tailwind-merge deliberately does not
+        // resolve an arbitrary variant against a standard modifier, so a
+        // caller passing `hover:bg-amber-100` used to lose the hover to the
+        // component and the well snapped back to muted on mouse-enter.
+        "bg-muted hover:bg-muted/80 active:bg-muted/80",
         className
       )}
       {...props}
@@ -132,64 +183,64 @@ const ProductCardImage = React.forwardRef<
           component installs into any React project, so it must not depend on
           next/image; the consumer swaps this for their framework's loader. */}
       <img
+        data-slot="product-card-img"
         src={src || "/placeholder.svg"}
         alt={alt}
         className={cn(
           "absolute inset-0 h-full w-full object-contain",
-          animated && "transition-transform duration-300 ease-in-out",
-          normalizedSize === "sm" && "p-4",
-          normalizedSize === "default" && "p-8",
-          normalizedSize === "lg" && "p-12",
-          // The inner variant parks the title/metric row over the bottom of
-          // this same square, so the object-contain subject has to clear it —
-          // otherwise the text lands on the product. Extra bottom padding
-          // lifts the subject by roughly the height of that row.
-          variant === "inner" && normalizedSize === "sm" && "pb-14",
-          variant === "inner" && normalizedSize === "default" && "pb-20",
-          variant === "inner" && normalizedSize === "lg" && "pb-24",
+          animated && [
+            "transition-transform duration-(--motion-slow) ease-spring",
+            "group-hover/card-image:-translate-y-2 group-active/card-image:-translate-y-2",
+          ],
+          imagePadding[size],
+          variant === "inner" && imagePaddingInner[size],
           imageClassName
         )}
       />
       {children}
     </div>
   )
-})
-ProductCardImage.displayName = "ProductCardImage"
+}
 
 /* ------------------------------------------------------------------
  * ProductCardBadge
  * ------------------------------------------------------------------ */
 
-interface ProductCardBadgeProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  /** Whether the badge is in active/selected state */
+interface ProductCardBadgeProps extends React.ComponentProps<"button"> {
+  /** Swaps the badge to the filled treatment. */
   isActive?: boolean
-  /** Icon to display before label */
   icon?: React.ReactNode
 }
 
-const ProductCardBadge = React.forwardRef<
-  HTMLButtonElement,
-  ProductCardBadgeProps
->(({ className, isActive = false, icon, children, onClick, ...props }, ref) => {
+function ProductCardBadge({
+  className,
+  isActive = false,
+  icon,
+  children,
+  onClick,
+  ...props
+}: ProductCardBadgeProps) {
   const { size } = useProductCardContext()
-  const normalizedSize = normalizeSize(size)
 
   return (
     <button
-      ref={ref}
+      data-slot="product-card-badge"
       type="button"
       onClick={(e) => {
+        // The badge sits on a card that may itself be clickable; a wishlist
+        // toggle must not also open the product.
         e.stopPropagation()
         onClick?.(e)
       }}
       className={cn(
-        "absolute flex items-center gap-1 font-medium transition-colors",
+        "absolute flex items-center gap-1 font-medium",
+        "transition-colors duration-(--motion-fast) ease-spring",
         "rounded-[var(--radius-button,var(--radius,0.5rem))]",
-        normalizedSize === "sm" &&
-          "top-1.5 right-1.5 px-1.5 py-0.5 text-[10px]",
-        normalizedSize === "default" && "top-2 right-2 px-2 py-1 text-xs",
-        normalizedSize === "lg" && "top-3 right-3 px-3 py-1.5 text-sm",
+        // Relative to the card's own type size rather than a third size
+        // table, so a `text-*` override on the root carries the badge with
+        // it. Lands within 0.4px of the sizes the tables used to hardcode.
+        "text-[0.85em]",
+        badgePosition[size],
         isActive
           ? "bg-primary text-primary-foreground hover:bg-primary/90"
           : "bg-popover text-popover-foreground hover:bg-accent",
@@ -202,39 +253,31 @@ const ProductCardBadge = React.forwardRef<
       {children}
     </button>
   )
-})
-ProductCardBadge.displayName = "ProductCardBadge"
+}
 
 /* ------------------------------------------------------------------
  * ProductCardContent (container for title, subtitle, metric)
  * ------------------------------------------------------------------ */
 
-type ProductCardContentProps = React.HTMLAttributes<HTMLDivElement>
+type ProductCardContentProps = React.ComponentProps<"div">
 
-const ProductCardContent = React.forwardRef<
-  HTMLDivElement,
-  ProductCardContentProps
->(({ className, children, ...props }, ref) => {
+function ProductCardContent({
+  className,
+  children,
+  ...props
+}: ProductCardContentProps) {
   const { variant, size } = useProductCardContext()
-  const normalizedSize = normalizeSize(size)
 
   return (
     <div
-      ref={ref}
+      data-slot="product-card-content"
       className={cn(
         "flex items-start justify-between gap-2",
-        variant === "default" && normalizedSize === "sm" && "px-0.5 py-2",
-        variant === "default" && normalizedSize === "default" && "px-1 py-3",
-        variant === "default" && normalizedSize === "lg" && "px-2 py-4",
-        variant === "inner" &&
-          normalizedSize === "sm" &&
-          "absolute inset-x-0 bottom-0 items-end p-2",
-        variant === "inner" &&
-          normalizedSize === "default" &&
-          "absolute inset-x-0 bottom-0 items-end p-3",
-        variant === "inner" &&
-          normalizedSize === "lg" &&
-          "absolute inset-x-0 bottom-0 items-end p-4",
+        variant === "default" && contentPadding[size],
+        variant === "inner" && [
+          "absolute inset-x-0 bottom-0 items-end",
+          contentPaddingInner[size],
+        ],
         className
       )}
       {...props}
@@ -242,119 +285,91 @@ const ProductCardContent = React.forwardRef<
       {children}
     </div>
   )
-})
-ProductCardContent.displayName = "ProductCardContent"
+}
 
 /* ------------------------------------------------------------------
  * ProductCardHeader (wrapper for title + subtitle)
  * ------------------------------------------------------------------ */
 
-type ProductCardHeaderProps = React.HTMLAttributes<HTMLDivElement>
+type ProductCardHeaderProps = React.ComponentProps<"div">
 
-const ProductCardHeader = React.forwardRef<
-  HTMLDivElement,
-  ProductCardHeaderProps
->(({ className, children, ...props }, ref) => {
+function ProductCardHeader({
+  className,
+  children,
+  ...props
+}: ProductCardHeaderProps) {
   return (
-    <div ref={ref} className={cn("min-w-0 flex-1", className)} {...props}>
+    <div
+      data-slot="product-card-header"
+      className={cn("min-w-0 flex-1", className)}
+      {...props}
+    >
       {children}
     </div>
   )
-})
-ProductCardHeader.displayName = "ProductCardHeader"
+}
 
 /* ------------------------------------------------------------------
- * ProductCardTitle
- * ------------------------------------------------------------------ */
+ * ProductCardTitle / Subtitle / Metric
+ * ------------------------------------------------------------------
+ * None of the three sets a font size. They inherit the card's, so one
+ * `text-*` on the root moves the whole block and a `text-*` on any one of
+ * them still overrides just that line.
+ */
 
-type ProductCardTitleProps = React.HTMLAttributes<HTMLHeadingElement>
+type ProductCardTitleProps = React.ComponentProps<"h3">
 
-const ProductCardTitle = React.forwardRef<
-  HTMLHeadingElement,
-  ProductCardTitleProps
->(({ className, children, ...props }, ref) => {
-  const { size } = useProductCardContext()
-  const normalizedSize = normalizeSize(size)
-
+function ProductCardTitle({
+  className,
+  children,
+  ...props
+}: ProductCardTitleProps) {
   return (
     <h3
-      ref={ref}
-      className={cn(
-        "text-foreground truncate font-medium",
-        normalizedSize === "sm" && "text-xs",
-        normalizedSize === "default" && "text-sm",
-        normalizedSize === "lg" && "text-base",
-        className
-      )}
+      data-slot="product-card-title"
+      className={cn("text-foreground truncate font-medium", className)}
       {...props}
     >
       {children}
     </h3>
   )
-})
-ProductCardTitle.displayName = "ProductCardTitle"
+}
 
-/* ------------------------------------------------------------------
- * ProductCardSubtitle
- * ------------------------------------------------------------------ */
+type ProductCardSubtitleProps = React.ComponentProps<"p">
 
-type ProductCardSubtitleProps = React.HTMLAttributes<HTMLParagraphElement>
-
-const ProductCardSubtitle = React.forwardRef<
-  HTMLParagraphElement,
-  ProductCardSubtitleProps
->(({ className, children, ...props }, ref) => {
-  const { size } = useProductCardContext()
-  const normalizedSize = normalizeSize(size)
-
+function ProductCardSubtitle({
+  className,
+  children,
+  ...props
+}: ProductCardSubtitleProps) {
   return (
     <p
-      ref={ref}
-      className={cn(
-        "text-muted-foreground",
-        normalizedSize === "sm" && "text-[10px]",
-        normalizedSize === "default" && "text-sm",
-        normalizedSize === "lg" && "text-base",
-        className
-      )}
+      data-slot="product-card-subtitle"
+      className={cn("text-muted-foreground", className)}
       {...props}
     >
       {children}
     </p>
   )
-})
-ProductCardSubtitle.displayName = "ProductCardSubtitle"
+}
 
-/* ------------------------------------------------------------------
- * ProductCardMetric
- * ------------------------------------------------------------------ */
+type ProductCardMetricProps = React.ComponentProps<"span">
 
-type ProductCardMetricProps = React.HTMLAttributes<HTMLSpanElement>
-
-const ProductCardMetric = React.forwardRef<
-  HTMLSpanElement,
-  ProductCardMetricProps
->(({ className, children, ...props }, ref) => {
-  const { size } = useProductCardContext()
-  const normalizedSize = normalizeSize(size)
-
+function ProductCardMetric({
+  className,
+  children,
+  ...props
+}: ProductCardMetricProps) {
   return (
     <span
-      ref={ref}
-      className={cn(
-        "text-foreground shrink-0 font-medium",
-        normalizedSize === "sm" && "text-xs",
-        normalizedSize === "default" && "text-sm",
-        normalizedSize === "lg" && "text-base",
-        className
-      )}
+      data-slot="product-card-metric"
+      className={cn("text-foreground shrink-0 font-medium", className)}
       {...props}
     >
       {children}
     </span>
   )
-})
-ProductCardMetric.displayName = "ProductCardMetric"
+}
 
 /* ------------------------------------------------------------------
  * Exports
@@ -378,4 +393,5 @@ export {
   type ProductCardSubtitleProps,
   type ProductCardMetricProps,
   type ProductCardSize,
+  type ProductCardVariant,
 }

@@ -23,6 +23,7 @@ import DemoProductCardProductCardBasic from "@/content/demos/product-card/produc
 import DemoProductCardProductCardDemo from "@/content/demos/product-card/product-card-demo";
 import DemoProductCardProductCardGrid from "@/content/demos/product-card/product-card-grid";
 import DemoProductCardProductCardInner from "@/content/demos/product-card/product-card-inner";
+import DemoProductCardProductCardOverrideStyling from "@/content/demos/product-card/product-card-override-styling";
 import DemoProductCardProductCardSizes from "@/content/demos/product-card/product-card-sizes";
 import DemoTabsTabsConcentric from "@/content/demos/tabs/tabs-concentric";
 import DemoTabsTabsDemo from "@/content/demos/tabs/tabs-demo";
@@ -83,7 +84,7 @@ export const demos: Record<string, DemoEntry> = {
   },
   "code-override-styling": {
     Component: DemoCodeCodeOverrideStyling,
-    source: "import { Code } from \"@/components/ui/code\";\n\nconst SAMPLE = `export function greet(name: string) {\n  return \\`Hello, \\${name}!\\`;\n}`;\n\nexport default function CodeOverrideStyling() {\n  return (\n    <div className=\"flex w-full max-w-[520px] flex-col gap-6\">\n      <Code language=\"typescript\" filename=\"greet.ts\" code={SAMPLE} />\n\n      {/* One className does all four: the type size (inherited by the code,\n          the gutter and the filename together), the corner, the border, and\n          the header bar reached through its data-slot. */}\n      <Code\n        language=\"typescript\"\n        filename=\"greet.ts\"\n        code={SAMPLE}\n        className=\"rounded-2xl border-2 border-dashed text-[12px] **:data-[slot=code-header]:bg-amber-500/10\"\n      />\n    </div>\n  );\n}",
+    source: "import { Code } from \"@/components/ui/code\";\n\nconst SAMPLE = `import { useEffect, useState } from \"react\";\n\nexport function useTheme() {\n  const [theme, setTheme] = useState(\"light\");\n\n  useEffect(() => {\n    document.body.dataset.theme = theme;\n  }, [theme]);\n\n  return { theme, setTheme };\n}`;\n\n// Bigger type, no outer border, and an editor-style dark title bar. The\n// filename and the copy glyph ride the bar's own colour at 60%, so setting a\n// text colour on the header carries both of them with it.\nconst OVERRIDES = [\n  \"rounded-xl border-0 text-base\",\n  \"**:data-[slot=code-header]:border-b-0\",\n  \"**:data-[slot=code-header]:bg-neutral-900 **:data-[slot=code-header]:text-white\",\n].join(\" \");\n\nexport default function CodeOverrideStyling() {\n  return (\n    <div className=\"w-full max-w-[560px]\">\n      <Code\n        language=\"typescript\"\n        filename=\"use-theme.ts\"\n        code={SAMPLE}\n        className={OVERRIDES}\n      />\n    </div>\n  );\n}",
   },
   "code-package-managers": {
     Component: DemoCodeCodePackageManagers,
@@ -124,6 +125,10 @@ export const demos: Record<string, DemoEntry> = {
   "product-card-inner": {
     Component: DemoProductCardProductCardInner,
     source: "import {\n  ProductCard,\n  ProductCardContent,\n  ProductCardHeader,\n  ProductCardImage,\n  ProductCardMetric,\n  ProductCardSubtitle,\n  ProductCardTitle,\n} from \"@/components/ui/product-card\";\n\nexport default function ProductCardInner() {\n  return (\n    <ProductCard variant=\"inner\">\n      <ProductCardImage src=\"/images/products/twemco-clock.png\" alt=\"Twemco Clock\">\n        <ProductCardContent>\n          <ProductCardHeader>\n            <ProductCardTitle>Twemco Clock</ProductCardTitle>\n            <ProductCardSubtitle>Clock</ProductCardSubtitle>\n          </ProductCardHeader>\n          <ProductCardMetric>$219</ProductCardMetric>\n        </ProductCardContent>\n      </ProductCardImage>\n    </ProductCard>\n  );\n}",
+  },
+  "product-card-override-styling": {
+    Component: DemoProductCardProductCardOverrideStyling,
+    source: "import {\n  ProductCard,\n  ProductCardContent,\n  ProductCardHeader,\n  ProductCardImage,\n  ProductCardMetric,\n  ProductCardSubtitle,\n  ProductCardTitle,\n} from \"@/components/ui/product-card\";\n\nexport default function ProductCardOverrideStyling() {\n  return (\n    // The same card fitted to another design system: a bordered tile with an\n    // inset well. The root's 8px padding and 16px corner make the well's own\n    // corner 8px, so the two stay concentric.\n    <ProductCard className=\"border-border/60 bg-card rounded-2xl border p-2\">\n      <ProductCardImage\n        src=\"/images/products/twemco-clock.png\"\n        alt=\"Twemco Clock\"\n        // The resting ground and the mouse-enter ground are two separate\n        // utilities: pass only the first and the component's own\n        // `hover:bg-muted/80` still takes over on hover.\n        className=\"rounded-lg bg-stone-200 hover:bg-stone-300 dark:bg-stone-900 dark:hover:bg-stone-800\"\n      />\n      <ProductCardContent className=\"px-1 pt-3 pb-1\">\n        <ProductCardHeader>\n          <ProductCardTitle className=\"font-semibold tracking-tight\">\n            Twemco Clock\n          </ProductCardTitle>\n          <ProductCardSubtitle className=\"text-[0.85em] tracking-wider uppercase\">\n            Desk clock\n          </ProductCardSubtitle>\n        </ProductCardHeader>\n        <ProductCardMetric className=\"tabular-nums\">$219</ProductCardMetric>\n      </ProductCardContent>\n    </ProductCard>\n  );\n}",
   },
   "product-card-sizes": {
     Component: DemoProductCardProductCardSizes,

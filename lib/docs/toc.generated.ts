@@ -177,6 +177,16 @@ export const TOC: Record<string, TocEntry[]> = {
       "depth": 2
     },
     {
+      "id": "override-styling",
+      "text": "Override Styling",
+      "depth": 2
+    },
+    {
+      "id": "accessibility",
+      "text": "Accessibility",
+      "depth": 2
+    },
+    {
       "id": "api-reference",
       "text": "API Reference",
       "depth": 2

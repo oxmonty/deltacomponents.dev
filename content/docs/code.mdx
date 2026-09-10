@@ -53,7 +53,9 @@ together — the row height follows the type with it.
 <ComponentPreview name="code-override-styling" padding="compact" align="top" />
 
 Every inner part carries a `data-slot`, so it is reachable from that same
-`className` and needs no prop of its own:
+`className` and needs no prop of its own. The chrome inside a part carries no
+colour of its own — the filename and the copy glyph sit at 60% of whatever
+colour the header inherits — so recolouring the bar carries both with it:
 
 | Slot | Element |
 | --- | --- |
