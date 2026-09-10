@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { usePathname } from "next/navigation";
 import { cn } from "@/registry/lib/utils";
+import { useSizeVariant } from "@/lib/docs/size-context";
 import { TOC } from "@/lib/docs/toc.generated";
 
 /** Whichever heading the reader is currently under. The bottom 80% of the
@@ -41,6 +42,7 @@ export function DocsToc({ className }: { className?: string }) {
   // appear a frame late and shove the properties card down the rail; this
   // renders with the rest of the page, server side included.
   const pathname = usePathname();
+  const sizeVariant = useSizeVariant();
   // Memoised on the route, not on `entries`: the `?? []` fallback would hand
   // back a fresh array every render and restart the observer with it.
   const entries = useMemo(() => TOC[pathname] ?? [], [pathname]);
@@ -62,10 +64,18 @@ export function DocsToc({ className }: { className?: string }) {
       aria-label="On this page"
       className={cn("flex flex-col gap-2", className)}
     >
-      {/* The left rail's group-label treatment exactly — 12px, muted at 70%,
-          no added weight. It is the same kind of thing in the same kind of
-          column, and the two rails sit either side of the page. */}
-      <p className="text-muted-foreground/70 text-[12px]">On This Page</p>
+      {/* The left rail's group-label treatment exactly — muted at 70%, no
+          added weight, and stepping 12px → 11px with the size ladder the way
+          SidebarGroupLabel does. It is the same kind of thing in the same kind
+          of column, and the two rails sit either side of the page. */}
+      <p
+        className={cn(
+          "text-muted-foreground/70",
+          sizeVariant === "compact" ? "text-[11px]" : "text-[12px]"
+        )}
+      >
+        On This Page
+      </p>
       {entries.map((entry) => (
         <a
           key={entry.id}
