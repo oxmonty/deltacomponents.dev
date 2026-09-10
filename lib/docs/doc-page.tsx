@@ -121,7 +121,7 @@ export function DocProse({
   children: ReactNode;
 }) {
   return (
-    <p className={cn("text-prose text-foreground/90 leading-normal text-pretty", className)}>
+    <p className={cn("text-prose text-foreground/90 leading-normal", className)}>
       {children}
     </p>
   );
