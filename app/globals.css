@@ -450,10 +450,6 @@ html, body {
     text-wrap: balance;
   }
 
-  p {
-    text-wrap: pretty;
-  }
-
   /* Inline code: the treatment www uses (after base-ui) — no pill, a blue
      accent, and a slightly smaller face with tightened letter and word spacing
      so a `code` span sits inside a line of prose without pushing it apart.

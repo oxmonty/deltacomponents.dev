@@ -34,7 +34,7 @@ export function DocPage({
   const { prev, next } = neighbours(slug ? `/docs/${slug}` : "");
 
   return (
-    <div className="flex flex-col gap-8 px-6">
+    <div className="flex flex-col gap-8 px-4 sm:px-6">
       <DocHeader title={heading} description={blurb} prev={prev} next={next} copyable />
 
       {/* The body writes its own Installation section — it is content, and a
