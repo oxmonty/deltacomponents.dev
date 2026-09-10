@@ -113,6 +113,10 @@ export const mdxComponents: MDXComponents = {
           "[&_th:first-child]:pl-0 [&_td:first-child]:pl-0",
           "[&_thead_tr]:border-border [&_thead_tr]:border-b",
           "[&_tbody_tr]:border-border/40 [&_tbody_tr]:border-b",
+          // Only the trailing column is muted — the description, as in
+          // PropsTable. Muting every cell dropped the first column, which is
+          // the one the row is named by, to the weight of its own footnote.
+          "[&_tbody_td:last-child]:text-muted-foreground",
           className
         )}
         {...props}
@@ -126,14 +130,8 @@ export const mdxComponents: MDXComponents = {
       {...props}
     />
   ),
-  // Muted like the description column, and a `<code>` inside brings its own
-  // foreground back — the same split PropsTable makes between a name and the
-  // sentence beside it.
   td: ({ className, ...props }: ComponentProps<"td">) => (
-    <td
-      className={cn("text-muted-foreground px-3 py-2 align-top", className)}
-      {...props}
-    />
+    <td className={cn("px-3 py-2 align-top", className)} {...props} />
   ),
 
   ul: ({ className, ...props }: ComponentProps<"ul">) => (
@@ -157,12 +155,12 @@ export const mdxComponents: MDXComponents = {
     return <Code language={language} code={String(child?.props?.children ?? "").trimEnd()} />;
   },
   // Inline code only — `pre` above has already claimed the fenced kind.
-  code: ({ className, ...props }: ComponentProps<"code">) => (
-    <code
-      className={cn("bg-muted text-foreground rounded px-[0.3rem] py-[0.15rem] font-mono text-[0.85em]", className)}
-      {...props}
-    />
-  ),
+  // No `code` mapping on purpose. Inline code is styled once, in globals.css
+  // (`code:not(pre code)`) — the blue accent, no pill, 0.85em with tightened
+  // tracking. A mapping here overrode that with a grey rounded chip, so a
+  // backtick in a page and the <code> PropsTable renders looked like two
+  // different things in the same table. A fenced block never reaches this
+  // anyway: the `pre` mapping below consumes it and hands the source to Code.
 
   // Components a page can use without importing them.
   ComponentPreview,

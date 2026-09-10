@@ -1,7 +1,7 @@
 import type { PropDef } from "@/lib/docs/props-table";
 
 export const codeBlockProps: PropDef[] = [
-  { name: "code", type: "string", description: "The source to render. A fenced markdown block (```lang) is unwrapped, and its language wins over `language`." },
+  { name: "code", type: "string", description: "The source to render. A fenced markdown block is unwrapped, and the language on its fence wins over `language`." },
   { name: "language", type: "string", default: '"typescript"', description: "Prism grammar name. Common aliases (ts, js, sh, yml, py) resolve automatically." },
   { name: "filename", type: "string", description: "Shows a header bar with a file-type icon, the name, and the copy button. Without it, the copy button floats over the code." },
   { name: "showLineNumbers", type: "boolean", default: "true", description: "Renders a sticky line-number gutter that survives horizontal scroll." },
