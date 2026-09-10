@@ -107,22 +107,43 @@ interface ButtonProps
    Pressing collapses the spread, shrinking the surface by exactly 1px per
    side at any width — a scale would warp (2% of a 400px button is 8px
    sideways but under 1px vertically). Fill colors are opaque color-mix()es
-   rather than alpha so the fill and its spread ring never seam. */
+   rather than alpha so the fill and its spread ring never seam.
+
+   This layer holds only the RESTING ground and that press geometry; every
+   hover and press *color* lives on the wash layer below, so the two can't
+   both paint a translucent fill and double its alpha. */
 const bgVariants: Record<string, string> = {
   primary:
-    "[--btn-bg:var(--foreground)] group-hover:[--btn-bg:color-mix(in_oklab,var(--foreground)_90%,var(--background))] group-active:[--btn-bg:color-mix(in_oklab,var(--foreground)_80%,var(--background))] bg-[var(--btn-bg)] shadow-[0_0_0_1px_var(--btn-bg)] group-active:shadow-[0_0_0_0px_var(--btn-bg)]",
+    "[--btn-bg:var(--foreground)] bg-[var(--btn-bg)] shadow-[0_0_0_1px_var(--btn-bg)] group-active:shadow-[0_0_0_0px_var(--btn-bg)]",
   secondary:
-    "[--btn-bg:var(--accent)] group-hover:[--btn-bg:color-mix(in_oklab,var(--accent)_80%,var(--background))] group-active:[--btn-bg:var(--accent)] bg-[var(--btn-bg)] shadow-[0_0_0_1px_var(--btn-bg)] group-active:shadow-[0_0_0_0px_var(--btn-bg)]",
+    "[--btn-bg:var(--accent)] bg-[var(--btn-bg)] shadow-[0_0_0_1px_var(--btn-bg)] group-active:shadow-[0_0_0_0px_var(--btn-bg)]",
   // The border ring is an outer 1px shadow at rest that hands off to an
   // inset 1px shadow when pressed, so the ring moves inward with the
-  // surface. The translucent fill only ever reaches the ring's inner edge
-  // (exactly the surface box), so it needs no spread of its own.
+  // surface.
   tertiary:
-    "bg-transparent shadow-[0_0_0_1px_var(--border),inset_0_0_0_0px_var(--border)] group-hover:bg-hover group-active:bg-active group-active:shadow-[0_0_0_0px_var(--border),inset_0_0_0_1px_var(--border)]",
-  // Translucent fill + same-color spread never double up: outer shadows
-  // render only outside the surface box.
-  ghost:
-    "bg-transparent shadow-[0_0_0_1px_transparent] group-hover:bg-hover group-hover:shadow-[0_0_0_1px_var(--hover)] group-active:bg-active group-active:shadow-[0_0_0_0px_var(--active)]",
+    "bg-transparent shadow-[0_0_0_1px_var(--border),inset_0_0_0_0px_var(--border)] group-active:shadow-[0_0_0_0px_var(--border),inset_0_0_0_1px_var(--border)]",
+  ghost: "bg-transparent",
+};
+
+/* Hover ground. A second layer over the resting one, carrying every hover and
+   press fill, which BLOOMS out of the button's centre (75% → full) instead of
+   cross-fading in place.
+
+   It repeats the base layer's geometry — `inset-px` plus a same-color 1px
+   spread — so the ground reaches the button's real bounds and collapses with
+   it under a press, rather than leaving a hairline of the resting color
+   ringing a hovered face. Translucent fill + same-color spread never double
+   up: outer shadows render only outside the surface box.
+
+   The color is one custom property per variant rather than two sets of
+   classes, so the layer itself is written once. */
+const washVariants: Record<string, string> = {
+  primary:
+    "[--btn-wash:color-mix(in_oklab,var(--foreground)_90%,var(--background))] group-active:[--btn-wash:color-mix(in_oklab,var(--foreground)_80%,var(--background))]",
+  secondary:
+    "[--btn-wash:color-mix(in_oklab,var(--accent)_80%,var(--background))] group-active:[--btn-wash:var(--accent)]",
+  tertiary: "[--btn-wash:var(--hover)] group-active:[--btn-wash:var(--active)]",
+  ghost: "[--btn-wash:var(--hover)] group-active:[--btn-wash:var(--active)]",
 };
 
 /* Forced-active (`active` prop): pressed colors at full size; the
@@ -211,6 +232,31 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
             bgClass
           )}
         />
+        {/* Forced-active paints the pressed color at full size on the layer
+            above, so a bloom on top of it would only re-tint an already-lit
+            button with the lighter hover shade. */}
+        {!active && (
+          <span
+            aria-hidden
+            className={cn(
+              "pointer-events-none absolute inset-px rounded-[inherit] scale-75 opacity-0",
+              "bg-[var(--btn-wash)] shadow-[0_0_0_1px_var(--btn-wash)]",
+              "transition-[scale,opacity,box-shadow,background-color] ease-spring",
+              // Moderate, not the fast tier hover usually takes: a scale this
+              // small lands inside 80ms without ever reading as movement, and
+              // the bloom IS the effect. Leaving runs a tier quicker, so the
+              // ground recedes crisply instead of replaying the entrance.
+              "duration-(--motion-moderate-exit) group-hover:duration-(--motion-moderate)",
+              "group-hover:scale-100 group-hover:opacity-100",
+              // A touch screen has no hover, so the press has to raise the
+              // ground itself — without this the only feedback on a phone is
+              // the 1px collapse, which is far too quiet to register.
+              "group-active:scale-100 group-active:opacity-100",
+              "group-active:shadow-[0_0_0_0px_var(--btn-wash)]",
+              washVariants[variant ?? "primary"]
+            )}
+          />
+        )}
         <span className="relative inline-flex items-center justify-center gap-[inherit]">
           {loading ? (
             <>

@@ -170,10 +170,17 @@ things that no longer exist is how this one went stale.
 
 | fast (80ms) | moderate (160ms) | slow (240ms) |
 |---|---|---|
-| Hover and focus rings, Toast press, Copy button | Tabs indicator, Tooltip, Mobile nav panel, Sidebar collapse | Right properties panel |
+| Hover and focus rings, Toast press, Copy button | Tabs indicator, Tooltip, Button hover bloom, Mobile nav panel, Sidebar collapse | Right properties panel |
 
 Most components also use `fast` for their hover and focus states on top of their
 headline tier — the table lists each component once, by its headline motion.
+
+Button's hover is the exception that proves the rule. Its ground does not
+cross-fade in place, it blooms out of the centre (75% → full), and a scale that
+small is over before 80ms has read as movement at all — the same reason the
+Tooltip's 4px slide sits on `moderate`. A hover that *travels* takes the tier
+its travel earns, not the tier hover usually gets. It still leaves on
+`--motion-moderate-exit`.
 
 ---
 
