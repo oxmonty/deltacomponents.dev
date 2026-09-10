@@ -55,7 +55,7 @@ function CodePreview() {
         language="rust"
         theme={PATRICK_DARK}
         showLineNumbers={false}
-        textClassName="text-caption"
+        className="text-caption"
         code={`use std::collections::HashMap;
 
 /// Counts how many times each word appears.

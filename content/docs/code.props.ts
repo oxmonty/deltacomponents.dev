@@ -15,5 +15,5 @@ export const codeBlockProps: PropDef[] = [
   { name: "adaptiveTheme", type: "{ light, dark }", description: "A palette pair chosen by the resolved site theme. Overrides `theme`." },
   { name: "useThemeBackground", type: "boolean", default: "true when a custom theme is set", description: "Paints the header and code surface from the Prism theme's own background instead of the page's card token. A supplied `theme` or `adaptiveTheme` turns this on by default, since a palette from elsewhere carries its own ground." },
   { name: "scrollbar", type: "boolean", default: "true", description: "Set false to hide the scrollbar while keeping the block scrollable." },
-  { name: "textClassName", type: "string", default: '"text-[14px]"', description: "Font size for the code. A `text-*` class in `className` overrides it." },
+  { name: "className", type: "string", description: "Merged onto the block's root through `tailwind-merge`, so a conflicting utility replaces the default rather than stacking with it. The code's type size lives here too — `text-sm` resizes the source, the gutter and the filename bar together — and every inner part is reachable by its `data-slot`." },
 ];

@@ -225,8 +225,7 @@ export function ComponentPreview({
             expandable={collapsible}
             collapsedHeight={codeCollapsedHeight}
             expandLabel={expandLabel}
-            className="rounded-none border-0 border-t border-border/60"
-            textClassName="text-body"
+            className="rounded-none border-0 border-t border-border/60 text-body"
           />
         )}
       </div>

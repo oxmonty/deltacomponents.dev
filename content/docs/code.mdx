@@ -42,6 +42,34 @@ the token colours.
 
 <ComponentPreview name="code-expandable" padding="compact" />
 
+## Override Styling
+
+`className` lands on the block's root and is merged with `tailwind-merge`, so a
+utility that conflicts with a default replaces it instead of piling on top of
+it. The type size is set on the root rather than on the `<pre>`, which is what
+lets one `text-*` resize the code, the line-number gutter and the filename bar
+together — the row height follows the type with it.
+
+<ComponentPreview name="code-override-styling" padding="compact" align="top" />
+
+Every inner part carries a `data-slot`, so it is reachable from that same
+`className` and needs no prop of its own:
+
+| Slot | Element |
+| --- | --- |
+| `code` | The block's root |
+| `code-header` | The filename bar, or the package-manager strip |
+| `code-filename` | The file icon and name inside that bar |
+| `code-tablist`, `code-tab` | The package-manager tabs |
+| `code-body` | The scroll container around the source |
+| `code-pre` | The highlighted `<pre>` |
+| `code-gutter` | One line-number cell |
+| `code-expand` | The button on a collapsed block |
+
+A `theme` or `adaptiveTheme` paints the header and code surface from inline
+style, which no class can outrank. Turn `useThemeBackground` off to keep those
+surfaces on the page's card token and colour them yourself.
+
 ## API Reference
 
 <PropsTable props={codeBlockProps} />

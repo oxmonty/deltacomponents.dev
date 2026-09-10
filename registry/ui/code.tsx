@@ -71,7 +71,7 @@ function resolveGroupColor(theme: PrismTheme, types: string[]): string {
   return theme.plain?.color ?? ""
 }
 
-interface CodeProps {
+interface CodeProps extends Omit<React.ComponentProps<"div">, "children"> {
   npm?: string
   yarn?: string
   pnpm?: string
@@ -94,8 +94,6 @@ interface CodeProps {
    *  own ground, and pairing its colours with the page's card is what makes a
    *  dark theme read washed out on a light page. */
   useThemeBackground?: boolean
-  className?: string
-  textClassName?: string
   scrollbar?: boolean
   expandable?: boolean
   defaultExpanded?: boolean
@@ -106,6 +104,15 @@ interface CodeProps {
    *  just opened. A page load starts collapsed again. */
   expandLabel?: string
 }
+
+/** The code's own type size, set on the block's ROOT rather than on the
+ *  `<pre>`, so every part of the block inherits it — the highlighted source,
+ *  the line-number gutter, the filename bar and the package-manager tabs. That
+ *  is what makes a single `text-sm` in `className` resize the whole block:
+ *  tailwind-merge drops this default in favour of the caller's utility, where
+ *  a size declared further down would have won on specificity and left the
+ *  parts at different sizes. */
+const CODE_TEXT_SIZE = "text-[14px]"
 
 const monoFontFamily =
   'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace'
@@ -387,13 +394,11 @@ function HighlightedCode({
   language,
   theme,
   showLineNumbers,
-  textClassName,
 }: {
   code: string
   language: string
   theme: PrismTheme
   showLineNumbers: boolean
-  textClassName: string
 }) {
   const lineNumberColor = theme.plain?.color
     ? `color-mix(in srgb, ${theme.plain.color} 35%, transparent)`
@@ -403,14 +408,18 @@ function HighlightedCode({
     <Highlight theme={theme} code={code.trim()} language={language}>
       {({ className, style, tokens, getLineProps, getTokenProps }) => (
         <pre
+          data-slot="code-pre"
           className={cn(
             className,
             // w-max so the block grows to the longest line, min-w-full so it
             // still fills the scroller when every line is short. Together they
             // give the rows below a width to stretch to.
             "relative w-max min-w-full py-3.5 outline-none",
-            "leading-6 font-normal",
-            textClassName
+            // Unitless leading rather than `leading-6`: it lands on the same
+            // 24px at the default 14px, but a `text-*` override on the root
+            // now scales the rows with the type instead of leaving them
+            // pinned to a height the larger text overflows.
+            "leading-[1.7143] font-normal"
           )}
           style={
             {
@@ -430,16 +439,14 @@ function HighlightedCode({
               // block. Left to size on its content, a short line's row ended
               // before the scroll did and its number slid away with it; at the
               // full block width every gutter survives the whole scroll.
-              className="relative flex min-h-[24px] w-max min-w-full"
+              className="relative flex min-h-[1.7143em] w-max min-w-full"
             >
               {showLineNumbers && (
                 // Sticky so the gutter survives a horizontal scroll; it paints
                 // the block background so code scrolls *under* it, not through.
                 <span
-                  className={cn(
-                    "sticky left-0 z-10 w-16 flex-shrink-0 pr-6 pl-6 text-right font-medium tabular-nums select-none",
-                    textClassName
-                  )}
+                  data-slot="code-gutter"
+                  className="sticky left-0 z-10 w-16 flex-shrink-0 pr-6 pl-6 text-right font-medium tabular-nums select-none"
                   style={{
                     fontFamily: monoFontFamily,
                     color: lineNumberColor,
@@ -483,12 +490,13 @@ export function Code({
   adaptiveTheme,
   useThemeBackground,
   className,
-  textClassName = "text-[14px]",
   scrollbar = true,
   expandable = false,
   defaultExpanded = false,
   collapsedHeight = "12rem",
   expandLabel = "Expand",
+  style,
+  ...props
 }: CodeProps) {
   const [packageManager, setPackageManager] = React.useState<PackageManager>(
     defaultPackageManager
@@ -589,14 +597,18 @@ export function Code({
 
     return (
       <div
+        data-slot="code"
         className={cn(
           "bg-card text-card-foreground border-border/60 overflow-hidden rounded-[var(--radius-bg,var(--radius,0.5rem))] border [background-clip:padding-box]",
+          CODE_TEXT_SIZE,
           adaptiveTheme && "code-adaptive-theme",
           className
         )}
-        style={wrapperVars as React.CSSProperties}
+        style={{ ...(wrapperVars as React.CSSProperties), ...style }}
+        {...props}
       >
         <div
+          data-slot="code-header"
           className={cn(
             "border-border/60 flex items-center justify-between border-b px-3 py-2",
             !paintFromTheme && "bg-background"
@@ -612,7 +624,12 @@ export function Code({
                   : undefined
               }
             />
-            <div role="tablist" aria-label="Package manager" className="flex items-center">
+            <div
+              role="tablist"
+              aria-label="Package manager"
+              data-slot="code-tablist"
+              className="flex items-center"
+            >
               {keys.map((key) => (
                 <button
                   key={key}
@@ -620,11 +637,11 @@ export function Code({
                   role="tab"
                   aria-selected={active === key}
                   data-state={active === key ? "active" : "inactive"}
+                  data-slot="code-tab"
                   onClick={() => setPackageManager(key)}
                   className={cn(
                     "text-muted-foreground data-[state=active]:text-foreground h-7 rounded-[var(--radius-item,var(--radius,0.5rem))] px-2.5 font-medium transition-colors",
-                    "outline-none focus-visible:ring-1 focus-visible:ring-[color:var(--focus-ring,#6B97FF)]",
-                    textClassName
+                    "outline-none focus-visible:ring-1 focus-visible:ring-[color:var(--focus-ring,#6B97FF)]"
                   )}
                   style={{
                     fontFamily: monoFontFamily,
@@ -647,7 +664,10 @@ export function Code({
             onTheme={paintFromTheme}
           />
         </div>
-        <div className={cn("overflow-x-auto", !scrollbar && "scrollbar-hide")}>
+        <div
+          data-slot="code-body"
+          className={cn("overflow-x-auto", !scrollbar && "scrollbar-hide")}
+        >
           <div
             className={cn("relative py-4", !paintFromTheme && "bg-card")}
             style={
@@ -669,10 +689,10 @@ export function Code({
                 getTokenProps,
               }) => (
                 <pre
+                  data-slot="code-pre"
                   className={cn(
                     highlightClassName,
-                    "w-full overflow-x-auto px-4 leading-relaxed font-normal",
-                    textClassName
+                    "w-full overflow-x-auto px-4 leading-relaxed font-normal"
                   )}
                   style={{
                     ...style,
@@ -702,39 +722,32 @@ export function Code({
 
   if (!actualCode) return null
 
-  // A `text-*` utility passed in className is a font-size override for the code
-  // itself, so it wins over textClassName rather than landing on the wrapper.
-  const classNames = className?.split(" ") ?? []
-  const hasClassPrefix = (prefix: string) =>
-    classNames.some((c) => c.startsWith(prefix))
-  const textSizeClasses = classNames.filter((c) => c.startsWith("text-"))
-  const effectiveTextClassName = textSizeClasses.length
-    ? textSizeClasses.join(" ")
-    : textClassName
-
   const highlighted = (
     <HighlightedCode
       code={actualCode}
       language={actualLanguage}
       theme={selectedTheme}
       showLineNumbers={showLineNumbers}
-      textClassName={effectiveTextClassName}
     />
   )
 
   return (
     <div
+      data-slot="code"
       className={cn(
         "pointer-events-auto w-full max-w-full overflow-hidden",
-        !hasClassPrefix("border") && "border-border/60 border [background-clip:padding-box]",
-        !hasClassPrefix("rounded") && "rounded-[var(--radius-bg,var(--radius,0.5rem))]",
+        "border-border/60 border [background-clip:padding-box]",
+        "rounded-[var(--radius-bg,var(--radius,0.5rem))]",
+        CODE_TEXT_SIZE,
         adaptiveTheme && "code-adaptive-theme",
         className
       )}
-      style={wrapperVars as React.CSSProperties}
+      style={{ ...(wrapperVars as React.CSSProperties), ...style }}
+      {...props}
     >
       {filename && (
         <figcaption
+          data-slot="code-header"
           className={cn(
             "border-border/60 flex items-center justify-between border-b px-4 py-2.5",
             !paintFromTheme && "bg-background"
@@ -750,10 +763,10 @@ export function Code({
           }}
         >
           <div
+            data-slot="code-filename"
             className={cn(
               "flex items-center gap-2",
-              chromeRestingTone(paintFromTheme),
-              effectiveTextClassName
+              chromeRestingTone(paintFromTheme)
             )}
           >
             {/* The file badge is a solid shape where the name beside it is
@@ -793,6 +806,7 @@ export function Code({
 
         {expandable ? (
           <div
+            data-slot="code-body"
             className={cn(
               "relative w-full transition-all",
               isExpanded ? "overflow-auto" : "overflow-hidden",
@@ -807,6 +821,7 @@ export function Code({
           </div>
         ) : (
           <div
+            data-slot="code-body"
             className={cn(
               "relative max-h-[450px] w-full overflow-auto",
               !scrollbar && "scrollbar-hide"
@@ -834,6 +849,7 @@ export function Code({
           >
             <Button
               type="button"
+              data-slot="code-expand"
               variant="tertiary"
               size="compact"
               onClick={() => setIsExpanded(true)}

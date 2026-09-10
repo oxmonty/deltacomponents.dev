@@ -12,6 +12,7 @@ import DemoCodeCodeBasic from "@/content/demos/code/code-basic";
 import DemoCodeCodeCustomTheme from "@/content/demos/code/code-custom-theme";
 import DemoCodeCodeDemo from "@/content/demos/code/code-demo";
 import DemoCodeCodeExpandable from "@/content/demos/code/code-expandable";
+import DemoCodeCodeOverrideStyling from "@/content/demos/code/code-override-styling";
 import DemoCodeCodePackageManagers from "@/content/demos/code/code-package-managers";
 import DemoGlyphGlyphBasic from "@/content/demos/glyph/glyph-basic";
 import DemoGlyphGlyphLabel from "@/content/demos/glyph/glyph-label";
@@ -79,6 +80,10 @@ export const demos: Record<string, DemoEntry> = {
   "code-expandable": {
     Component: DemoCodeCodeExpandable,
     source: "import { Code } from \"@/components/ui/code\";\n\nconst LONG_SAMPLE = `import { useEffect, useState } from \"react\";\n\nexport function useDebounced<T>(value: T, delay = 200): T {\n  const [debounced, setDebounced] = useState(value);\n\n  useEffect(() => {\n    const timer = setTimeout(() => setDebounced(value), delay);\n    return () => clearTimeout(timer);\n  }, [value, delay]);\n\n  return debounced;\n}\n\nexport function useOnline(): boolean {\n  const [online, setOnline] = useState(true);\n\n  useEffect(() => {\n    const update = () => setOnline(navigator.onLine);\n    update();\n    window.addEventListener(\"online\", update);\n    window.addEventListener(\"offline\", update);\n    return () => {\n      window.removeEventListener(\"online\", update);\n      window.removeEventListener(\"offline\", update);\n    };\n  }, []);\n\n  return online;\n}`;\n\nexport default function CodeExpandable() {\n  return (\n    <div className=\"w-full max-w-[520px]\">\n      <Code\n        filename=\"hooks.ts\"\n        language=\"typescript\"\n        code={LONG_SAMPLE}\n        expandable\n        collapsedHeight=\"10rem\"\n      />\n    </div>\n  );\n}",
+  },
+  "code-override-styling": {
+    Component: DemoCodeCodeOverrideStyling,
+    source: "import { Code } from \"@/components/ui/code\";\n\nconst SAMPLE = `export function greet(name: string) {\n  return \\`Hello, \\${name}!\\`;\n}`;\n\nexport default function CodeOverrideStyling() {\n  return (\n    <div className=\"flex w-full max-w-[520px] flex-col gap-6\">\n      <Code language=\"typescript\" filename=\"greet.ts\" code={SAMPLE} />\n\n      {/* One className does all four: the type size (inherited by the code,\n          the gutter and the filename together), the corner, the border, and\n          the header bar reached through its data-slot. */}\n      <Code\n        language=\"typescript\"\n        filename=\"greet.ts\"\n        code={SAMPLE}\n        className=\"rounded-2xl border-2 border-dashed text-[12px] **:data-[slot=code-header]:bg-amber-500/10\"\n      />\n    </div>\n  );\n}",
   },
   "code-package-managers": {
     Component: DemoCodeCodePackageManagers,
