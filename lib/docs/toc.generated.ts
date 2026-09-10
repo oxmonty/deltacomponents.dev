@@ -140,18 +140,13 @@ export const TOC: Record<string, TocEntry[]> = {
   ],
   "/docs": [
     {
-      "id": "decoupled-by-design",
-      "text": "Decoupled by design",
-      "depth": 2
-    },
-    {
       "id": "how-to-use-it",
       "text": "How to use it",
       "depth": 2
     },
     {
-      "id": "values",
-      "text": "Values",
+      "id": "text-first",
+      "text": "Text first",
       "depth": 2
     }
   ],
@@ -189,6 +184,11 @@ export const TOC: Record<string, TocEntry[]> = {
     {
       "id": "grid",
       "text": "Grid",
+      "depth": 2
+    },
+    {
+      "id": "animated-images",
+      "text": "Animated images",
       "depth": 2
     },
     {

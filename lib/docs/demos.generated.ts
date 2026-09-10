@@ -18,6 +18,7 @@ import DemoGlyphGlyphBasic from "@/content/demos/glyph/glyph-basic";
 import DemoGlyphGlyphLabel from "@/content/demos/glyph/glyph-label";
 import DemoGlyphGlyphSizes from "@/content/demos/glyph/glyph-sizes";
 import DemoGlyphGlyphVariants from "@/content/demos/glyph/glyph-variants";
+import DemoProductCardProductCardAnimated from "@/content/demos/product-card/product-card-animated";
 import DemoProductCardProductCardBadge from "@/content/demos/product-card/product-card-badge";
 import DemoProductCardProductCardBasic from "@/content/demos/product-card/product-card-basic";
 import DemoProductCardProductCardDemo from "@/content/demos/product-card/product-card-demo";
@@ -106,6 +107,10 @@ export const demos: Record<string, DemoEntry> = {
   "glyph-variants": {
     Component: DemoGlyphGlyphVariants,
     source: "import { Check, Flame, Zap } from \"lucide-react\";\nimport { Glyph } from \"@/components/ui/glyph\";\n\nfunction Specimen({\n  children,\n  caption,\n}: {\n  children: React.ReactNode;\n  caption: string;\n}) {\n  return (\n    <div className=\"flex flex-col items-center gap-2\">\n      {children}\n      <span className=\"text-caption text-muted-foreground\">{caption}</span>\n    </div>\n  );\n}\n\n// Icons come from lucide here, which is the point: Glyph only owns the\n// shape, the consumer brings whatever icon library they already use.\nexport default function GlyphVariants() {\n  return (\n    <div className=\"flex items-center gap-8\">\n      <Specimen caption=\"Verified\">\n        <Glyph mask=\"rosette\" className=\"size-8 text-[#1d9bf0]\">\n          <Check />\n        </Glyph>\n      </Specimen>\n      <Specimen caption=\"Streak\">\n        <Glyph mask=\"circle\" className=\"size-8 text-orange-500\">\n          <Flame />\n        </Glyph>\n      </Specimen>\n      <Specimen caption=\"Premium\">\n        <Glyph mask=\"squircle\" className=\"size-8 text-violet-500\">\n          <Zap />\n        </Glyph>\n      </Specimen>\n    </div>\n  );\n}",
+  },
+  "product-card-animated": {
+    Component: DemoProductCardProductCardAnimated,
+    source: "import { useState } from \"react\";\nimport {\n  ProductCard,\n  ProductCardContent,\n  ProductCardHeader,\n  ProductCardImage,\n  ProductCardMetric,\n  ProductCardSubtitle,\n  ProductCardTitle,\n} from \"@/components/ui/product-card\";\n\nconst STILL = \"/images/products/hitmontop-still.png\";\nconst ANIMATED = \"/images/products/hitmontop.gif\";\n\nexport default function ProductCardAnimated() {\n  // A GIF has no play control, so swapping the source is the whole trick: the\n  // still frame rests, the animation starts from frame one on every hover.\n  // The handlers reach the image well because it spreads the DOM props it is\n  // given, like every other part of the card.\n  const [playing, setPlaying] = useState(false);\n\n  return (\n    <ProductCard>\n      <ProductCardImage\n        src={playing ? ANIMATED : STILL}\n        alt=\"Hitmontop\"\n        // Sits the sprite in a little further than the size step's own p-8.\n        imageClassName=\"p-12\"\n        onMouseEnter={() => setPlaying(true)}\n        onMouseLeave={() => setPlaying(false)}\n      />\n      <ProductCardContent>\n        <ProductCardHeader>\n          <ProductCardTitle>Hitmontop</ProductCardTitle>\n          <ProductCardSubtitle>Fighting type</ProductCardSubtitle>\n        </ProductCardHeader>\n        <ProductCardMetric>#237</ProductCardMetric>\n      </ProductCardContent>\n    </ProductCard>\n  );\n}",
   },
   "product-card-badge": {
     Component: DemoProductCardProductCardBadge,
