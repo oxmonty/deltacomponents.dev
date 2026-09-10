@@ -44,12 +44,11 @@ function useTabs() {
   return context;
 }
 
-interface TabsProps {
+interface TabsProps
+  extends Omit<React.ComponentProps<"div">, "defaultValue" | "onChange"> {
   defaultValue?: string;
   value?: string;
   onValueChange?: (value: string) => void;
-  children: React.ReactNode;
-  className?: string;
   variant?: TabVariant;
   size?: TabSize;
   /** Override the active indicator's classes — its background, or the
@@ -80,6 +79,7 @@ function Tabs({
   indicatorClassName,
   concentric = false,
   activationMode = "automatic",
+  ...props
 }: TabsProps) {
   const [internalValue, setInternalValue] = React.useState(defaultValue ?? "");
   const baseId = React.useId();
@@ -124,41 +124,40 @@ function Tabs({
 
   return (
     <TabsContext.Provider value={contextValue}>
-      <div data-slot="tabs" className={cn("flex flex-col gap-2", className)}>
+      <div
+        data-slot="tabs"
+        className={cn("flex flex-col gap-2", className)}
+        {...props}
+      >
         {children}
       </div>
     </TabsContext.Provider>
   );
 }
 
-const listHeight: Record<TabSize, string> = {
-  sm: "h-8",
-  default: "h-10",
-  lg: "h-12",
+/* Size presets. Each one sets only the LIST's box and type; everything inside
+ * derives from that — the triggers stretch to the list's height, the indicator
+ * and the hover wash inset to its padding, and every label inherits its font
+ * size.
+ *
+ * That is what makes `size` a preset rather than a separate axis:
+ * `className="h-12 text-sm"` on TabsList moves the strip exactly the way a
+ * size step does. Five per-part height tables made that impossible — an `h-*`
+ * from outside reached the list and nothing else, so the triggers stayed at
+ * whatever literal their own table held and the strip came apart. */
+const listSize: Record<TabSize, string> = {
+  sm: "h-8 text-[13px]",
+  default: "h-10 text-[13px]",
+  lg: "h-12 text-subtitle",
 };
 
-const hoverHeight: Record<TabSize, string> = {
-  sm: "h-6",
-  default: "h-7",
-  lg: "h-9",
-};
-
-const hoverOffset: Record<TabSize, string> = {
-  sm: "-1px",
-  default: "-2px",
-  lg: "-3px",
-};
-
+/* The one thing that cannot be derived: the underline's weight is a design
+ * choice, not a function of the row's height. Override it through
+ * `indicatorClassName`. */
 const underlineThickness: Record<TabSize, string> = {
   sm: "h-[2px]",
   default: "h-[3px]",
   lg: "h-[4px]",
-};
-
-const indicatorHeight: Record<TabSize, string> = {
-  sm: "h-6",
-  default: "h-8",
-  lg: "h-10",
 };
 
 /** Outer (list) and inner (trigger, indicator) radius classes.
@@ -190,12 +189,9 @@ function radii(concentric: boolean) {
 const PLACED_TRANSITION =
   "group-data-[placed=true]/tabs:transition-[translate,width] group-data-[placed=true]/tabs:duration-(--motion-moderate) group-data-[placed=true]/tabs:ease-spring";
 
-interface TabsListProps {
-  children: React.ReactNode;
-  className?: string;
-}
+type TabsListProps = React.ComponentProps<"div">;
 
-function TabsList({ children, className }: TabsListProps) {
+function TabsList({ children, className, ref, ...props }: TabsListProps) {
   const {
     activeTab,
     variant,
@@ -214,6 +210,17 @@ function TabsList({ children, className }: TabsListProps) {
 
   const listRef = React.useRef<HTMLDivElement>(null);
   const placedRef = React.useRef(false);
+
+  // The list measures itself, so it needs its own ref — but a caller may want
+  // one too (to scroll the strip, or measure it). Both get the node.
+  const setListRef = React.useCallback(
+    (el: HTMLDivElement | null) => {
+      listRef.current = el;
+      if (typeof ref === "function") ref(el);
+      else if (ref) ref.current = el;
+    },
+    [ref]
+  );
 
   // Re-measures the active trigger's box whenever it changes identity, and
   // keeps watching it (and the list) for as long as it stays active — a
@@ -329,15 +336,19 @@ function TabsList({ children, className }: TabsListProps) {
 
   return (
     <div
-      ref={listRef}
+      ref={setListRef}
       data-slot="tabs-list"
       role="tablist"
       onKeyDown={handleKeyDown}
       onPointerOver={handlePointerOver}
       onPointerLeave={handlePointerLeave}
+      {...props}
       className={cn(
-        "text-muted-foreground group/tabs relative inline-flex items-center",
-        listHeight[size],
+        // items-stretch, not items-center: it is what makes every trigger
+        // fill the list's height, so the list's `h-*` is the only height in
+        // the strip and an override of it carries the triggers along.
+        "text-muted-foreground group/tabs relative inline-flex items-stretch",
+        listSize[size],
         variant === "default" && ["bg-muted w-fit justify-center p-1", outer],
         variant === "ghost" && "w-fit justify-center gap-1 bg-transparent p-0",
         variant === "underline" &&
@@ -354,32 +365,30 @@ function TabsList({ children, className }: TabsListProps) {
       {variant === "underline" && (
         <div
           aria-hidden="true"
+          data-slot="tabs-hover"
           className={cn(
-            "bg-muted pointer-events-none absolute z-0 left-0 w-(--tab-hover-w) opacity-0",
+            // Insets rather than a height table, so the wash follows whatever
+            // height the list is given. The extra 2px at the bottom keeps it
+            // clear of the underline bar it shares the row with.
+            "bg-muted pointer-events-none absolute top-1 bottom-1.5 z-0 left-0",
+            "w-(--tab-hover-w) translate-x-(--tab-hover-x) opacity-0",
             "group-data-[tab-hover=true]/tabs:opacity-100",
             PLACED_TRANSITION,
-            hoverHeight[size],
             inner
           )}
-          // `translate` (not the `translate-x-*` utility) so the dynamic X
-          // offset and the fixed -50% vertical centering combine in the one
-          // CSS property they share, instead of one silently overriding the
-          // other.
-          style={{
-            top: `calc(50% + ${hoverOffset[size]})`,
-            translate: "var(--tab-hover-x, 0px) -50%",
-          }}
         />
       )}
 
       {(variant === "default" || variant === "ghost") && (
         <div
           aria-hidden="true"
+          data-slot="tabs-indicator"
           className={cn(
-            "absolute z-0 left-0 w-(--tab-w) translate-x-(--tab-x)",
+            // inset-y-1 is the list's own 4px tray, so the pill tracks the
+            // list's height instead of a table of its own.
+            "absolute inset-y-1 z-0 left-0 w-(--tab-w) translate-x-(--tab-x)",
             "hidden group-data-[placed=true]/tabs:block",
             PLACED_TRANSITION,
-            indicatorHeight[size],
             inner,
             variant === "ghost" ? "bg-muted" : pill,
             indicatorClassName
@@ -390,6 +399,7 @@ function TabsList({ children, className }: TabsListProps) {
       {variant === "underline" && (
         <div
           aria-hidden="true"
+          data-slot="tabs-indicator"
           className={cn(
             "bg-foreground absolute bottom-0 z-10 left-0 w-(--tab-w) translate-x-(--tab-x)",
             "hidden group-data-[placed=true]/tabs:block",
@@ -409,120 +419,135 @@ function TabsList({ children, className }: TabsListProps) {
 // `--control-*` tokens in globals.css). `lg` steps the type up as well as the box — `text-body` is
 // 13px in this ladder, the same as `text-caption`, so leaving it there gave the
 // large variant a taller row with a label no bigger than the small one's.
-const triggerSize: Record<TabSize, string> = {
-  sm: "h-7 px-2.5 py-1 text-[13px]",
-  default: "h-8 px-2.5 py-1.5 text-[13px]",
-  lg: "h-10 px-3.5 py-2 text-subtitle",
+// Padding only. The height comes from the list (the triggers stretch to it)
+// and the label size is inherited, so a `text-*` or `h-*` on TabsList — or on
+// one trigger — lands instead of losing to a literal written here.
+const triggerPadding: Record<TabSize, string> = {
+  sm: "px-2.5",
+  default: "px-2.5",
+  lg: "px-3.5",
 };
 
-const underlineTriggerSize: Record<TabSize, string> = {
-  sm: "h-9 px-2.5 pt-2 pb-2.5 text-[13px]",
-  default: "h-10 px-3 pt-2 pb-3 text-[13px]",
-  lg: "h-12 px-4 pt-2.5 pb-4 text-subtitle",
+// The underline's label rides high in its row so the bar has somewhere to sit,
+// which is the one place vertical padding still does real work.
+const underlineTriggerPadding: Record<TabSize, string> = {
+  sm: "px-2.5 pt-2 pb-2.5",
+  default: "px-3 pt-2 pb-3",
+  lg: "px-4 pt-2.5 pb-4",
 };
 
-interface TabsTriggerProps {
+interface TabsTriggerProps extends React.ComponentProps<"button"> {
   value: string;
-  children: React.ReactNode;
-  className?: string;
-  disabled?: boolean;
   icon?: React.ReactNode;
 }
 
-const TabsTrigger = React.forwardRef<HTMLButtonElement, TabsTriggerProps>(
-  ({ value, children, className, disabled = false, icon }, forwardedRef) => {
-    const { activeTab, setActiveTab, variant, size, concentric, baseId, triggerElements } =
-      useTabs();
-    const { inner } = radii(concentric);
-    const isActive = activeTab === value;
+function TabsTrigger({
+  value,
+  children,
+  className,
+  disabled = false,
+  icon,
+  onClick,
+  ref,
+  ...props
+}: TabsTriggerProps) {
+  const { activeTab, setActiveTab, variant, size, concentric, baseId, triggerElements } =
+    useTabs();
+  const { inner } = radii(concentric);
+  const isActive = activeTab === value;
 
-    // Registers this trigger by its value, not a mount-order index, so a
-    // conditionally-rendered or reordered tab can't leave a stale slot behind
-    // or drift the indicator to the wrong element. The cleanup (React 19 ref
-    // callbacks may return one) removes it again on unmount.
-    const setTabRef = React.useCallback<React.RefCallback<HTMLButtonElement>>(
-      (el) => {
-        if (el) triggerElements.set(value, el);
-        if (typeof forwardedRef === "function") forwardedRef(el);
-        else if (forwardedRef) forwardedRef.current = el;
-        return () => {
-          triggerElements.delete(value);
-          if (typeof forwardedRef === "function") forwardedRef(null);
-        };
-      },
-      [value, triggerElements, forwardedRef]
-    );
+  // Registers this trigger by its value, not a mount-order index, so a
+  // conditionally-rendered or reordered tab can't leave a stale slot behind
+  // or drift the indicator to the wrong element. The cleanup (React 19 ref
+  // callbacks may return one) removes it again on unmount.
+  const setTabRef = React.useCallback<React.RefCallback<HTMLButtonElement>>(
+    (el) => {
+      if (el) triggerElements.set(value, el);
+      if (typeof ref === "function") ref(el);
+      else if (ref) ref.current = el;
+      return () => {
+        triggerElements.delete(value);
+        if (typeof ref === "function") ref(null);
+        else if (ref) ref.current = null;
+      };
+    },
+    [value, triggerElements, ref]
+  );
 
-    return (
-      <button
-        ref={setTabRef}
-        id={`${baseId}-trigger-${value}`}
-        type="button"
-        role="tab"
-        aria-selected={isActive}
-        aria-disabled={disabled}
-        aria-controls={`${baseId}-panel-${value}`}
-        disabled={disabled}
-        // Roving tabindex: only the selected trigger is in the Tab order —
-        // Left/Right/Home/End (handled on the list) move focus among the rest.
-        tabIndex={isActive ? 0 : -1}
-        data-state={isActive ? "active" : "inactive"}
-        data-slot="tabs-trigger"
-        data-value={value}
-        onClick={() => {
-          if (disabled) return;
-          setActiveTab(value);
-        }}
-        className={cn(
-          "relative z-10 inline-flex items-center justify-center gap-1.5 font-medium whitespace-nowrap",
-          "transition-colors duration-80",
-          // Ring on the element, no offset: Button's treatment, and inside the
-          // list's 4px tray an offset ring would spill over the tray's edge.
-          "outline-none focus-visible:ring-1 focus-visible:ring-[color:var(--focus-ring,#6B97FF)]",
-          "disabled:pointer-events-none disabled:opacity-50",
-          inner,
-          (variant === "default" || variant === "ghost") && [
-            triggerSize[size],
-            // The visible pill is smaller than the row it sits in, which left
-            // 4px of dead target above and below it. The pseudo-element takes
-            // the hit area back out to the list's full height without touching
-            // the pill — horizontal only at the edges, so neighbouring targets
-            // never overlap.
-            "after:absolute after:inset-x-0 after:-inset-y-1 after:content-['']",
-            isActive
-              ? "text-foreground"
-              : "text-muted-foreground hover:text-foreground/80",
-          ],
-          variant === "underline" && [
-            underlineTriggerSize[size],
-            isActive
-              ? "text-foreground"
-              : "text-muted-foreground hover:text-foreground",
-          ],
-          className
+  return (
+    <button
+      ref={setTabRef}
+      // Spread first: everything after it — role, the id the panel's
+      // aria-labelledby points at, aria-selected, the roving tabindex — is
+      // what makes this a tab rather than a button, and none of it is a
+      // caller's to overwrite. Anything else (aria-label, data-*, onFocus)
+      // still lands.
+      {...props}
+      id={`${baseId}-trigger-${value}`}
+      type="button"
+      role="tab"
+      aria-selected={isActive}
+      aria-disabled={disabled}
+      aria-controls={`${baseId}-panel-${value}`}
+      disabled={disabled}
+      // Roving tabindex: only the selected trigger is in the Tab order —
+      // Left/Right/Home/End (handled on the list) move focus among the rest.
+      tabIndex={isActive ? 0 : -1}
+      data-state={isActive ? "active" : "inactive"}
+      data-slot="tabs-trigger"
+      data-value={value}
+      onClick={(event) => {
+        if (disabled) return;
+        setActiveTab(value);
+        // After ours, not instead of it: spreading a caller's onClick over
+        // the handler that selects the tab would leave the trigger inert.
+        onClick?.(event);
+      }}
+      className={cn(
+        "relative z-10 inline-flex items-center justify-center gap-1.5 font-medium whitespace-nowrap",
+        "transition-colors duration-80",
+        // Ring on the element, no offset: Button's treatment, and inside the
+        // list's 4px tray an offset ring would spill over the tray's edge.
+        "outline-none focus-visible:ring-1 focus-visible:ring-[color:var(--focus-ring,#6B97FF)]",
+        "disabled:pointer-events-none disabled:opacity-50",
+        inner,
+        (variant === "default" || variant === "ghost") && [
+          triggerPadding[size],
+          // The visible pill is smaller than the row it sits in, which left
+          // 4px of dead target above and below it. The pseudo-element takes
+          // the hit area back out to the list's full height without touching
+          // the pill — horizontal only at the edges, so neighbouring targets
+          // never overlap.
+          "after:absolute after:inset-x-0 after:-inset-y-1 after:content-['']",
+          isActive
+            ? "text-foreground"
+            : "text-muted-foreground hover:text-foreground/80",
+        ],
+        variant === "underline" && [
+          underlineTriggerPadding[size],
+          isActive
+            ? "text-foreground"
+            : "text-muted-foreground hover:text-foreground",
+        ],
+        className
+      )}
+    >
+      <span className="relative z-10 flex items-center gap-1.5">
+        {/* stroke-1.5 beside a medium label — the weight Button's icons rest
+            at. Lucide's default 2 reads bolder than the text beside it. */}
+        {icon && (
+          <span className="shrink-0 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:stroke-[1.5]">
+            {icon}
+          </span>
         )}
-      >
-        <span className="relative z-10 flex items-center gap-1.5">
-          {/* stroke-1.5 beside a medium label — the weight Button's icons rest
-              at. Lucide's default 2 reads bolder than the text beside it. */}
-          {icon && (
-            <span className="shrink-0 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:stroke-[1.5]">
-              {icon}
-            </span>
-          )}
-          {children}
-        </span>
-      </button>
-    );
-  }
-);
+        {children}
+      </span>
+    </button>
+  );
+}
 
-TabsTrigger.displayName = "TabsTrigger";
-
-interface TabsContentProps {
+interface TabsContentProps extends React.ComponentProps<"div"> {
   value: string;
-  children: React.ReactNode;
-  className?: string;
   /** Render this panel from the first render instead of waiting for it to
    *  become active — for crawlers, or content that must exist up front. */
   forceMount?: boolean;
@@ -533,6 +558,7 @@ function TabsContent({
   children,
   className,
   forceMount = false,
+  ...props
 }: TabsContentProps) {
   const { activeTab, baseId, activatedTabs } = useTabs();
   const isActive = activeTab === value;
@@ -546,6 +572,7 @@ function TabsContent({
 
   return (
     <div
+      {...props}
       id={`${baseId}-panel-${value}`}
       role="tabpanel"
       aria-labelledby={`${baseId}-trigger-${value}`}

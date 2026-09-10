@@ -9,7 +9,7 @@ import Content from "@/content/docs/introduction.mdx";
 
 export const metadata: Metadata = createMetadata({
   title: "Introduction",
-  description: "What Delta Components is, and how to install it.",
+  description: "What Delta Components is, and how to use it",
   path: "/docs",
 });
 
@@ -23,7 +23,7 @@ export default function DocsIndex() {
     <div className="flex flex-col gap-8 px-6">
       <DocHeader
         title="Introduction"
-        description="What Delta Components is, and how to install it."
+        description="What Delta Components is, and how to use it"
         prev={prev}
         next={next}
       />

@@ -1,4 +1,4 @@
-.PHONY: help install dev build start lint typecheck test test-install check registry demos gacp
+.PHONY: help install run dev build start lint typecheck test test-install check registry demos gacp
 
 # Default target - show help
 .DEFAULT_GOAL := help
@@ -17,6 +17,10 @@ help: ## Show this help message
 ## Dev:
 install: ## Install dependencies
 	bun install
+
+# Prerequisites run in order, so this is `install` then `dev` — the same
+# chaining `start: build` already uses.
+run: install dev ## Install dependencies and start the dev server
 
 dev: ## Start the development server
 	bun run dev

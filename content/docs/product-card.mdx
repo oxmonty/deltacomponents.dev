@@ -1,5 +1,5 @@
 ---
-description: "Compound card for commerce rows \u2014 image well, overlaid badge, and a title/subtitle/metric footer."
+description: "Compound card for commerce rows \u2014 image well, overlaid badge, and a title/subtitle/metric footer"
 ---
 
 import {
@@ -61,6 +61,22 @@ import {
 ## Grid
 
 <ComponentPreview name="product-card-grid" padding="compact" />
+
+## Preparing images
+
+The well is `object-contain` over a tinted ground, so a product shot with its
+background removed sits in it far better than a rectangular photo — and a
+transparent PNG is the only kind that works in both themes, where a
+white-background JPEG shows its corners the moment the page goes dark. Every
+example on this page uses one.
+
+On macOS you can cut one out without opening an editor: right-click the file in
+Finder and choose **Quick Actions → Remove Background**. It writes a new PNG
+with transparency beside the original. If it isn't in the menu, open **Quick
+Actions → Customize** and add it under Extensions — Apple's [guide to Quick
+Actions in the
+Finder](https://support.apple.com/guide/mac-help/perform-quick-actions-in-the-finder-mchl97ff9142/mac)
+covers both.
 
 ## Override Styling
 

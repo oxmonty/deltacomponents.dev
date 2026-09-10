@@ -91,8 +91,13 @@ export const TOC: Record<string, TocEntry[]> = {
   ],
   "/docs/contributing": [
     {
-      "id": "tbd",
-      "text": "TBD",
+      "id": "what-i-accept-and-what-i-dont",
+      "text": "What I accept and what I don't",
+      "depth": 2
+    },
+    {
+      "id": "how-to-contribute",
+      "text": "How to contribute",
       "depth": 2
     }
   ],
@@ -135,8 +140,18 @@ export const TOC: Record<string, TocEntry[]> = {
   ],
   "/docs": [
     {
-      "id": "tbd",
-      "text": "TBD",
+      "id": "decoupled-by-design",
+      "text": "Decoupled by design",
+      "depth": 2
+    },
+    {
+      "id": "how-to-use-it",
+      "text": "How to use it",
+      "depth": 2
+    },
+    {
+      "id": "values",
+      "text": "Values",
       "depth": 2
     }
   ],
@@ -174,6 +189,11 @@ export const TOC: Record<string, TocEntry[]> = {
     {
       "id": "grid",
       "text": "Grid",
+      "depth": 2
+    },
+    {
+      "id": "preparing-images",
+      "text": "Preparing images",
       "depth": 2
     },
     {
@@ -271,6 +291,11 @@ export const TOC: Record<string, TocEntry[]> = {
     {
       "id": "concentric",
       "text": "Concentric",
+      "depth": 2
+    },
+    {
+      "id": "override-styling",
+      "text": "Override Styling",
       "depth": 2
     },
     {

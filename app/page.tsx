@@ -17,7 +17,7 @@ export default function Page() {
       <div className="w-full max-w-[680px] mx-auto py-20 sm:py-28 px-6">
         <DocHeader
           title="Delta Components"
-          description="A curated collection of UI components I've refined over the years, the ones that make the difference. Free and open source via the shadcn registry."
+          description="A curated collection of UI components I've refined over the years, the ones that make the difference. Free and open source, via the shadcn registry"
           prev={prev}
           next={next}
         >

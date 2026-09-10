@@ -1,12 +1,28 @@
-{/* TBD: placeholder copy. The inherited pitch has been removed — write the
-    real introduction here, then delete this block. */}
+import { Code } from "@/registry/ui/code";
+import { installUrl } from "@/lib/registry-url";
 
-## TBD
+Delta Components is a small, curated set of UI components distributed through the [shadcn](https://ui.shadcn.com) registry. Each one exists because I needed it in more than one project and found it difficult to get right more than once.
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
-incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
-nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+## Decoupled by design
 
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
-fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
-culpa qui officia deserunt mollit anim id est laborum.
+The goal of this registry is to curate the components nearly every project needs but people put off building because of their complexity. Once built, components like these tend to become coupled to the design system they were built in. This registry is an effort to keep them decoupled and extensible.
+
+## How to use it
+
+Each component page includes a live preview, the install command, usage, and props. Use the Customise panel to preview components against your theme, radius, size, and icon set (Lucide, Tabler, Phosphor, HugeIcons, or Untitled UI) before you add them.
+
+Installing one is a single command, and every component page prints its own ready to copy:
+
+<Code
+  language="bash"
+  showLineNumbers={false}
+  code={`npx shadcn@latest add ${installUrl("{componentName}")}`}
+/>
+
+The CLI writes the component into `components/ui/` and anything it depends on into `lib/`, so what lands in your project is yours to edit.
+
+## Values
+
+[Text is _still_ the strongest form of media on the web](https://motherfuckingwebsite.com/). It loads fastest, it's searchable, it's accessible by default, and it survives every screen size and connection. Images, video, and animation are secondary: they support the text, and they earn their place only when they carry something the text can't.
+
+Every component here is built on that premise. Typography, spacing, and legibility come first; motion and imagery are additive. If you're building for the web, your focus should be there. Delta Components is for the polish.

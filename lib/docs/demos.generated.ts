@@ -28,6 +28,7 @@ import DemoProductCardProductCardSizes from "@/content/demos/product-card/produc
 import DemoTabsTabsConcentric from "@/content/demos/tabs/tabs-concentric";
 import DemoTabsTabsDemo from "@/content/demos/tabs/tabs-demo";
 import DemoTabsTabsGhost from "@/content/demos/tabs/tabs-ghost";
+import DemoTabsTabsOverrideStyling from "@/content/demos/tabs/tabs-override-styling";
 import DemoTabsTabsSizes from "@/content/demos/tabs/tabs-sizes";
 import DemoTabsTabsUnderline from "@/content/demos/tabs/tabs-underline";
 import DemoTabsTabsWithIcons from "@/content/demos/tabs/tabs-with-icons";
@@ -145,6 +146,10 @@ export const demos: Record<string, DemoEntry> = {
   "tabs-ghost": {
     Component: DemoTabsTabsGhost,
     source: "import { Tabs, TabsContent, TabsList, TabsTrigger } from \"@/components/ui/tabs\";\n\nconst PANELS = [\n  { value: \"account\", copy: \"Manage your account settings.\" },\n  { value: \"password\", copy: \"Change your password here.\" },\n  { value: \"settings\", copy: \"Configure your preferences.\" },\n] as const;\n\nconst LABELS: Record<string, string> = {\n  account: \"Account\",\n  password: \"Password\",\n  settings: \"Settings\",\n};\n\nexport default function TabsGhost() {\n  return (\n    <Tabs defaultValue=\"account\" variant=\"ghost\" className=\"w-fit max-w-full\">\n      <TabsList>\n        {PANELS.map((panel) => (\n          <TabsTrigger key={panel.value} value={panel.value}>\n            {LABELS[panel.value]}\n          </TabsTrigger>\n        ))}\n      </TabsList>\n      <div className=\"relative min-h-[24px]\">\n        {PANELS.map((panel) => (\n          <TabsContent\n            key={panel.value}\n            value={panel.value}\n            className=\"absolute inset-x-0 top-0\"\n          >\n            <p className=\"text-caption text-muted-foreground\">{panel.copy}</p>\n          </TabsContent>\n        ))}\n      </div>\n    </Tabs>\n  );\n}",
+  },
+  "tabs-override-styling": {
+    Component: DemoTabsTabsOverrideStyling,
+    source: "import { Tabs, TabsContent, TabsList, TabsTrigger } from \"@/components/ui/tabs\";\n\nexport default function TabsOverrideStyling() {\n  return (\n    // `data-radius` scopes the shape system to this subtree. The list takes\n    // the container radius and the triggers the element radius, so the corners\n    // stay nested without either being written out here.\n    <div data-radius=\"pill\" className=\"w-full max-w-[380px]\">\n      <Tabs defaultValue=\"monthly\" concentric>\n        {/* The list's height and type size are the only ones in the strip —\n            the triggers stretch to the first and inherit the second. */}\n        <TabsList className=\"h-11 w-full p-1 text-sm\">\n          <TabsTrigger value=\"monthly\" className=\"flex-1\">\n            Monthly\n          </TabsTrigger>\n          <TabsTrigger value=\"yearly\" className=\"flex-1\">\n            Yearly\n          </TabsTrigger>\n        </TabsList>\n        <TabsContent value=\"monthly\" className=\"text-muted-foreground text-sm\">\n          $12 per user, billed monthly.\n        </TabsContent>\n        <TabsContent value=\"yearly\" className=\"text-muted-foreground text-sm\">\n          $9 per user, billed annually. Two months free.\n        </TabsContent>\n      </Tabs>\n    </div>\n  );\n}",
   },
   "tabs-sizes": {
     Component: DemoTabsTabsSizes,

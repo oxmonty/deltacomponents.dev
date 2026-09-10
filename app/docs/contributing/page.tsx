@@ -13,7 +13,7 @@ export default function ContributingPage() {
     <div className="flex flex-col gap-8 px-6">
       <DocHeader
         title="Contributing"
-        description="Contributions are welcome, within a deliberately narrow scope."
+        description="Contributions are welcome, within a narrow scope"
         prev={prev}
         next={next}
       />

@@ -1,5 +1,5 @@
 ---
-description: "Tab navigation with underline, background, and ghost variants, and an indicator that follows the shape system."
+description: "Tab navigation with underline, background, and ghost variants, and an indicator that follows the shape system"
 ---
 
 import { tabsProps, listProps, triggerProps, contentProps, fromArrayProps } from "./tabs.props";
@@ -48,6 +48,32 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 ## Concentric
 
 <ComponentPreview name="tabs-concentric" />
+
+## Override Styling
+
+The list carries the only height and the only type size in the strip. Triggers
+stretch to the first and inherit the second, and the indicator insets to the
+list's own padding, so `className="h-11 text-sm"` on `TabsList` moves the whole
+control the way a `size` step does — `size` is a preset for those same values,
+not a separate axis.
+
+<ComponentPreview name="tabs-override-styling" align="top" />
+
+Radius rides the shape system rather than a utility: a `data-radius` scope
+gives the list the container radius and the triggers the element radius, which
+differ by exactly the list's 4px padding, so `concentric` corners stay nested
+without any arithmetic at the call site.
+
+Parts you hold no reference to are reachable by `data-slot`:
+
+| Slot | Element |
+| --- | --- |
+| `tabs` | The root wrapper |
+| `tabs-list` | The strip |
+| `tabs-trigger` | One tab |
+| `tabs-indicator` | The active pill, or the underline bar |
+| `tabs-hover` | The underline variant's hover wash |
+| `tabs-content` | One panel |
 
 ## API Reference
 

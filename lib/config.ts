@@ -43,7 +43,7 @@ export const site = {
   domain: new URL(url).host,
   url,
   description:
-    "A curated collection of UI components, free and open source via the shadcn registry.",
+    "A curated collection of UI components, free and open source, via the shadcn registry",
   /** owner/name — the star count and the GitHub button both hang off this. */
   repo: "oxmonty/deltacomponents.dev",
   author: {

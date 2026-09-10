@@ -428,6 +428,13 @@ html, body {
      color-scheme-driven canvastext default never shows through). */
   color: var(--foreground);
   font-family: var(--font-sans);
+  /* The global leading. Preflight sets 1.5 on <html>; this tightens it a
+     notch. It reaches almost everything because the type-scale roles
+     (text-body, text-prose, …) set a font-size and nothing else, so they
+     inherit their leading from here — where a built-in Tailwind size utility
+     would bring its own paired line-height and ignore this. A component that
+     needs a specific rhythm still says so with `leading-*`. */
+  line-height: 1.4;
   /* Inherited by everything (portals included) — a `subpixel-antialiased`
      utility on a subtree is the only way to opt back out. */
   -webkit-font-smoothing: antialiased;

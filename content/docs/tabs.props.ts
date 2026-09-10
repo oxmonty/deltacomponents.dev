@@ -5,7 +5,7 @@ export const tabsProps: PropDef[] = [
   { name: "value", type: "string", description: "Selected tab. Pass it with `onValueChange` to control the component." },
   { name: "onValueChange", type: "(value: string) => void", description: "Called with the new value when a trigger is clicked." },
   { name: "variant", type: '"default" | "underline" | "ghost"', default: '"default"', description: "`default` fills a tray, `ghost` drops the tray, `underline` swaps the pill for a bar." },
-  { name: "size", type: '"sm" | "default" | "lg"', default: '"default"', description: "Drives the list height, trigger padding, and underline thickness together." },
+  { name: "size", type: '"sm" | "default" | "lg"', default: '"default"', description: "A preset for the list's height and type size, which the triggers stretch to and inherit. `className=\"h-11 text-sm\"` on `TabsList` does the same job for a value the presets do not cover." },
   { name: "concentric", type: "boolean", default: "false", description: "Nest the radii so the list's corners sit concentric with the triggers'." },
   { name: "activationMode", type: '"automatic" | "manual"', default: '"automatic"', description: "`automatic` selects a tab as the arrow keys move focus onto it; `manual` only moves focus, and Enter/Space commits the selection." },
   { name: "indicatorClassName", type: "string", description: "Extra classes merged onto the active indicator — its background, or the underline bar's thickness (e.g. `h-0.5`)." },
@@ -13,11 +13,13 @@ export const tabsProps: PropDef[] = [
 
 export const listProps: PropDef[] = [
   { name: "children", type: "ReactNode", description: "TabsTrigger elements to render in the strip." },
-  { name: "className", type: "string", description: "Extra classes merged onto the tab strip." },
+  { name: "className", type: "string", description: "Merged onto the strip. It holds the only height and type size in the control, so an `h-*` or `text-*` here carries the triggers and the indicator with it." },
+  { name: "...props", type: 'React.ComponentProps<"div">', description: "Everything else lands on the strip, `ref` included — the list keeps its own for measurement and hands the node to yours as well." },
 ];
 
 export const triggerProps: PropDef[] = [
   { name: "value", type: "string", description: "Matches the `value` of the panel this trigger reveals." },
+  { name: "...props", type: 'React.ComponentProps<"button">', description: "Lands on the trigger, `ref` and `onClick` included — your handler runs after the one that selects the tab, rather than replacing it. The tab semantics (role, id, aria-selected, roving tabindex) are not overridable." },
   { name: "icon", type: "ReactNode", description: "Glyph rendered before the label, sized to 16px." },
   { name: "disabled", type: "boolean", default: "false", description: "Dims the trigger and stops it taking pointer events." },
 ];
@@ -33,7 +35,7 @@ export const fromArrayProps: PropDef[] = [
   { name: "value", type: "string", description: "Selected tab. Pass it with `onValueChange` to control the component." },
   { name: "onValueChange", type: "(value: string) => void", description: "Called with the new value when a trigger is clicked." },
   { name: "variant", type: '"default" | "underline" | "ghost"', default: '"default"', description: "`default` fills a tray, `ghost` drops the tray, `underline` swaps the pill for a bar." },
-  { name: "size", type: '"sm" | "default" | "lg"', default: '"default"', description: "Drives the list height, trigger padding, and underline thickness together." },
+  { name: "size", type: '"sm" | "default" | "lg"', default: '"default"', description: "A preset for the list's height and type size, which the triggers stretch to and inherit. `className=\"h-11 text-sm\"` on `TabsList` does the same job for a value the presets do not cover." },
   { name: "listClassName", type: "string", description: "Extra classes on the tab strip." },
   { name: "triggerClassName", type: "string", description: "Extra classes on every trigger." },
   { name: "contentClassName", type: "string", description: "Extra classes on every panel." },
