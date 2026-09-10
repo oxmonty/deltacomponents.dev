@@ -446,7 +446,12 @@ html, body {
    white-space-collapse + text-wrap-mode), which silently un-truncates every
    <p> that asks for it — CardDescription among them. */
 @layer base {
-  h1, h2, h3 {
+  /* Sub-headings only. `balance` evens a heading's lines by shortening them,
+     which on a phone leaves the page title sitting well short of the width it
+     has — the same call patrickprunty.com makes on its own article titles.
+     Body copy is never balanced or prettied: a paragraph wraps on the
+     browser's default. */
+  h2, h3 {
     text-wrap: balance;
   }
 

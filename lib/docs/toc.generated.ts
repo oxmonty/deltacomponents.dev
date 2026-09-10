@@ -5,6 +5,18 @@ import type { TocEntry } from "@/lib/docs/heading-id";
 
 /** Every page's headings, in reading order, keyed by route. */
 export const TOC: Record<string, TocEntry[]> = {
+  "/docs/alert": [
+    {
+      "id": "installation",
+      "text": "Installation",
+      "depth": 2
+    },
+    {
+      "id": "api-reference",
+      "text": "API Reference",
+      "depth": 2
+    }
+  ],
   "/docs/button": [
     {
       "id": "installation",
@@ -101,6 +113,18 @@ export const TOC: Record<string, TocEntry[]> = {
       "depth": 2
     }
   ],
+  "/docs/editor": [
+    {
+      "id": "installation",
+      "text": "Installation",
+      "depth": 2
+    },
+    {
+      "id": "api-reference",
+      "text": "API Reference",
+      "depth": 2
+    }
+  ],
   "/docs/glyph": [
     {
       "id": "installation",
@@ -147,6 +171,18 @@ export const TOC: Record<string, TocEntry[]> = {
     {
       "id": "text-first",
       "text": "Text first",
+      "depth": 2
+    }
+  ],
+  "/docs/mp3-player": [
+    {
+      "id": "installation",
+      "text": "Installation",
+      "depth": 2
+    },
+    {
+      "id": "api-reference",
+      "text": "API Reference",
       "depth": 2
     }
   ],

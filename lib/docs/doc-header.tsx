@@ -111,7 +111,7 @@ export function DocHeader({
           at 632px that cap cuts the line to ~50 characters, short of the
           comfortable 45-75 measure, and adds a line. Full width lands at ~63.
           Nothing collides: the arrows sit in the row above, not beside this. */}
-      <p className="text-prose text-muted-foreground text-pretty">{description}</p>
+      <p className="text-prose text-muted-foreground">{description}</p>
       {children}
     </div>
   );

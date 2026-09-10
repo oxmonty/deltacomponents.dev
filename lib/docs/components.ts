@@ -42,6 +42,9 @@ export const componentList: ComponentEntry[] = [
   { slug: "button", name: "Button", gridSize: "small" },
   { slug: "tooltip", name: "Tooltip", gridSize: "small" },
   { slug: "glyph", name: "Glyph", isNew: true, gridSize: "small", draft: true },
+  { slug: "editor", name: "Editor", gridSize: "large", draft: true },
+  { slug: "mp3-player", name: "MP3Player", gridSize: "medium", draft: true },
+  { slug: "alert", name: "Alert", gridSize: "small", draft: true },
 ];
 
 /** Drafts survive `next dev` so they can be worked on, and disappear from

@@ -9,16 +9,17 @@ Each component page includes a live preview, the install command, usage, and pro
 
 Installing one is a single command, and every component page prints its own ready to copy:
 
+{/* A fenced ```npx block is what turns Code into its package-manager
+    variant — it expands the one command into npm, yarn, pnpm and bun. */}
+
 <Code
-  language="bash"
-  showLineNumbers={false}
-  code={`npx shadcn@latest add ${installUrl("{componentName}")}`}
+  code={`\`\`\`npx\nshadcn@latest add ${installUrl("{componentName}")}\n\`\`\``}
 />
 
 The CLI writes the component into `components/ui/` and anything it depends on into `lib/`, so what lands in your project is yours to edit.
 
 ## Text first
 
-[Text is _still_ the strongest form of media on the web](https://motherfuckingwebsite.com/). It loads fastest, it's searchable, it's accessible by default, and it survives every screen size and connection. Images, video, and animation are secondary: they support the text, and they earn their place only when they carry something the text can't.
+[Text is still the strongest form of media on the web](https://motherfuckingwebsite.com/). It loads fastest, it's searchable, it's accessible by default, and it survives every screen size and connection. Images, video, and animation are secondary: they support the text, and they earn their place only when they carry something the text can't.
 
 Every component here is built on that premise. Typography, spacing, and legibility come first; motion and imagery are additive. If you're building for the web, your focus should be there. Delta Components is for the polish.
