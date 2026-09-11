@@ -145,10 +145,14 @@ function Tabs({
  * size step does. Five per-part height tables made that impossible — an `h-*`
  * from outside reached the list and nothing else, so the triggers stayed at
  * whatever literal their own table held and the strip came apart. */
+// Type reads the globals.css tokens with a fallback, the way Button does, so it
+// follows the compact size step and still sizes for a consumer without them:
+// `--control-text` is the 13px label step every control shares, and `lg` steps
+// up to `--fs-subtitle` so its taller row does not carry the small one's label.
 const listSize: Record<TabSize, string> = {
-  sm: "h-8 text-[13px]",
-  default: "h-10 text-[13px]",
-  lg: "h-12 text-subtitle",
+  sm: "h-8 text-[length:var(--control-text,13px)]",
+  default: "h-10 text-[length:var(--control-text,13px)]",
+  lg: "h-12 text-[length:var(--fs-subtitle,15px)]",
 };
 
 /* The one thing that cannot be derived: the underline's weight is a design
@@ -415,10 +419,6 @@ function TabsList({ children, className, ref, ...props }: TabsListProps) {
   );
 }
 
-// 13px is the control-label step the size system uses everywhere (see the
-// `--control-*` tokens in globals.css). `lg` steps the type up as well as the box — `text-body` is
-// 13px in this ladder, the same as `text-caption`, so leaving it there gave the
-// large variant a taller row with a label no bigger than the small one's.
 // Padding only. The height comes from the list (the triggers stretch to it)
 // and the label size is inherited, so a `text-*` or `h-*` on TabsList — or on
 // one trigger — lands instead of losing to a literal written here.
