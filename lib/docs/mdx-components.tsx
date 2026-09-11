@@ -155,7 +155,15 @@ export const mdxComponents: MDXComponents = {
   pre: ({ children }: ComponentProps<"pre">) => {
     const child = children as { props?: { className?: string; children?: string } };
     const language = child?.props?.className?.replace("language-", "") ?? "tsx";
-    return <Code language={language} code={String(child?.props?.children ?? "").trimEnd()} />;
+    // A terminal command is copied, never referred to by line.
+    const isShell = ["bash", "sh", "shell", "zsh", "console"].includes(language);
+    return (
+      <Code
+        language={language}
+        code={String(child?.props?.children ?? "").trimEnd()}
+        showLineNumbers={!isShell}
+      />
+    );
   },
   // Inline code only — `pre` above has already claimed the fenced kind.
   // No `code` mapping on purpose. Inline code is styled once, in globals.css
