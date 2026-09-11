@@ -772,6 +772,12 @@ const ROW_GAP = 4;
 const ROW_BADGE_INSET = 8;
 const ROW_ACTION_INSET = 6;
 
+// Semibold at the normal weight's optical size. `fontWeights.semibold` raises
+// opsz to hold the text's width, which also shortens the x-height (~1.2%), so
+// an active row read as smaller rather than just heavier. The ghost span below
+// already reserves the width, so the row does not need that compensation.
+const ACTIVE_WEIGHT = "'wght' 550, 'opsz' 14";
+
 function rowGutter(actionCount: number, hasBadge: boolean) {
   if (!actionCount && !hasBadge) return ROW_BASE_PAD;
   const actionsWidth = actionCount
@@ -901,7 +907,7 @@ function MenuRowLabel({
             and the negative margins cancel it out of the row's height. */}
         <span
           className="col-start-1 row-start-1 invisible truncate pt-[0.25em] -mt-[0.25em] pb-[0.25em] -mb-[0.25em] [text-box:trim-both_cap_alphabetic]"
-          style={{ fontVariationSettings: fontWeights.semibold }}
+          style={{ fontVariationSettings: ACTIVE_WEIGHT }}
           aria-hidden="true"
         >
           {label}
@@ -913,7 +919,7 @@ function MenuRowLabel({
             lit ? "text-foreground" : "text-muted-foreground"
           )}
           style={{
-            fontVariationSettings: emphasized ? fontWeights.semibold : fontWeights.normal,
+            fontVariationSettings: emphasized ? ACTIVE_WEIGHT : fontWeights.normal,
           }}
         >
           {label}
@@ -1267,7 +1273,7 @@ const SidebarMenuBadge = forwardRef<HTMLDivElement, SidebarMenuBadgeProps>(
           className
         )}
         style={{
-          fontVariationSettings: lit ? fontWeights.semibold : fontWeights.normal,
+          fontVariationSettings: lit ? ACTIVE_WEIGHT : fontWeights.normal,
         }}
         {...props}
       />
