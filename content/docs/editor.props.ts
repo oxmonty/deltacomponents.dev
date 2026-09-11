@@ -20,6 +20,6 @@ export const elementsProps: PropDef[] = [
   { name: "a", type: "EditorElement", default: '{ tag: "a", className: "underline underline-offset-2 decoration-muted-foreground" }', description: "The label of a `[link](url)`. The URL half stays concealed until the caret enters it, and the element carries no `href` — `Cmd+click` is what opens it." },
   { name: "li", type: "EditorElement", default: '{ className: "" }', description: "The whole list row. No tag: the row is CodeMirror's own line div, and the indent on it is structural, so this is for type and colour only." },
   { name: "bullet", type: "EditorElement", default: '{ className: "text-muted-foreground" }', description: "The • (or ◦ when nested) standing in for the `-` marker." },
-  { name: "checkbox", type: "EditorElement", default: '{ className: "size-3.5 align-[-0.09375rem] accent-[var(--primary)] cursor-pointer" }', description: "The real `<input type=\"checkbox\">` standing in for `[ ]` / `[x]`. Clicking it rewrites those characters in the document." },
+  { name: "checkbox", type: "EditorElement", default: '{ className: "size-3.5 accent-[var(--primary)] cursor-pointer" }', description: "The real `<input type=\"checkbox\">` standing in for `[ ]` / `[x]`. Clicking it rewrites those characters in the document. It sits in a `<label>` whose hit area reaches past it on touch, so size the box here and leave the target alone." },
   { name: "taskDone", type: "EditorElement", default: '{ className: "text-muted-foreground line-through" }', description: "The text of a checked task row." },
 ];

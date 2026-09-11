@@ -129,8 +129,12 @@ obscured height from `visualViewport` and scrolls the caret clear of it, both
 when it scrolls the selection into view and when the keyboard opens or
 changes height.
 
-Checkboxes come up to 24×24 on a coarse pointer, which is the WCAG 2.2 target
-size — a 14px checkbox is a coin toss with a fingertip. Links still open on
+A checkbox's hit area comes up past 24×24 on a coarse pointer — WCAG 2.2's
+target size, and a 14px checkbox is a coin toss with a fingertip. The box
+itself stays the size you set it: the padding that widens the target is given
+straight back as negative margin, so the line keeps its height and the text
+keeps its distance rather than ending up jammed against a box that towers over
+it. Links still open on
 `Cmd/Ctrl+click` only: on touch a tap places the caret, because this is an
 editor first.
 

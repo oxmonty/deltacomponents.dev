@@ -268,29 +268,6 @@
       ]
     },
     {
-      "name": "live-markdown",
-      "type": "registry:lib",
-      "title": "Live Markdown",
-      "description": "CodeMirror 6 extension set behind Editor: the markdown language, the formatting keymaps, and the live-preview decorations that conceal syntax everywhere the caret is not. Type and colour come from an EditorTypography class map, so installing it needs no stylesheet.",
-      "dependencies": [
-        "@codemirror/commands",
-        "@codemirror/lang-markdown",
-        "@codemirror/language",
-        "@codemirror/state",
-        "@codemirror/view",
-        "@lezer/common"
-      ],
-      "files": [
-        {
-          "path": "registry/lib/live-markdown.ts",
-          "type": "registry:lib"
-        }
-      ],
-      "categories": [
-        "lib"
-      ]
-    },
-    {
       "name": "button",
       "type": "registry:ui",
       "title": "Button",
@@ -553,18 +530,26 @@
       "title": "Editor",
       "description": "Always-on live-preview markdown editor: one surface that is both the rendered document and the text you type into, with debounced autosave and a per-construct typography map.",
       "dependencies": [
+        "@codemirror/commands",
+        "@codemirror/lang-markdown",
+        "@codemirror/language",
         "@codemirror/state",
-        "@codemirror/view"
+        "@codemirror/view",
+        "@lezer/common"
       ],
       "registryDependencies": [
-        "utils",
-        "live-markdown"
+        "utils"
       ],
       "files": [
         {
           "path": "registry/ui/editor.tsx",
           "type": "registry:ui",
           "target": "components/ui/editor.tsx"
+        },
+        {
+          "path": "registry/lib/live-markdown.ts",
+          "type": "registry:lib",
+          "target": "lib/live-markdown.ts"
         }
       ],
       "docs": "Docs & live playground: https://deltacomponents.dev/docs/editor.",

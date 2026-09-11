@@ -94,7 +94,7 @@ export const defaultElements: Required<Record<keyof EditorElements, { tag?: stri
   a: { tag: "a", className: "underline underline-offset-2 decoration-muted-foreground" },
   li: { className: "" },
   bullet: { className: "text-muted-foreground" },
-  checkbox: { className: "size-3.5 align-[-0.09375rem] accent-[var(--primary)] cursor-pointer" },
+  checkbox: { className: "size-3.5 accent-[var(--primary)] cursor-pointer" },
   taskDone: { className: "text-muted-foreground line-through" },
 };
 
@@ -144,6 +144,12 @@ const chromelessTheme = EditorView.theme({
   // List rows read as a block. Structural, and applied regardless of caret
   // position — layout must never toggle as the caret moves.
   ".cm-line.cm-md-li": { paddingLeft: "0.5rem" },
+  // The checkbox wrapper. Sizing the box is the element map's job; this only
+  // sits it on the text baseline, and `display: block` on the input keeps the
+  // wrapper's baseline at its bottom edge rather than on a line box that
+  // shifts with the box's size.
+  ".cm-md-check": { display: "inline-block", verticalAlign: "-0.09375rem" },
+  ".cm-md-check > input": { display: "block" },
   ".cm-cursor": { borderLeftColor: "var(--foreground)" },
   // drawSelection() replaces the native selection and caret (the native caret
   // spans the full line box and reads oversized); its layers need explicit
@@ -163,13 +169,12 @@ const chromelessTheme = EditorView.theme({
     // surface already larger than 16px keeps whatever it inherited.
     ".cm-content": { fontSize: "max(1rem, 1em)" },
     // WCAG 2.2 target size (24×24 minimum) — a 14px checkbox is a coin toss
-    // with a fingertip. `min-*`, so a caller who wants a bigger one still
-    // wins; the negative margin keeps the line from growing around it.
-    "input.cm-md-checkbox": {
-      minWidth: "1.5rem",
-      minHeight: "1.5rem",
-      margin: "-0.25rem",
-    },
+    // with a fingertip. The HIT AREA grows, not the box: padding takes the
+    // label past 24px in both axes and an equal negative margin gives the
+    // space straight back, so the line keeps its height and the text keeps
+    // its distance. Sizing the box itself to 24px is what made it tower over
+    // 16px type with the sentence jammed against it.
+    ".cm-md-check": { padding: "0.375rem", margin: "-0.375rem" },
   },
 });
 
@@ -382,6 +387,11 @@ class CheckboxWidget extends WidgetType {
     return other.checked === this.checked && other.className === this.className;
   }
   toDOM(view: EditorView) {
+    // A <label>, not a bare input: on touch the hit area has to reach past
+    // the box (see the target-size rule in the theme), and a label forwards a
+    // click on that margin to the input natively — no handler of our own.
+    const label = document.createElement("label");
+    label.className = "cm-md-check";
     const input = document.createElement("input");
     input.type = "checkbox";
     input.checked = this.checked;
@@ -390,12 +400,13 @@ class CheckboxWidget extends WidgetType {
     input.addEventListener("change", () => {
       // The widget replaces the "[ ]"/"[x]" marker, so its own position IS
       // the marker's — toggle by rewriting those three characters.
-      const pos = view.posAtDOM(input);
+      const pos = view.posAtDOM(label);
       view.dispatch({
         changes: { from: pos, to: pos + 3, insert: this.checked ? "[ ]" : "[x]" },
       });
     });
-    return input;
+    label.appendChild(input);
+    return label;
   }
   // Default ignoreEvent() is true: CM leaves clicks to the checkbox, so
   // toggling doesn't move the caret.
