@@ -1,6 +1,6 @@
 "use client";
 
-import { LockIcon, SettingsIcon, UserIcon } from "lucide-react";
+import { useIcon } from "@/registry/lib/icon-context";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/registry/ui/tabs";
 
 const PANELS = [
@@ -10,6 +10,10 @@ const PANELS = [
 ] as const;
 
 export default function TabsWithIcons() {
+  const UserIcon = useIcon("user");
+  const LockIcon = useIcon("lock");
+  const SettingsIcon = useIcon("settings");
+
   return (
     <Tabs defaultValue="account" className="w-fit max-w-full">
       <TabsList>
