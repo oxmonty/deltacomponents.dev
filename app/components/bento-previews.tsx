@@ -3,7 +3,9 @@
 import { Button } from "@/registry/ui/button";
 import { Tooltip } from "@/registry/ui/tooltip";
 import GlyphBasic from "@/content/demos/glyph/glyph-basic";
+import AlertDemo from "@/content/demos/alert/alert-demo";
 import { Code } from "@/registry/ui/code";
+import { Editor } from "@/registry/ui/editor";
 import { PATRICK_DARK } from "@/lib/docs/code-themes";
 import {
   Tabs,
@@ -118,6 +120,24 @@ function TabsPreview() {
   );
 }
 
+// A seeded document rather than an empty editor: the card has to show what
+// the component does in one glance, and an empty editor shows a placeholder.
+const EDITOR_DOC = `# Release notes
+
+**Live preview** with no *edit mode* — the syntax hides where the caret isn't.
+
+- [x] Conceal the marks away from the caret
+- [ ] Swap the [typography set](https://deltacomponents.dev/docs/editor)
+`;
+
+function EditorPreview() {
+  return (
+    <div className="w-full max-w-[440px]">
+      <Editor defaultValue={EDITOR_DOC} className="min-h-0 text-sm leading-6" />
+    </div>
+  );
+}
+
 export const previewMap: Record<string, React.FC> = {
   tabs: TabsPreview,
   "product-card": ProductCardPreview,
@@ -125,4 +145,6 @@ export const previewMap: Record<string, React.FC> = {
   button: ButtonPreview,
   tooltip: TooltipPreview,
   "glyph": GlyphBasic,
+  alert: AlertDemo,
+  editor: EditorPreview,
 };

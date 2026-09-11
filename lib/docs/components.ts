@@ -38,13 +38,13 @@ export function labelOf(entry: Pick<ComponentEntry, "name" | "label">): string {
 export const componentList: ComponentEntry[] = [
   { slug: "code", name: "Code", isNew: true, gridSize: "large" },
   { slug: "product-card", name: "ProductCard", isNew: true, gridSize: "large" },
+  { slug: "editor", name: "Editor", isNew: true, gridSize: "large" },
   { slug: "tabs", name: "Tabs", isNew: true, gridSize: "medium" },
   { slug: "button", name: "Button", gridSize: "small" },
   { slug: "tooltip", name: "Tooltip", gridSize: "small" },
+  { slug: "alert", name: "Alert", isNew: true, gridSize: "medium" },
   { slug: "glyph", name: "Glyph", isNew: true, gridSize: "small", draft: true },
-  { slug: "editor", name: "Editor", gridSize: "large", draft: true },
   { slug: "mp3-player", name: "MP3Player", gridSize: "medium", draft: true },
-  { slug: "alert", name: "Alert", gridSize: "small", draft: true },
 ];
 
 /** Drafts survive `next dev` so they can be worked on, and disappear from

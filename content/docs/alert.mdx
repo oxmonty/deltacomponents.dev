@@ -2,15 +2,36 @@
 description: "Inline message for status, warning, and error states"
 ---
 
-{/* TBD: nothing is built yet. The page exists so the slug, the sidebar entry
-    and the contents rail are wired up ahead of the component. The entry in
-    lib/docs/components.ts carries `draft: true`, so none of this reaches a
-    production build. */}
+import { alertProps } from "./alert.props";
+
+<ComponentPreview name="alert-demo" />
 
 ## Installation
 
-Not published to the registry yet.
+<InstallTabs slug="alert" />
+
+## Usage
+
+```tsx
+import { Alert } from "@/components/ui/alert";
+
+<Alert type="warning" title="Write-only">
+  Secrets can be replaced but never read back.
+</Alert>
+```
+
+## Basic
+
+<ComponentPreview name="alert-basic" />
+
+## Types
+
+The pastels sit at one lightness and chroma, so mixed types read as one family. In dark mode each pastel becomes the text colour over a faint wash of itself.
+
+<ComponentPreview name="alert-types" align="top" />
 
 ## API Reference
 
-TBD.
+Any other `div` attribute is passed through to the root. Add `role="alert"` when the alert appears in response to something, so a screen reader announces it.
+
+<PropsTable props={alertProps} />

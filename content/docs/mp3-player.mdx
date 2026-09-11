@@ -2,15 +2,81 @@
 description: "Audio playback with a transport and a scrubber"
 ---
 
-{/* TBD: nothing is built yet. The page exists so the slug, the sidebar entry
-    and the contents rail are wired up ahead of the component. The entry in
-    lib/docs/components.ts carries `draft: true`, so none of this reaches a
-    production build. */}
+import {
+  mp3PlayerProps,
+  mp3PlayerPlayProps,
+  mp3PlayerTimeProps,
+  mp3PlayerScrubberProps,
+  mp3PlayerSpeedProps,
+  mp3PlayerDownloadProps,
+} from "./mp3-player.props";
+
+<ComponentPreview name="mp3-player-demo" />
 
 ## Installation
 
-Not published to the registry yet.
+<InstallTabs slug="mp3-player" />
+
+## Usage
+
+```tsx
+import { MP3Player } from "@/components/ui/mp3-player";
+
+<MP3Player src="/audio/track.mp3" title="Track Name" artist="Artist Name" />
+```
+
+## Waveform
+
+<ComponentPreview name="mp3-player-waveform" />
+
+`peaks` are 0–1 values you compute ahead of time, e.g. with ffmpeg. When the player is too narrow to draw one bar per value, neighbouring peaks merge and the loudest one wins.
+
+## Composition
+
+The default layout is `MP3Player` rendering its parts for you. Pass children to arrange them yourself:
+
+```tsx
+import {
+  MP3Player,
+  MP3PlayerPlay,
+  MP3PlayerTime,
+  MP3PlayerScrubber,
+  MP3PlayerSpeed,
+  MP3PlayerDownload,
+} from "@/components/ui/mp3-player";
+
+<MP3Player src="/audio/track.mp3">
+  <MP3PlayerPlay />
+  <MP3PlayerTime />
+  <MP3PlayerScrubber className="flex-1" />
+  <MP3PlayerTime remaining />
+  <MP3PlayerSpeed />
+  <MP3PlayerDownload />
+</MP3Player>
+```
 
 ## API Reference
 
-TBD.
+### MP3Player
+
+<PropsTable props={mp3PlayerProps} />
+
+### MP3PlayerPlay
+
+<PropsTable props={mp3PlayerPlayProps} />
+
+### MP3PlayerTime
+
+<PropsTable props={mp3PlayerTimeProps} />
+
+### MP3PlayerScrubber
+
+<PropsTable props={mp3PlayerScrubberProps} />
+
+### MP3PlayerSpeed
+
+<PropsTable props={mp3PlayerSpeedProps} />
+
+### MP3PlayerDownload
+
+<PropsTable props={mp3PlayerDownloadProps} />

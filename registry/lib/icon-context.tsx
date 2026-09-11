@@ -61,6 +61,7 @@ import {
   Calendar,
   Folder,
   SlidersHorizontal,
+  Download,
 } from "lucide-react";
 
 export interface IconComponentProps {
@@ -85,7 +86,7 @@ export type IconName =
   | "home" | "message-circle" | "inbox"
   | "pencil" | "scaling" | "skip-forward" | "corner-down-right" | "corner-down-left"
   | "panel-left" | "panel-right" | "chevrons-up-down" | "more-horizontal" | "more-vertical" | "calendar" | "folder"
-  | "sliders-horizontal";
+  | "sliders-horizontal" | "download";
 
 export const defaultIcons: Record<IconName, IconComponent> = {
   "chevron-right": ChevronRight,
@@ -146,6 +147,7 @@ export const defaultIcons: Record<IconName, IconComponent> = {
   "calendar": Calendar,
   "folder": Folder,
   "sliders-horizontal": SlidersHorizontal,
+  "download": Download,
 };
 
 const IconContext = createContext<Record<IconName, IconComponent> | null>(null);

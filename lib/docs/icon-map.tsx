@@ -75,6 +75,7 @@ import {
   IconCalendar,
   IconFolder,
   IconAdjustmentsHorizontal,
+  IconDownload,
 } from "@tabler/icons-react";
 
 // ── Phosphor ────────────────────────────────────────────────
@@ -136,6 +137,7 @@ import {
   SlidersHorizontal as PhSlidersHorizontal,
   CalendarBlank as PhCalendarBlank,
   FolderSimple as PhFolderSimple,
+  Download as PhDownload,
 } from "@phosphor-icons/react";
 
 // ── HugeIcons ───────────────────────────────────────────────
@@ -195,6 +197,7 @@ import HiMoreVertical from "@hugeicons/core-free-icons/MoreVerticalIcon";
 import HiCalendar from "@hugeicons/core-free-icons/Calendar01Icon";
 import HiFolder from "@hugeicons/core-free-icons/Folder01Icon";
 import HiSliders from "@hugeicons/core-free-icons/SlidersHorizontalIcon";
+import HiDownload from "@hugeicons/core-free-icons/Download01Icon";
 
 // ── Untitled UI ─────────────────────────────────────────────
 // Aliased with a Uui prefix to avoid collisions with the Lucide imports above.
@@ -254,6 +257,7 @@ import {
   Sliders01 as UuiSliders,
   Calendar as UuiCalendar,
   Folder as UuiFolder,
+  Download01 as UuiDownload,
 } from "@untitledui/icons";
 
 
@@ -380,6 +384,7 @@ const tablerMap: Record<IconName, IconComponent> = {
   "calendar": tabler(IconCalendar),
   "folder": tabler(IconFolder),
   "sliders-horizontal": tabler(IconAdjustmentsHorizontal),
+  "download": tabler(IconDownload),
 };
 
 const phosphorMap: Record<IconName, IconComponent> = {
@@ -441,6 +446,7 @@ const phosphorMap: Record<IconName, IconComponent> = {
   "calendar": phosphor(PhCalendarBlank),
   "folder": phosphor(PhFolderSimple),
   "sliders-horizontal": phosphor(PhSlidersHorizontal),
+  "download": phosphor(PhDownload),
 };
 
 const hugeiconsMap: Record<IconName, IconComponent> = {
@@ -502,6 +508,7 @@ const hugeiconsMap: Record<IconName, IconComponent> = {
   "calendar": hugeicons(HiCalendar),
   "folder": hugeicons(HiFolder),
   "sliders-horizontal": hugeicons(HiSliders),
+  "download": hugeicons(HiDownload),
 };
 
 const untitleduiMap: Record<IconName, IconComponent> = {
@@ -567,6 +574,7 @@ const untitleduiMap: Record<IconName, IconComponent> = {
   "calendar": untitledui(UuiCalendar),
   "folder": untitledui(UuiFolder),
   "sliders-horizontal": untitledui(UuiSliders),
+  "download": untitledui(UuiDownload),
 };
 
 // ── Unified Map ─────────────────────────────────────────────

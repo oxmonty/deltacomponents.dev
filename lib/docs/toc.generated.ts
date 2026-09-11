@@ -12,6 +12,21 @@ export const TOC: Record<string, TocEntry[]> = {
       "depth": 2
     },
     {
+      "id": "usage",
+      "text": "Usage",
+      "depth": 2
+    },
+    {
+      "id": "basic",
+      "text": "Basic",
+      "depth": 2
+    },
+    {
+      "id": "types",
+      "text": "Types",
+      "depth": 2
+    },
+    {
       "id": "api-reference",
       "text": "API Reference",
       "depth": 2
@@ -120,8 +135,48 @@ export const TOC: Record<string, TocEntry[]> = {
       "depth": 2
     },
     {
+      "id": "usage",
+      "text": "Usage",
+      "depth": 2
+    },
+    {
+      "id": "basic",
+      "text": "Basic",
+      "depth": 2
+    },
+    {
+      "id": "typography",
+      "text": "Typography",
+      "depth": 2
+    },
+    {
+      "id": "autosaving",
+      "text": "Autosaving",
+      "depth": 2
+    },
+    {
+      "id": "keyboard",
+      "text": "Keyboard",
+      "depth": 2
+    },
+    {
       "id": "api-reference",
       "text": "API Reference",
+      "depth": 2
+    },
+    {
+      "id": "editor",
+      "text": "Editor",
+      "depth": 3
+    },
+    {
+      "id": "editorelements",
+      "text": "EditorElements",
+      "depth": 3
+    },
+    {
+      "id": "accessibility",
+      "text": "Accessibility",
       "depth": 2
     }
   ],
@@ -181,9 +236,54 @@ export const TOC: Record<string, TocEntry[]> = {
       "depth": 2
     },
     {
+      "id": "usage",
+      "text": "Usage",
+      "depth": 2
+    },
+    {
+      "id": "waveform",
+      "text": "Waveform",
+      "depth": 2
+    },
+    {
+      "id": "composition",
+      "text": "Composition",
+      "depth": 2
+    },
+    {
       "id": "api-reference",
       "text": "API Reference",
       "depth": 2
+    },
+    {
+      "id": "mp3player",
+      "text": "MP3Player",
+      "depth": 3
+    },
+    {
+      "id": "mp3playerplay",
+      "text": "MP3PlayerPlay",
+      "depth": 3
+    },
+    {
+      "id": "mp3playertime",
+      "text": "MP3PlayerTime",
+      "depth": 3
+    },
+    {
+      "id": "mp3playerscrubber",
+      "text": "MP3PlayerScrubber",
+      "depth": 3
+    },
+    {
+      "id": "mp3playerspeed",
+      "text": "MP3PlayerSpeed",
+      "depth": 3
+    },
+    {
+      "id": "mp3playerdownload",
+      "text": "MP3PlayerDownload",
+      "depth": 3
     }
   ],
   "/docs/product-card": [

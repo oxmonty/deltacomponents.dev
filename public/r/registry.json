@@ -268,6 +268,29 @@
       ]
     },
     {
+      "name": "live-markdown",
+      "type": "registry:lib",
+      "title": "Live Markdown",
+      "description": "CodeMirror 6 extension set behind Editor: the markdown language, the formatting keymaps, and the live-preview decorations that conceal syntax everywhere the caret is not. Type and colour come from an EditorTypography class map, so installing it needs no stylesheet.",
+      "dependencies": [
+        "@codemirror/commands",
+        "@codemirror/lang-markdown",
+        "@codemirror/language",
+        "@codemirror/state",
+        "@codemirror/view",
+        "@lezer/common"
+      ],
+      "files": [
+        {
+          "path": "registry/lib/live-markdown.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "categories": [
+        "lib"
+      ]
+    },
+    {
       "name": "button",
       "type": "registry:ui",
       "title": "Button",
@@ -499,6 +522,79 @@
         }
       ],
       "docs": "Docs & live playground: https://deltacomponents.dev/docs/glyph.",
+      "categories": [
+        "components"
+      ]
+    },
+    {
+      "name": "alert",
+      "type": "registry:ui",
+      "title": "Alert",
+      "description": "Inline callout carried by a pastel fill alone, no border or icon, that turns into pastel ink on a faint wash in dark mode.",
+      "registryDependencies": [
+        "utils",
+        "font-weight"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/alert.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/alert.tsx"
+        }
+      ],
+      "docs": "Docs & live playground: https://deltacomponents.dev/docs/alert.",
+      "categories": [
+        "components"
+      ]
+    },
+    {
+      "name": "editor",
+      "type": "registry:ui",
+      "title": "Editor",
+      "description": "Always-on live-preview markdown editor: one surface that is both the rendered document and the text you type into, with debounced autosave and a per-construct typography map.",
+      "dependencies": [
+        "@codemirror/state",
+        "@codemirror/view"
+      ],
+      "registryDependencies": [
+        "utils",
+        "live-markdown"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/editor.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/editor.tsx"
+        }
+      ],
+      "docs": "Docs & live playground: https://deltacomponents.dev/docs/editor.",
+      "categories": [
+        "components"
+      ]
+    },
+    {
+      "name": "mp3-player",
+      "type": "registry:ui",
+      "title": "MP3 Player",
+      "description": "Inline audio player with a transport, an elapsed/remaining clock, and a seek bar that renders as a line or a waveform of precomputed peaks.",
+      "dependencies": [
+        "@base-ui/react"
+      ],
+      "registryDependencies": [
+        "utils",
+        "motion",
+        "icon-context",
+        "button",
+        "tokens"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/mp3-player.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/mp3-player.tsx"
+        }
+      ],
+      "docs": "Docs & live playground: https://deltacomponents.dev/docs/mp3-player.",
       "categories": [
         "components"
       ]

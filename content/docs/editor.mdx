@@ -1,16 +1,132 @@
 ---
-description: "Rich-text editing surface"
+description: "Always-on live-preview markdown editor — one surface that is both the rendered document and the text you type into"
 ---
 
-{/* TBD: nothing is built yet. The page exists so the slug, the sidebar entry
-    and the contents rail are wired up ahead of the component. The entry in
-    lib/docs/components.ts carries `draft: true`, so none of this reaches a
-    production build. */}
+import { editorProps, elementsProps } from "./editor.props";
+
+<ComponentPreview name="editor-demo" align="top" />
 
 ## Installation
 
-Not published to the registry yet.
+<InstallTabs slug="editor" />
+
+The CLI brings CodeMirror 6 with it — five `@codemirror/*` packages and
+`@lezer/common`, around 170 kB gzipped — plus `lib/live-markdown.ts`, which is
+where the extensions and the live-preview decorations live. There is no
+stylesheet to add: every construct is styled by a class, and the editor's own
+chrome reads your tokens.
+
+## Usage
+
+```tsx
+import { Editor } from "@/components/ui/editor";
+
+<Editor
+  defaultValue={note.body}
+  placeholder="Write something"
+  onSave={(body) => saveNote(note.id, body)}
+/>
+```
+
+## Basic
+
+<ComponentPreview name="editor-basic" align="top" />
+
+There is no view/edit toggle, because there is nothing to toggle: the document
+you are reading is the document you are typing into. Markdown renders in place
+and the syntax marks conceal themselves everywhere the caret isn't — move into
+a construct and its `**`, `#` or `](url)` comes back so you can edit it.
+
+The surface is the core set: headings, bold, italic, inline code, links,
+bullet and numbered lists, and task checkboxes that are real `<input>`s.
+Emphasis styles as soon as you open it, without waiting for the closing
+delimiter, because headings do and it reads as inconsistent when inline
+constructs don't.
+
+## Typography
+
+<ComponentPreview name="editor-typography" align="top" minHeightClass="min-h-[360px]" />
+
+`elements` is this editor's answer to an MDX components map. The keys are the
+same — `h1`, `strong`, `code`, `a` — and each one says which element the
+construct renders as and what classes it carries, so the editor emits real
+`<strong>`, `<code>` and `<h2>` tags around the live text and an existing prose
+stylesheet lands on them without being restated.
+
+What it cannot take is React components, and that is not an omission: these
+ranges are the characters the caret is moving through. A `<strong>` here wraps
+live text that stays editable, which means it has to be a tag CodeMirror can
+mark a range with — a component would have to replace that text with something
+rendered, and replaced text is text you can no longer type into. Components
+belong to the block-level things you don't type inside (an image, an embed, a
+code fence), which is a separate seam from this one.
+
+The box model is the one thing the map doesn't get. Vertical rhythm in a
+source editor is its blank lines, so margins and padding on the emitted tags
+are pinned at zero — a heading that brought `margin: 1rem 0` with it would
+push the caret off its own text. Type, weight and colour come through.
+
+Type that belongs to the whole surface — the family, the base size, the
+leading — comes from `className` on the root instead, which the editor
+inherits. The two sets above differ in both: one map plus one root class each.
+
+## Autosaving
+
+<ComponentPreview name="editor-autosave" align="top" />
+
+`onSave` is the persistence hook, and it fires on a debounce (800 ms by
+default), on blur, and on unmount, so navigating away mid-sentence still
+writes. It never fires with a document it has already stored, which makes an
+idle tick on an untouched editor free.
+
+The indicator in the top-right corner is the whole save UI: a dot that appears
+the moment the document is dirty, pulses while the write is in flight, and
+settles when it lands. It is pinned to the corner rather than trailing the
+text because you glance for it, and the document is the wrong length for
+something you glance at. Reject from `onSave` and it says **Not saved** in
+`--destructive` — that document stays pending, so the next flush sends it
+again rather than dropping it. Turn the chip off with `showSaveStatus={false}`
+and drive your own from `onSaveState`.
+
+That contract is why the prop is `defaultValue` and not `value`: the editor
+owns the text after mount. Feeding a server value back in while someone is
+typing would move their caret and let undo restore state they never wrote, so
+the component does not offer it. Undo is the editor's own history — `Cmd+Z`,
+and there is no cancel gesture to go with an autosave.
+
+## Keyboard
+
+| Keys | Does |
+| --- | --- |
+| `Cmd+B` / `Cmd+I` / `Cmd+E` | Wrap the selection in `**`, `*` or `` ` ``. Again to unwrap. |
+| `Cmd+L` | Toggle `- [ ]` on every selected line. |
+| `Enter` | Continues the list or task you are in. Twice leaves it. |
+| `Backspace` | At the head of a list row, removes the marker before the text. |
+| `Escape` / `Cmd+Enter` | Blur, which flushes a pending save. |
+| `Cmd+click` | Open the link under the pointer. A plain click edits it. |
 
 ## API Reference
 
-TBD.
+### Editor
+
+<PropsTable props={editorProps} />
+
+### EditorElements
+
+Every key is optional and falls back to the default below. A key can be a bare
+class string, which keeps that construct's default element:
+`{ h2: "text-xl font-medium" }`. Import the type, or `defaultElements` to
+extend the set rather than replace it, from `@/lib/live-markdown`.
+
+<PropsTable props={elementsProps} />
+
+## Accessibility
+
+The editing surface is a `contenteditable` with its `aria-label` taken from
+`placeholder`. Headings and emphasis are the real elements, not divs wearing a
+size, so a screen reader meets a document rather than a wall of text; task
+checkboxes are real inputs labelled "Mark task done", so one can be checked
+without touching the markdown; and the save indicator announces through a
+polite live region, but only its settled states — narrating every pause in
+someone's typing is not help. It is still a step down from a `<textarea>`,
+which is the standing cost of live preview.

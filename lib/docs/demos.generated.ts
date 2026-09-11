@@ -3,6 +3,9 @@
 // `make build` regenerate it, and `make test` fails if it has drifted.
 import type { ComponentType } from "react";
 
+import DemoAlertAlertBasic from "@/content/demos/alert/alert-basic";
+import DemoAlertAlertDemo from "@/content/demos/alert/alert-demo";
+import DemoAlertAlertTypes from "@/content/demos/alert/alert-types";
 import DemoButtonButtonBasic from "@/content/demos/button/button-basic";
 import DemoButtonButtonDemo from "@/content/demos/button/button-demo";
 import DemoButtonButtonLoading from "@/content/demos/button/button-loading";
@@ -14,10 +17,16 @@ import DemoCodeCodeDemo from "@/content/demos/code/code-demo";
 import DemoCodeCodeExpandable from "@/content/demos/code/code-expandable";
 import DemoCodeCodeOverrideStyling from "@/content/demos/code/code-override-styling";
 import DemoCodeCodePackageManagers from "@/content/demos/code/code-package-managers";
+import DemoEditorEditorAutosave from "@/content/demos/editor/editor-autosave";
+import DemoEditorEditorBasic from "@/content/demos/editor/editor-basic";
+import DemoEditorEditorDemo from "@/content/demos/editor/editor-demo";
+import DemoEditorEditorTypography from "@/content/demos/editor/editor-typography";
 import DemoGlyphGlyphBasic from "@/content/demos/glyph/glyph-basic";
 import DemoGlyphGlyphLabel from "@/content/demos/glyph/glyph-label";
 import DemoGlyphGlyphSizes from "@/content/demos/glyph/glyph-sizes";
 import DemoGlyphGlyphVariants from "@/content/demos/glyph/glyph-variants";
+import DemoMp3PlayerMp3PlayerDemo from "@/content/demos/mp3-player/mp3-player-demo";
+import DemoMp3PlayerMp3PlayerWaveform from "@/content/demos/mp3-player/mp3-player-waveform";
 import DemoProductCardProductCardAnimated from "@/content/demos/product-card/product-card-animated";
 import DemoProductCardProductCardBadge from "@/content/demos/product-card/product-card-badge";
 import DemoProductCardProductCardBasic from "@/content/demos/product-card/product-card-basic";
@@ -48,6 +57,18 @@ export interface DemoEntry {
 
 /** Every demo, keyed by the name a doc page refers to it by. */
 export const demos: Record<string, DemoEntry> = {
+  "alert-basic": {
+    Component: DemoAlertAlertBasic,
+    source: "import { Alert } from \"@/components/ui/alert\";\n\nexport default function AlertBasic() {\n  return (\n    <Alert title=\"Flags live in Environment Variables\" className=\"w-full max-w-md\">\n      Any variable prefixed with FLAG_ is read as a feature flag.\n    </Alert>\n  );\n}",
+  },
+  "alert-demo": {
+    Component: DemoAlertAlertDemo,
+    source: "import { Alert } from \"@/components/ui/alert\";\n\nexport default function AlertDemo() {\n  return (\n    <Alert type=\"warning\" title=\"Write-only\" className=\"w-full max-w-md\">\n      Secrets can be replaced but never read back. Copy the value somewhere\n      safe before you save it.\n    </Alert>\n  );\n}",
+  },
+  "alert-types": {
+    Component: DemoAlertAlertTypes,
+    source: "import { Alert } from \"@/components/ui/alert\";\n\nconst TYPES = [\"note\", \"tip\", \"info\", \"warning\", \"danger\", \"success\", \"caution\"] as const;\n\nexport default function AlertTypes() {\n  return (\n    <div className=\"flex w-full max-w-md flex-col gap-3\">\n      {TYPES.map((type) => (\n        <Alert key={type} type={type} title={type[0].toUpperCase() + type.slice(1)}>\n          The fill carries the severity on its own.\n        </Alert>\n      ))}\n    </div>\n  );\n}",
+  },
   "button-basic": {
     Component: DemoButtonButtonBasic,
     source: "import { Button } from \"@/components/ui/button\";\n\nexport default function ButtonBasic() {\n  return <Button>Button</Button>;\n}",
@@ -92,6 +113,22 @@ export const demos: Record<string, DemoEntry> = {
     Component: DemoCodeCodePackageManagers,
     source: "import { Code } from \"@/components/ui/code\";\n\nexport default function CodePackageManagers() {\n  return (\n    <div className=\"w-full max-w-[520px]\">\n      <Code code={\"```npx\\nshadcn@latest add code\\n```\"} />\n    </div>\n  );\n}",
   },
+  "editor-autosave": {
+    Component: DemoEditorEditorAutosave,
+    source: "import { useState } from \"react\";\nimport { Editor } from \"@/components/ui/editor\";\n\nexport default function EditorAutosave() {\n  const [saves, setSaves] = useState(0);\n\n  return (\n    <div className=\"flex w-full max-w-[560px] flex-col gap-2\">\n      <Editor\n        defaultValue={\"Type here. The indicator in the corner is the save.\\n\"}\n        onSave={async () => {\n          // Stands in for the write: `await fetch(\"/api/note\", { method: \"PUT\", body: doc })`\n          await new Promise((resolve) => setTimeout(resolve, 900));\n          setSaves((n) => n + 1);\n        }}\n      />\n      <span className=\"text-caption text-muted-foreground\">\n        {saves === 0 ? \"Nothing written yet\" : `${saves} write${saves === 1 ? \"\" : \"s\"}`}\n      </span>\n    </div>\n  );\n}",
+  },
+  "editor-basic": {
+    Component: DemoEditorEditorBasic,
+    source: "import { Editor } from \"@/components/ui/editor\";\n\nexport default function EditorBasic() {\n  return (\n    <Editor\n      placeholder=\"Write something — # for a heading, - [ ] for a task\"\n      className=\"w-full max-w-[560px]\"\n    />\n  );\n}",
+  },
+  "editor-demo": {
+    Component: DemoEditorEditorDemo,
+    source: "import { Editor } from \"@/components/ui/editor\";\n\nconst NOTE = `# Weekly note\n\nThe editor is **always on** — there is no *edit mode* to enter. Syntax marks conceal themselves everywhere the caret isn't, and reveal as you move into a construct.\n\n- [x] Port the live preview off \\`@codemirror/lang-markdown\\`\n- [ ] Read the [typography map](https://deltacomponents.dev/docs/editor)\n- [ ] Wire autosave to the database\n\nTry \\`Cmd+B\\`, \\`Cmd+I\\` and \\`Cmd+L\\` on a selection.\n`;\n\nexport default function EditorDemo() {\n  return <Editor defaultValue={NOTE} className=\"w-full max-w-[560px]\" />;\n}",
+  },
+  "editor-typography": {
+    Component: DemoEditorEditorTypography,
+    source: "import { useState } from \"react\";\nimport { Button } from \"@/components/ui/button\";\nimport { Editor } from \"@/components/ui/editor\";\nimport type { EditorElements } from \"@/lib/live-markdown\";\n\n// Two type sets over one document. The keys are an MDX components map's keys,\n// and each one takes the classes that construct wears — the elements\n// themselves (h1, strong, code, a) are emitted either way, so a set only has\n// to say what it wants to look different.\nconst SETS: Record<string, { root: string; elements: EditorElements }> = {\n  Product: {\n    root: \"text-base leading-7\",\n    elements: {\n      h1: \"text-2xl font-semibold\",\n      h2: \"text-xl font-semibold\",\n      strong: \"font-semibold\",\n      code: \"font-mono text-sm bg-muted rounded px-1\",\n      a: \"underline underline-offset-2 decoration-muted-foreground\",\n      bullet: \"text-muted-foreground\",\n    },\n  },\n  Editorial: {\n    root: \"font-serif text-lg leading-8\",\n    elements: {\n      h1: \"text-3xl\",\n      h2: \"text-2xl\",\n      strong: \"font-semibold\",\n      em: \"italic\",\n      code: \"font-mono text-sm text-muted-foreground\",\n      a: \"underline underline-offset-4 decoration-1\",\n      bullet: \"text-muted-foreground/60\",\n    },\n  },\n};\n\nconst DOC = `# On revision\n\nWriting is *rewriting*. The **first** draft only has to exist; the second one has to be read. Keep the \\`- [ ]\\` list short enough that finishing it is plausible.\n\n- [ ] Cut the third paragraph\n- [ ] Give the [opening](https://example.com) a verb\n`;\n\nexport default function EditorTypographySets() {\n  const [name, setName] = useState(\"Product\");\n  const set = SETS[name];\n\n  return (\n    <div className=\"flex w-full max-w-[560px] flex-col gap-4\">\n      <div className=\"flex gap-2\">\n        {Object.keys(SETS).map((key) => (\n          <Button\n            key={key}\n            size=\"compact\"\n            variant={key === name ? \"secondary\" : \"ghost\"}\n            onClick={() => setName(key)}\n          >\n            {key}\n          </Button>\n        ))}\n      </div>\n      {/* One editor, not two: swapping the set keeps the document, the caret\n          and the undo history, so the comparison is on the same text. */}\n      <Editor defaultValue={DOC} elements={set.elements} className={set.root} />\n    </div>\n  );\n}",
+  },
   "glyph-basic": {
     Component: DemoGlyphGlyphBasic,
     source: "import { Check } from \"lucide-react\";\nimport { Glyph } from \"@/components/ui/glyph\";\n\nexport default function GlyphBasic() {\n  return (\n    <div className=\"flex items-center gap-1.5\">\n      <span style={{ fontVariationSettings: \"'wght' 550\" }}>Ada Lovelace</span>\n      <Glyph className=\"text-[#1d9bf0]\">\n        <Check />\n      </Glyph>\n    </div>\n  );\n}",
@@ -107,6 +144,14 @@ export const demos: Record<string, DemoEntry> = {
   "glyph-variants": {
     Component: DemoGlyphGlyphVariants,
     source: "import { Check, Flame, Zap } from \"lucide-react\";\nimport { Glyph } from \"@/components/ui/glyph\";\n\nfunction Specimen({\n  children,\n  caption,\n}: {\n  children: React.ReactNode;\n  caption: string;\n}) {\n  return (\n    <div className=\"flex flex-col items-center gap-2\">\n      {children}\n      <span className=\"text-caption text-muted-foreground\">{caption}</span>\n    </div>\n  );\n}\n\n// Icons come from lucide here, which is the point: Glyph only owns the\n// shape, the consumer brings whatever icon library they already use.\nexport default function GlyphVariants() {\n  return (\n    <div className=\"flex items-center gap-8\">\n      <Specimen caption=\"Verified\">\n        <Glyph mask=\"rosette\" className=\"size-8 text-[#1d9bf0]\">\n          <Check />\n        </Glyph>\n      </Specimen>\n      <Specimen caption=\"Streak\">\n        <Glyph mask=\"circle\" className=\"size-8 text-orange-500\">\n          <Flame />\n        </Glyph>\n      </Specimen>\n      <Specimen caption=\"Premium\">\n        <Glyph mask=\"squircle\" className=\"size-8 text-violet-500\">\n          <Zap />\n        </Glyph>\n      </Specimen>\n    </div>\n  );\n}",
+  },
+  "mp3-player-demo": {
+    Component: DemoMp3PlayerMp3PlayerDemo,
+    source: "import { MP3Player } from \"@/components/ui/mp3-player\";\n\nexport default function MP3PlayerDemo() {\n  return (\n    <MP3Player\n      src=\"/audio/the-engineers-proclivity-for-perfection.mp3\"\n      title=\"The Engineer's Proclivity for Perfection\"\n      artist=\"Patrick Prunty\"\n      className=\"max-w-md\"\n    />\n  );\n}",
+  },
+  "mp3-player-waveform": {
+    Component: DemoMp3PlayerMp3PlayerWaveform,
+    source: "import { MP3Player } from \"@/components/ui/mp3-player\";\n\nconst PEAKS = [0.59,0.49,0.36,0.5,0.33,0.29,0.52,0.48,0.41,0.21,0.0,0.87,0.59,0.37,0.31,0.64,0.32,0.3,0.45,0.36,0.24,0.29,0.66,0.4,0.41,0.24,0.57,0.62,0.48,0.59,0.35,0.32,0.61,0.42,0.5,0.29,0.51,0.63,0.53,0.43,0.48,0.47,0.44,0.27,0.53,0.67,0.35,0.54,0.31,0.21,0.16,0.57,0.72,0.24,0.53,0.47,0.66,0.43,0.39,0.33,0.44,0.31,0.47,0.46,0.33,0.25,0.46,1.0,0.19,0.37,0.24,0.51,0.19,0.37,0.3,0.32,0.25,0.44,0.41,0.37,0.41,0.38,0.23,0.44,0.25,0.46,0.44,0.37,0.33,0.41,0.32,0.47,0.31,0.27,0.05,0.03];\n\nexport default function MP3PlayerWaveform() {\n  return (\n    <MP3Player\n      src=\"/audio/the-engineers-proclivity-for-perfection.mp3\"\n      title=\"The Engineer's Proclivity for Perfection\"\n      artist=\"Patrick Prunty\"\n      peaks={PEAKS}\n      className=\"max-w-md\"\n    />\n  );\n}",
   },
   "product-card-animated": {
     Component: DemoProductCardProductCardAnimated,
