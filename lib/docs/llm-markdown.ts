@@ -90,6 +90,8 @@ export async function docPageAsMarkdown(slug: string): Promise<string | null> {
     })
     .replace(/<Playground\s+slug="([^"]+)"[^>]*\/>/g,
       "_An interactive playground for this component is available on the page._")
+    // A mobile-only notice is about the screen, not the component.
+    .replace(/<Alert\b[^>]*\bmd:hidden\b[^>]*>[\s\S]*?<\/Alert>/g, "")
     .replace(/\n{3,}/g, "\n\n")
     .trim();
 

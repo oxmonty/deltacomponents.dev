@@ -19,9 +19,12 @@ import { fontWeights } from "@/registry/lib/font-weight";
  *  such nesting — every heading, paragraph and preview is a sibling — so the
  *  rhythm has to come from the run itself: a base step between any two
  *  elements, and a bigger one above a heading so it reads as opening what
- *  follows rather than captioning what came before. */
+ *  follows rather than captioning what came before.
+ *
+ *  A mobile-only first child (`md:hidden`) is gone on desktop, so whatever
+ *  follows it is the first thing visible there and drops its step too. */
 export const mdxBodyClass =
-  "flex flex-col [&>*]:mt-4 [&>*:first-child]:mt-0 [&>h2]:mt-10 [&>h3]:mt-6 [&>h4]:mt-5";
+  "flex flex-col [&>*]:mt-4 [&>*:first-child]:mt-0 md:[&>[class~='md:hidden']:first-child+*]:mt-0 [&>h2]:mt-10 [&>h3]:mt-6 [&>h4]:mt-5";
 
 /**
  * What every element in a `.mdx` doc page renders as.
