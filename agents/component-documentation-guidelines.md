@@ -77,7 +77,7 @@ Add an entry to `componentList`:
 - `name` is the exported identifier in PascalCase; `labelOf` spaces it for display
 - **Position in the array is the reading order** — sidebar, prev/next arrows and
   the ←/→ shortcuts all read it
-- `gridSize` (`large` / `medium` / `small`) sizes the showcase card
+- `gridSize` (`large` 2×2 / `medium` 2×1 / `small` 1×1) sizes the showcase card; its position comes from `SHOWCASE_ORDER` in `app/components/bento-grid.tsx`
 - **No `description`** — that lives in the page's own frontmatter, next to the
   prose it introduces
 

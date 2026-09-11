@@ -85,7 +85,9 @@ Field rules:
   display. Add `label` only when that derived spacing reads wrong.
 - **Position in the array is the reading order** — it drives the sidebar, the
   prev/next arrows and the ←/→ shortcuts.
-- `gridSize` (`large` / `medium` / `small`) sizes the showcase card.
+- `gridSize` (`large` 2×2 / `medium` 2×1 / `small` 1×1) sizes the showcase
+  card. The showcase is hand-packed by `SHOWCASE_ORDER` in
+  `app/components/bento-grid.tsx`; add the slug there where it fills a hole.
 - No `description` here — that lives in the page's frontmatter.
 
 `app/components/bento-previews.tsx` — add a preview to `previewMap`, keyed by
