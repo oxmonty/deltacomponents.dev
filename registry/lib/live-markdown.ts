@@ -124,6 +124,11 @@ const chromelessTheme = EditorView.theme({
     padding: "0",
     minHeight: "inherit",
     caretColor: "var(--foreground)",
+    // Kill the 300ms double-tap-zoom wait and the grey flash a tap leaves on
+    // mobile WebKit. Neither affects long-press selection or double-tap word
+    // select — those are selection gestures, not browser zoom gestures.
+    touchAction: "manipulation",
+    WebkitTapHighlightColor: "transparent",
   },
   ".cm-line": { padding: "0" },
   // The emitted tags (h1…h6, strong, code, a) sit INSIDE a line div, and a
@@ -150,7 +155,75 @@ const chromelessTheme = EditorView.theme({
     backgroundColor: "color-mix(in oklab, var(--focus-ring, #6B97FF) 30%, transparent)",
   },
   ".cm-placeholder": { color: "var(--muted-foreground)" },
+
+  // --- Touch ---------------------------------------------------------------
+  "@media (pointer: coarse)": {
+    // iOS zooms the page when an editable field under 16px takes focus, and
+    // leaves the user zoomed in with no way back. A floor, not a size: a
+    // surface already larger than 16px keeps whatever it inherited.
+    ".cm-content": { fontSize: "max(1rem, 1em)" },
+    // WCAG 2.2 target size (24×24 minimum) — a 14px checkbox is a coin toss
+    // with a fingertip. `min-*`, so a caller who wants a bigger one still
+    // wins; the negative margin keeps the line from growing around it.
+    "input.cm-md-checkbox": {
+      minWidth: "1.5rem",
+      minHeight: "1.5rem",
+      margin: "-0.25rem",
+    },
+  },
 });
+
+/** True on a device whose primary input is a finger. Read once, at mount —
+ *  extensions are built there and a pointer type does not change mid-session
+ *  in any way worth rebuilding an editor over. */
+function isTouchDevice(): boolean {
+  return typeof window !== "undefined" && window.matchMedia?.("(pointer: coarse)").matches === true;
+}
+
+/** How much of the window the on-screen keyboard is covering.
+ *
+ *  iOS and Android open the keyboard OVER the page: the layout viewport keeps
+ *  its height and only the visual viewport shrinks, so nothing in CSS knows
+ *  the bottom of the window is gone. */
+function keyboardInset(): number {
+  const viewport = typeof window !== "undefined" ? window.visualViewport : null;
+  if (!viewport) return 0;
+  return Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop);
+}
+
+// Both halves of keeping the caret off the keyboard: tell CodeMirror how much
+// of the window is obscured whenever it scrolls the selection into view, and
+// re-run that scroll when the keyboard opens, closes or changes height (a
+// suggestion strip appearing is a resize too). Without the second half, the
+// keyboard opens over the line you just tapped and nothing moves.
+const keyboardAware: Extension = [
+  EditorView.scrollMargins.of(() => {
+    const inset = keyboardInset();
+    return inset > 0 ? { bottom: inset + 16 } : null;
+  }),
+  ViewPlugin.fromClass(
+    class {
+      constructor(readonly view: EditorView) {
+        window.visualViewport?.addEventListener("resize", this.onViewportResize);
+      }
+      // A frame later: iOS reports the resize while the keyboard is still
+      // sliding, and scrolling into a viewport that is still moving lands
+      // short of where it settles.
+      onViewportResize = () => {
+        if (!this.view.hasFocus) return;
+        requestAnimationFrame(() => {
+          if (!this.view.hasFocus) return;
+          this.view.dispatch({
+            effects: EditorView.scrollIntoView(this.view.state.selection.main.head),
+          });
+        });
+      };
+      destroy() {
+        window.visualViewport?.removeEventListener("resize", this.onViewportResize);
+      }
+    },
+  ),
+];
 
 /* ------------------------------------------------------------------
  * Formatting shortcuts
@@ -608,11 +681,26 @@ export function liveMarkdownBase(placeholderText = ""): Extension[] {
     ]),
     linkClickHandler,
     history(),
-    drawSelection(),
+    // drawSelection() forces `caret-color: transparent` and paints its own
+    // caret and selection. On a desktop that is an improvement — the native
+    // caret spans the whole line box and reads oversized. On a phone it takes
+    // away the things a finger actually uses: the caret you drag, the
+    // selection handles, the magnifier. The platform keeps its own there.
+    ...(isTouchDevice() ? [] : [drawSelection()]),
     keymap.of([...blurKeymap, ...formattingKeymap, ...defaultKeymap, ...historyKeymap]),
     EditorView.lineWrapping,
     cmPlaceholder(placeholderText),
-    EditorView.contentAttributes.of({ "aria-label": placeholderText }),
+    keyboardAware,
+    EditorView.contentAttributes.of({
+      "aria-label": placeholderText,
+      // CodeMirror ships code-editor defaults (spellcheck off, autocorrect
+      // off, autocapitalize off). This is prose: without these, typing a
+      // sentence on a phone gives you no capital, no autocorrect and no
+      // spellcheck, which reads as a broken text field rather than a choice.
+      autocorrect: "on",
+      autocapitalize: "sentences",
+      spellcheck: "true",
+    }),
     chromelessTheme,
   ];
 }

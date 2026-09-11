@@ -160,6 +160,11 @@ export const TOC: Record<string, TocEntry[]> = {
       "depth": 2
     },
     {
+      "id": "mobile",
+      "text": "Mobile",
+      "depth": 2
+    },
+    {
       "id": "api-reference",
       "text": "API Reference",
       "depth": 2

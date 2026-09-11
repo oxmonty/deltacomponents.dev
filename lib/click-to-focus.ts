@@ -13,6 +13,15 @@ const FOCUSABLE_SELECTOR = [
   "textarea:not([disabled])",
   '[role="slider"]',
   '[tabindex]:not([tabindex="-1"])',
+  // An editing surface focuses through `contenteditable`, not tabindex —
+  // CodeMirror even pins its scroller at tabindex="-1", which the rule above
+  // deliberately excludes. Without this entry a mousedown anywhere in the
+  // Editor demo read as empty space and got preventDefault()ed. Desktop
+  // survived it (CodeMirror's own listener had already placed the caret and
+  // taken focus, so the guard below bailed out), but a tap did not: on iOS
+  // and Android the focus decision happens after that synthesized mousedown,
+  // so preventing it meant no caret and no keyboard.
+  '[contenteditable="true"]',
 ].join(",");
 
 /**

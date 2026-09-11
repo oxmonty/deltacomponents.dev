@@ -122,18 +122,26 @@ function TabsPreview() {
 
 // A seeded document rather than an empty editor: the card has to show what
 // the component does in one glance, and an empty editor shows a placeholder.
-const EDITOR_DOC = `# Release notes
+// One of each construct — heading, inline marks, a bullet glyph, a checked
+// task — because the concealment is the point and you only see it happen
+// against syntax that ISN'T there.
+const EDITOR_DOC = `# Field notes
 
-**Live preview** with no *edit mode* — the syntax hides where the caret isn't.
+Click or touch here to begin editing — the syntax hides wherever the caret isn't.
+
+- Bullets, [links](https://deltacomponents.dev) and \`code\`
 
 - [x] Conceal the marks away from the caret
-- [ ] Swap the [typography set](https://deltacomponents.dev/docs/editor)
+- [ ] Swap the typography set
 `;
 
 function EditorPreview() {
   return (
-    <div className="w-full max-w-[440px]">
-      <Editor defaultValue={EDITOR_DOC} className="min-h-0 text-sm leading-6" />
+    // text-base, not text-sm: an editable field under 16px makes iOS zoom the
+    // page the moment it takes focus, and the showcase card is the first one
+    // a phone meets.
+    <div className="w-full max-w-[460px]">
+      <Editor defaultValue={EDITOR_DOC} className="min-h-0 text-base" />
     </div>
   );
 }

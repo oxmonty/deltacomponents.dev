@@ -37,6 +37,11 @@ you are reading is the document you are typing into. Markdown renders in place
 and the syntax marks conceal themselves everywhere the caret isn't — move into
 a construct and its `**`, `#` or `](url)` comes back so you can edit it.
 
+The cost of having no edit mode is that nothing announces there is one, so the
+demos carry the invitation in their own first line. A document is the only
+chrome this editor has; a corner badge over it is one more thing to place, and
+on a phone there is nowhere to put it that isn't on top of the text.
+
 The surface is the core set: headings, bold, italic, inline code, links,
 bullet and numbered lists, and task checkboxes that are real `<input>`s.
 Emphasis styles as soon as you open it, without waiting for the closing
@@ -104,6 +109,30 @@ and there is no cancel gesture to go with an autosave.
 | `Backspace` | At the head of a list row, removes the marker before the text. |
 | `Escape` / `Cmd+Enter` | Blur, which flushes a pending save. |
 | `Cmd+click` | Open the link under the pointer. A plain click edits it. |
+
+## Mobile
+
+Touch gets the platform's own behaviour rather than the editor's. CodeMirror's
+`drawSelection` paints its own caret and hides the native one, which on a
+desktop is an improvement and on a phone takes away the caret you drag, the
+selection handles and the magnifier — so it is left out on a coarse pointer
+and iOS and Android keep their own. The input attributes are prose defaults,
+not code ones: autocorrect and autocapitalize on, spellcheck on, where
+CodeMirror ships all three off.
+
+Two more things a phone needs. The content has a 16px floor there, because iOS
+zooms the page when an editable field under 16px takes focus and leaves the
+reader zoomed in — a floor, so a surface already larger keeps its size, but a
+`text-sm` editor comes up to 16 on touch. And the on-screen keyboard covers
+the window without shrinking the layout viewport, so the editor measures the
+obscured height from `visualViewport` and scrolls the caret clear of it, both
+when it scrolls the selection into view and when the keyboard opens or
+changes height.
+
+Checkboxes come up to 24×24 on a coarse pointer, which is the WCAG 2.2 target
+size — a 14px checkbox is a coin toss with a fingertip. Links still open on
+`Cmd/Ctrl+click` only: on touch a tap places the caret, because this is an
+editor first.
 
 ## API Reference
 

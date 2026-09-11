@@ -119,11 +119,11 @@ export const demos: Record<string, DemoEntry> = {
   },
   "editor-basic": {
     Component: DemoEditorEditorBasic,
-    source: "import { Editor } from \"@/components/ui/editor\";\n\nexport default function EditorBasic() {\n  return (\n    <Editor\n      placeholder=\"Write something — # for a heading, - [ ] for a task\"\n      className=\"w-full max-w-[560px]\"\n    />\n  );\n}",
+    source: "import { Editor } from \"@/components/ui/editor\";\n\nexport default function EditorBasic() {\n  return (\n    <Editor\n      placeholder=\"Click or touch here to begin editing — # for a heading, - [ ] for a task\"\n      className=\"w-full max-w-[560px]\"\n    />\n  );\n}",
   },
   "editor-demo": {
     Component: DemoEditorEditorDemo,
-    source: "import { Editor } from \"@/components/ui/editor\";\n\nconst NOTE = `# Weekly note\n\nThe editor is **always on** — there is no *edit mode* to enter. Syntax marks conceal themselves everywhere the caret isn't, and reveal as you move into a construct.\n\n- [x] Port the live preview off \\`@codemirror/lang-markdown\\`\n- [ ] Read the [typography map](https://deltacomponents.dev/docs/editor)\n- [ ] Wire autosave to the database\n\nTry \\`Cmd+B\\`, \\`Cmd+I\\` and \\`Cmd+L\\` on a selection.\n`;\n\nexport default function EditorDemo() {\n  return <Editor defaultValue={NOTE} className=\"w-full max-w-[560px]\" />;\n}",
+    source: "import { Editor } from \"@/components/ui/editor\";\n\nconst NOTE = `# Weekly note\n\nClick or touch here to begin editing. The editor is **always on** — there is no *edit mode* to enter, and the syntax marks conceal themselves everywhere the caret isn't.\n\n- [x] Port the live preview off \\`@codemirror/lang-markdown\\`\n- [ ] Read the [typography map](https://deltacomponents.dev/docs/editor)\n- [ ] Wire autosave to the database\n\nTry \\`Cmd+B\\`, \\`Cmd+I\\` and \\`Cmd+L\\` on a selection.\n`;\n\nexport default function EditorDemo() {\n  return <Editor defaultValue={NOTE} className=\"w-full max-w-[560px]\" />;\n}",
   },
   "editor-typography": {
     Component: DemoEditorEditorTypography,
