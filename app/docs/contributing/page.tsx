@@ -10,7 +10,7 @@ export default function ContributingPage() {
   const { prev, next } = neighbours("/docs/contributing");
 
   return (
-    <div className="flex flex-col gap-8 px-4 sm:px-6">
+    <div className="flex flex-col gap-8 px-5 sm:px-6">
       <DocHeader
         title="Contributing"
         description="Contributions are welcome, within a narrow scope"

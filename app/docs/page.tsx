@@ -20,7 +20,7 @@ export default function DocsIndex() {
   const { prev, next } = neighbours("/docs");
 
   return (
-    <div className="flex flex-col gap-8 px-4 sm:px-6">
+    <div className="flex flex-col gap-8 px-5 sm:px-6">
       <DocHeader
         title="Introduction"
         description="What Delta Components is, and how to use it"
