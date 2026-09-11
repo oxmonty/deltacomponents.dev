@@ -38,7 +38,7 @@ function Alert({
       data-slot="alert"
       data-type={type}
       className={cn(
-        "p-4 text-base leading-normal",
+        "rounded-xs p-4 text-base leading-normal",
         "bg-(--alert) text-[#0a0a0a] dark:bg-(--alert)/15 dark:text-(--alert)",
         alertTypes[type],
         className
