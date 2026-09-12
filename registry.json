@@ -279,7 +279,6 @@
       ],
       "registryDependencies": [
         "utils",
-        "font-weight",
         "icon-context",
         "tokens"
       ],

@@ -12,24 +12,23 @@ import { Button as ButtonPrimitive } from "@base-ui/react/button";
 import { cva, type VariantProps } from "class-variance-authority";
 import type { IconComponent } from "@/registry/lib/icon-context";
 import { cn } from "@/registry/lib/utils";
-import { fontWeights } from "@/registry/lib/font-weight";
 
-// The two-step size ladder shared by every control (default = 36px control
-// height, compact = 28px for dense surfaces) rides `--control-*` custom
-// properties instead of two sets of literal classes — see the size ladder in
-// globals.css. `:root` carries the default values; `[data-size="compact"]`
-// overrides them, either from an ancestor (e.g. a docs-only SizeProvider) or
-// from this component's own root (see `resolvedSize` below), so a button
-// resolves the right size whether it's driven by an explicit prop or by
-// whatever scope it's rendered in — with no context import required.
-const controlSize =
-  "h-[var(--control-h,36px)] px-[var(--control-px,16px)] text-[length:var(--control-text,13px)] gap-[var(--control-gap,6px)]";
-const iconOnlySize =
-  "size-[var(--control-icon-box,36px)] p-0 [&_svg]:size-[var(--control-icon-glyph,16px)]";
+// The size ladder shared by every control — sm 32px, default 36px, lg 40px,
+// shadcn's heights — rides `--control-*` custom properties instead of literal
+// classes, so one set of classes serves every scope. `:root` carries the
+// values; `[data-size="compact"]` shifts the ladder down a step, either from an
+// ancestor (e.g. a docs-only SizeProvider) or from this component's own root
+// (see `resolvedSize` below), so a button resolves the right size whether it's
+// driven by an explicit prop or by whatever scope it's rendered in — with no
+// context import required. `compact` is sm inside that scope: still 28px.
+const controlSize = (h: string, px: string) =>
+  `${h} ${px} text-[length:var(--control-text,13px)] gap-[var(--control-gap,6px)]`;
+const iconOnlySize = (box: string) =>
+  `${box} p-0 [&_svg]:size-[var(--control-icon-glyph,16px)]`;
 
 const buttonVariants = cva(
   [
-    "group relative isolate inline-flex items-center justify-center outline-none cursor-pointer",
+    "group relative isolate inline-flex items-center justify-center outline-none cursor-pointer font-medium",
     "rounded-[var(--radius-button,var(--radius,0.5rem))]",
     "transition-colors duration-80",
     "disabled:opacity-50 disabled:pointer-events-none",
@@ -44,10 +43,12 @@ const buttonVariants = cva(
         ghost: "text-muted-foreground hover:text-foreground",
       },
       size: {
-        default: controlSize,
-        compact: controlSize,
-        icon: iconOnlySize,
-        "icon-compact": iconOnlySize,
+        sm: controlSize("h-[var(--control-h-sm,32px)]", "px-[var(--control-px-sm,12px)]"),
+        default: controlSize("h-[var(--control-h,36px)]", "px-[var(--control-px,16px)]"),
+        lg: controlSize("h-[var(--control-h-lg,40px)]", "px-[var(--control-px-lg,24px)]"),
+        "icon-sm": iconOnlySize("size-[var(--control-icon-box-sm,32px)]"),
+        icon: iconOnlySize("size-[var(--control-icon-box,36px)]"),
+        "icon-lg": iconOnlySize("size-[var(--control-icon-box-lg,40px)]"),
       },
       iconLeft: { true: "" },
       iconRight: { true: "" },
@@ -63,33 +64,44 @@ const buttonVariants = cva(
   }
 );
 
-type ButtonSizeCanonical = "default" | "compact" | "icon" | "icon-compact";
-
-/** Public size values: the canonical two-size scale plus the pre-sizes-system
- *  aliases, kept so existing call sites keep compiling. Aliases resolve onto
- *  the canonical ladder (sm → compact; md/lg → default). */
-type ButtonSize =
-  | ButtonSizeCanonical
+type ButtonSizeCanonical =
   | "sm"
-  | "md"
+  | "default"
   | "lg"
   | "icon-sm"
+  | "icon"
   | "icon-lg";
 
-const legacySizeAliases: Partial<Record<ButtonSize, ButtonSizeCanonical>> = {
-  sm: "compact",
+/** Public size values: the canonical ladder plus `compact`/`icon-compact` for
+ *  the dense 28px control, and `md`, kept so existing call sites compile. */
+type ButtonSize = ButtonSizeCanonical | "compact" | "icon-compact" | "md";
+
+/** `compact` is `sm` rendered inside the compact scope — the ladder shifted
+ *  down a step lands it back on 28px, the height it has always had. */
+const sizeAliases: Partial<Record<ButtonSize, ButtonSizeCanonical>> = {
+  compact: "sm",
+  "icon-compact": "icon-sm",
   md: "default",
-  lg: "default",
-  "icon-sm": "icon-compact",
-  "icon-lg": "icon",
+};
+
+/** The spinner tracks the button's own box, so it stays proportionate on every
+ *  step rather than reading the default one's height at all three. */
+const spinnerBox: Record<ButtonSizeCanonical, string> = {
+  sm: "size-[var(--control-h-sm,32px)]",
+  default: "size-[var(--control-h,36px)]",
+  lg: "size-[var(--control-h-lg,40px)]",
+  "icon-sm": "size-[var(--control-icon-box-sm,32px)]",
+  icon: "size-[var(--control-icon-box,36px)]",
+  "icon-lg": "size-[var(--control-icon-box-lg,40px)]",
 };
 
 interface ButtonProps
   extends ButtonHTMLAttributes<HTMLButtonElement>,
     Omit<VariantProps<typeof buttonVariants>, "size"> {
-  /** Omitted, the button follows the ambient `data-size` scope (default 36px,
-   *  compact 28px) — see the `--control-*` tokens in globals.css. Legacy
-   *  sm/md/lg values still resolve. */
+  /** sm 32px, default 36px, lg 40px, and the `icon-*` squares to match.
+   *  Omitted, the button follows the ambient `data-size` scope, where compact
+   *  shifts the ladder down a step — see the `--control-*` tokens in
+   *  globals.css. `compact`/`icon-compact` are the dense 28px control. */
   size?: ButtonSize;
   /** When true, the given single React-element child becomes the rendered element (slot-style). */
   asChild?: boolean;
@@ -200,11 +212,10 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     // ancestor via the `--control-*` vars in buttonVariants, CSS handles
     // that resolution on its own.
     const resolvedSize: ButtonSizeCanonical = size
-      ? legacySizeAliases[size] ?? (size as ButtonSizeCanonical)
+      ? sizeAliases[size] ?? (size as ButtonSizeCanonical)
       : "default";
-    const isIconOnly = resolvedSize === "icon" || resolvedSize === "icon-compact";
-    const isCompact =
-      resolvedSize === "compact" || resolvedSize === "icon-compact";
+    const isIconOnly = resolvedSize.startsWith("icon");
+    const isCompact = size === "compact" || size === "icon-compact";
     // Best-effort JS fallback for icon components that don't size off the
     // `size-[var(--control-icon-glyph,16px)]` class below (e.g. a non-SVG glyph
     // font) — accurate whenever `size` was passed explicitly, otherwise just
@@ -212,13 +223,12 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     const iconSize = isCompact ? 14 : 16;
     // A control label is an affordance, not prose: at the 13px control size
     // regular reads too light, most visibly on `primary`, where light-on-dark
-    // optically thins. `medium`'s opsz pairing is calibrated at this size, so
-    // the extra weight costs no advance width (see registry/lib/font-weight.ts).
-    // Spread last so a caller's own `style` still wins.
-    const labelStyle: React.CSSProperties = {
-      fontVariationSettings: fontWeights.medium,
-      ...style,
-    };
+    // optically thins. The weight is `font-medium` on the root rather than the
+    // `fontWeights.medium` variation (450): that pairing exists to hold a
+    // label's width while the weight ANIMATES, which a button's never does, and
+    // 500 is what Tabs' triggers carry — a control should not read lighter than
+    // the tab strip beside it.
+    const labelStyle: React.CSSProperties = { ...style };
     const bgClass = active
       ? activeBgVariants[variant ?? "primary"]
       : bgVariants[variant ?? "primary"];
@@ -284,7 +294,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
                 {/* Tracks the button height so the loading glyph stays
                     proportionate across sizes, ambient or explicit. */}
                 <svg
-                  className="size-[var(--control-h,36px)]"
+                  className={spinnerBox[resolvedSize]}
                   viewBox="0 0 24 24"
                   fill="none"
                 >

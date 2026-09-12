@@ -21,12 +21,19 @@ import type { PlaygroundProps } from "./types";
 // sync in the doc page's Code tab.
 
 type PlayVariant = "primary" | "secondary" | "tertiary" | "ghost";
-type PlaySize = "compact" | "default";
+// `compact` sits below the ladder rather than on it, and is what the site-wide
+// size step resolves to — so it stays selectable here alongside sm/default/lg.
+type PlaySize = "compact" | "sm" | "default" | "lg";
 
 // "Icon only" swaps the text sizes for their square counterparts.
-const ICON_ONLY_SIZE: Record<PlaySize, "icon-compact" | "icon"> = {
+const ICON_ONLY_SIZE: Record<
+  PlaySize,
+  "icon-compact" | "icon-sm" | "icon" | "icon-lg"
+> = {
   compact: "icon-compact",
+  sm: "icon-sm",
   default: "icon",
+  lg: "icon-lg",
 };
 
 function buildButtonCode(o: {
@@ -128,7 +135,7 @@ export function ButtonPlayground({ children }: PlaygroundProps) {
     const pick = <T,>(arr: readonly T[]) =>
       arr[Math.floor(Math.random() * arr.length)];
     setVariant(pick(["primary", "secondary", "tertiary", "ghost"] as const));
-    setSizeOverride(pick(["compact", "default"] as const));
+    setSizeOverride(pick(["compact", "sm", "default", "lg"] as const));
     setIconOnly(Math.random() > 0.85);
     setLeading(Math.random() > 0.5);
     setTrailing(Math.random() > 0.75);
@@ -160,7 +167,9 @@ export function ButtonPlayground({ children }: PlaygroundProps) {
             onChange={(v) => setSizeOverride(v as PlaySize)}
             options={[
               { value: "compact", label: "Compact" },
+              { value: "sm", label: "Small" },
               { value: "default", label: "Default" },
+              { value: "lg", label: "Large" },
             ]}
           />
         </PlayField>

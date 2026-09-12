@@ -518,12 +518,22 @@ html, body {
      directly, instead of a SizeProvider React context. Default here; [data-
      size="compact"] below overrides it for whatever subtree a docs-only
      SizeProvider (lib/docs/size-context.tsx), or Button's own root when an
-     explicit compact size is requested, scopes. */
+     explicit compact size is requested, scopes.
+
+     Three steps, at shadcn's heights: sm 32, default 36, lg 40. The compact
+     scope shifts the whole ladder down one step, so `compact` — which is sm
+     inside that scope — stays the 28px dense control it has always been. */
+  --control-h-sm: 32px;
   --control-h: 36px;
+  --control-h-lg: 40px;
+  --control-px-sm: 12px;
   --control-px: 16px;
+  --control-px-lg: 24px;
   --control-text: 13px;
   --control-gap: 6px;
+  --control-icon-box-sm: 32px;
   --control-icon-box: 36px;
+  --control-icon-box-lg: 40px;
   --control-icon-glyph: 16px;
   --control-icon-pad: 10px;
 }
@@ -550,11 +560,17 @@ html, body {
   --fs-body: 12px;
   --fs-caption: 12px;
 
-  --control-h: 28px;
+  --control-h-sm: 28px;
+  --control-h: 32px;
+  --control-h-lg: 36px;
+  --control-px-sm: 10px;
   --control-px: 12px;
+  --control-px-lg: 16px;
   --control-text: 12px;
   --control-gap: 4px;
-  --control-icon-box: 28px;
+  --control-icon-box-sm: 28px;
+  --control-icon-box: 32px;
+  --control-icon-box-lg: 36px;
   --control-icon-glyph: 14px;
   --control-icon-pad: 6px;
 }
@@ -565,11 +581,17 @@ html, body {
    Only the control tokens: a Button setting this on its own root should not
    also reset the page's type scale for its label. */
 [data-size="default"] {
+  --control-h-sm: 32px;
   --control-h: 36px;
+  --control-h-lg: 40px;
+  --control-px-sm: 12px;
   --control-px: 16px;
+  --control-px-lg: 24px;
   --control-text: 13px;
   --control-gap: 6px;
+  --control-icon-box-sm: 32px;
   --control-icon-box: 36px;
+  --control-icon-box-lg: 40px;
   --control-icon-glyph: 16px;
   --control-icon-pad: 10px;
 }
