@@ -26,7 +26,10 @@ import { BUTTON_ITEMS, TOOLTIP_COPY, TABS_ITEMS } from "@/app/components/demo-da
 
 function ButtonPreview() {
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    // justify-center, not just the stage's centring: the row wraps on a phone
+    // and a wrapped line is laid out from the start edge, so the second row of
+    // buttons sat left of the first.
+    <div className="flex flex-wrap items-center justify-center gap-2">
       {BUTTON_ITEMS.map((item) => (
         <Button key={item.label} variant={item.variant}>
           {item.label}
@@ -94,7 +97,7 @@ function TabsPreview() {
     // copy share a left edge, centred as one unit by the card's stage. Needs
     // the two-column card — in one column the stage is 213px against the
     // strip's 232, and a `w-fit` block that cannot shrink pins left instead.
-    <Tabs defaultValue="account" className="w-fit max-w-full">
+    <Tabs defaultValue="account" size="lg" className="w-fit max-w-full">
       <TabsList>
         {TABS_ITEMS.map((tab) => (
           <TabsTrigger key={tab.value} value={tab.value}>
