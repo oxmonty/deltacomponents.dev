@@ -788,6 +788,7 @@ export function Code({
 
         {expandable && !isExpanded && (
           <div
+            data-slot="code-expand-overlay"
             className="absolute inset-x-0 bottom-0 z-20 flex h-24 items-end justify-center rounded-b-[var(--radius-bg,var(--radius,0.5rem))] pb-4"
             style={{
               background: `linear-gradient(to top, ${

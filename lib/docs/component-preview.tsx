@@ -8,7 +8,6 @@ import { useIcon } from "@/registry/lib/icon-context";
 import { Tooltip } from "@/registry/ui/tooltip";
 import { Code } from "@/registry/ui/code";
 import { demos } from "@/lib/docs/demos.generated";
-import { useNarrowFrame } from "@/lib/hooks/use-narrow-frame";
 
 /** Snippets longer than this collapse behind an Expand affordance; shorter
  *  ones render in full. Roughly the point where a reader stops taking the
@@ -92,7 +91,6 @@ export function ComponentPreview({
   caption,
   children,
 }: ComponentPreviewProps) {
-  const narrow = useNarrowFrame();
   const shape = useShape();
   // A named demo supplies both halves of the frame. An unknown name is a hard
   // error rather than an empty frame: a typo in a doc page should fail loudly
@@ -126,9 +124,16 @@ export function ComponentPreview({
   // whole thing under the Expand gradient for no gain — the affordance would
   // be taller than the code it covers. A one- or two-line sample stays open on
   // a phone for the same reason.
-  const collapsible =
-    (resolvedCode?.trim().split("\n").length ?? 0) >
-    (narrow ? COLLAPSE_AFTER_LINES_NARROW : COLLAPSE_AFTER_LINES);
+  //
+  // Which width collapses is a MEDIA QUERY, never a measurement. Reading the
+  // width in an effect meant the server painted a sample in the 5–12 line band
+  // open and the effect closed it a frame later, so arriving on a page flashed
+  // the full block before the gradient and its button dropped over it.
+  const lineCount = resolvedCode?.trim().split("\n").length ?? 0;
+  const collapsible = lineCount > COLLAPSE_AFTER_LINES_NARROW;
+  // Long enough for a phone, short enough for a desktop: the markup collapses
+  // either way and CSS lifts the clip and hides the affordance from `md` up.
+  const collapsesOnlyWhenNarrow = collapsible && lineCount <= COLLAPSE_AFTER_LINES;
 
   const frame = (
     <div
@@ -223,9 +228,17 @@ export function ComponentPreview({
             language="tsx"
             showLineNumbers={false}
             expandable={collapsible}
-            collapsedHeight={codeCollapsedHeight}
+            collapsedHeight={
+              collapsesOnlyWhenNarrow
+                ? `var(--code-collapse-h, ${codeCollapsedHeight})`
+                : codeCollapsedHeight
+            }
             expandLabel={expandLabel}
-            className="rounded-none border-0 border-t border-border/60 text-body"
+            className={`rounded-none border-0 border-t border-border/60 text-body${
+              collapsesOnlyWhenNarrow
+                ? " md:[--code-collapse-h:none] md:[&_[data-slot=code-expand-overlay]]:hidden"
+                : ""
+            }`}
           />
         )}
       </div>
