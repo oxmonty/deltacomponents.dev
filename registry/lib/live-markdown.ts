@@ -700,10 +700,16 @@ export function liveMarkdownBase(placeholderText = ""): Extension[] {
     ...(isTouchDevice() ? [] : [drawSelection()]),
     keymap.of([...blurKeymap, ...formattingKeymap, ...defaultKeymap, ...historyKeymap]),
     EditorView.lineWrapping,
-    cmPlaceholder(placeholderText),
+    // Only with text to show: the extension writes `aria-placeholder` from
+    // whatever it is given, and an empty one is an attribute that says nothing.
+    ...(placeholderText ? [cmPlaceholder(placeholderText)] : []),
     keyboardAware,
     EditorView.contentAttributes.of({
-      "aria-label": placeholderText,
+      // A textbox has to be named. The placeholder is the caller's own words
+      // for this field, so it names it when there is one; without it the
+      // fallback at least says what the field is, where "" left a screen
+      // reader announcing an unlabelled edit box.
+      "aria-label": placeholderText || "Markdown editor",
       // CodeMirror ships code-editor defaults (spellcheck off, autocorrect
       // off, autocapitalize off). This is prose: without these, typing a
       // sentence on a phone gives you no capital, no autocorrect and no
