@@ -28,7 +28,7 @@ function ButtonPreview() {
   return (
     <div className="flex flex-wrap items-center gap-2">
       {BUTTON_ITEMS.map((item) => (
-        <Button key={item.label} variant={item.variant} size="sm">
+        <Button key={item.label} variant={item.variant}>
           {item.label}
         </Button>
       ))}
@@ -41,7 +41,7 @@ function TooltipPreview() {
   return (
     <div className="relative z-10">
       <Tooltip content={TOOLTIP_COPY.content}>
-        <Button variant="secondary" size="sm">{TOOLTIP_COPY.trigger}</Button>
+        <Button variant="secondary">{TOOLTIP_COPY.trigger}</Button>
       </Tooltip>
     </div>
   );
