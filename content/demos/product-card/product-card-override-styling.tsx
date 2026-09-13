@@ -19,10 +19,9 @@ export default function ProductCardOverrideStyling() {
       <ProductCardImage
         src="/images/products/twemco-clock.png"
         alt="Twemco Clock"
-        // The resting ground and the mouse-enter ground are two separate
-        // utilities: pass only the first and the component's own
-        // `hover:bg-muted/80` still takes over on hover.
-        className="rounded-lg bg-stone-200 hover:bg-stone-300 dark:bg-stone-900 dark:hover:bg-stone-800"
+        // Corner only: the well keeps the component's own `bg-muted` ground,
+        // the same one every other card on this page rests on.
+        className="rounded-lg"
       />
       <ProductCardContent className="px-1 pt-3 pb-1">
         <ProductCardHeader>
