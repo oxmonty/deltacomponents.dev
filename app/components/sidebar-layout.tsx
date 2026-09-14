@@ -13,6 +13,7 @@ import { SiteSidebar } from "@/app/components/sidebar";
 import { SiteHeader } from "@/app/components/site-header";
 import { RightPanel } from "@/app/components/right-panel";
 import { SiteFooter } from "@/app/components/site-footer";
+import { SiteCommandMenu, SiteCommandMenuProvider } from "@/app/components/site-command-menu";
 import { RightRailProvider } from "@/lib/right-rail";
 import { showShortcutToast } from "@/lib/docs/settings-toast";
 import { pageOrder } from "@/lib/docs/components";
@@ -171,6 +172,7 @@ export function SidebarLayout({ children }: { children: ReactNode }) {
 
   return (
     <RightRailProvider>
+      <SiteCommandMenuProvider>
       {/* The Sidebar component, dogfooded: the provider owns the desktop
           collapse ("[" + cookie persistence, restored by SidebarCookieSync)
           and the mobile sheet. The site switches rail ↔ sheet at xl, so the
@@ -179,6 +181,7 @@ export function SidebarLayout({ children }: { children: ReactNode }) {
         <SiteSidebar />
         <SidebarCookieSync />
         <CloseSheetOnNavigate />
+        <SiteCommandMenu />
 
         {/* Desktop collapse uses [ or the rail; mobile's own menu lives in
             SiteHeader now, which replaces this sidebar's sheet on phones. */}
@@ -195,6 +198,7 @@ export function SidebarLayout({ children }: { children: ReactNode }) {
         {/* Desktop right panel */}
         <RightPanel />
       </SidebarProvider>
+      </SiteCommandMenuProvider>
     </RightRailProvider>
   );
 }
