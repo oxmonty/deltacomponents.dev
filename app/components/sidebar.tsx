@@ -45,8 +45,10 @@ function NavSearch() {
         onClick={() => setOpen(true)}
         className={cn(
           "text-muted-foreground flex w-full cursor-pointer items-center bg-transparent pr-12 pl-8 text-left outline-none",
-          "ring-1 ring-transparent transition-[background-color,box-shadow] duration-80",
-          "hover:bg-muted/50 hover:ring-border",
+          // Ringed at rest, unlike SidebarInput's ladder: it is a trigger,
+          // and a bare label reads as a heading rather than a field.
+          "ring-border ring-1 transition-[background-color,box-shadow] duration-80",
+          "hover:bg-muted/50",
           "focus-visible:ring-[color:var(--focus-ring,#6B97FF)]",
           size.variant === "compact" ? "h-7" : "h-8",
           size.text,
