@@ -40,6 +40,9 @@ export default function Page() {
         </DocHeader>
       </div>
       <div className="w-full max-w-[1200px] mx-auto px-5 sm:px-6">
+        {/* The previews carry their own h3s (a product card's title), so the
+            outline needs a level between the page title and them. */}
+        <h2 className="sr-only">Components</h2>
         <BentoGrid components={visibleComponents} />
       </div>
       {/* Tracks the bento grid's width, not the 680px reading column the header

@@ -14,7 +14,9 @@ export const PATRICK_DARK: PrismTheme = {
   styles: [
     {
       types: ["comment", "prolog", "cdata"],
-      style: { color: "#6f6f68", fontStyle: "italic" },
+      // Lifted from the reference's #6f6f68 (3.7:1 on the block) to clear
+      // 4.5:1; same warm grey, two steps lighter.
+      style: { color: "#85857c", fontStyle: "italic" },
     },
     {
       // The reference keeps braces, dots, semicolons and operators unaccented.

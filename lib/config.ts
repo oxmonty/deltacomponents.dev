@@ -55,7 +55,7 @@ export const site = {
      *  the cheaper one where the avatar sits in the page's own scroll. */
     avatar: {
       vector: "/portrait.svg",
-      raster: "/portrait.png",
+      raster: "/portrait.webp",
     },
     email: "patrickprunty.business@gmail.com",
     twitter: "@pprunty_",

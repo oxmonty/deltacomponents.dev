@@ -54,6 +54,7 @@ export function BentoCard({ slug, name, isNew, gridSize = "small", action, class
         style={{ fontVariationSettings: fontWeights.medium }}
       >
         {name}
+        {slug && <span className="sr-only"> documentation</span>}
       </span>
       {slug && (
         <ArrowRight
@@ -104,10 +105,12 @@ export function BentoCard({ slug, name, isNew, gridSize = "small", action, class
           markup, and a click on the pen must not navigate — so overlaying is
           what buys the link its full width. */}
       <div className="relative shrink-0 border-t border-border/40">
+        {/* Named by its content (plus the hidden "documentation"), not an
+            aria-label: the New badge is visible text too, and a label that
+            omits it fails the label-in-name check. */}
         {slug ? (
           <Link
             href={`/docs/${slug}`}
-            aria-label={`View ${name} documentation`}
             className="group/link flex items-center gap-2 px-4 py-3 rounded-b-xl transition-colors duration-80 hover:bg-hover outline-none focus-visible:shadow-[inset_0_0_0_1px_var(--focus-ring,#6B97FF)]"
           >
             {footerLabel}

@@ -520,6 +520,8 @@ function useMenuScope(containerRef: RefObject<HTMLElement | null>): MenuScope {
   const [hoverShown, dismissHover] = useCssPresence(hoverItems);
   const [focusShown, dismissFocus] = useCssPresence(focusItems);
 
+  // aria-hidden on each: they are direct children of the <ul>, and a list
+  // whose children are not all items fails the accessibility list check.
   const overlays = isMeasured ? (
     <>
       {/* Active row backgrounds — one per active row (see activeRects above) */}
@@ -529,6 +531,7 @@ function useMenuScope(containerRef: RefObject<HTMLElement | null>): MenuScope {
           onTransitionEnd={(e) => {
             if (b.exiting && e.propertyName === "opacity") dismissActive(b.key);
           }}
+          aria-hidden
           className={`absolute ${shape.bg} bg-active pointer-events-none`}
           style={{
             top: b.rect.top,
@@ -554,6 +557,7 @@ function useMenuScope(containerRef: RefObject<HTMLElement | null>): MenuScope {
           onTransitionEnd={(e) => {
             if (b.exiting && e.propertyName === "opacity") dismissHover(b.key);
           }}
+          aria-hidden
           className={cn(
             `absolute ${shape.bg} bg-hover pointer-events-none`,
             // A fresh hover session fades in anchored on hoverAnchorRect — a
@@ -586,6 +590,7 @@ function useMenuScope(containerRef: RefObject<HTMLElement | null>): MenuScope {
           onTransitionEnd={(e) => {
             if (b.exiting && e.propertyName === "opacity") dismissFocus(b.key);
           }}
+          aria-hidden
           className={`absolute ${shape.focusRing} pointer-events-none z-20 border border-[color:var(--focus-ring,#6B97FF)]`}
           style={{
             left: b.rect.left - 2,

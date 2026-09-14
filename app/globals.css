@@ -43,7 +43,9 @@
      as near-white, leaving anything sitting on it (a Tabs track, say) with no
      separation. A greyer value gives muted real semantic presence. */
   --muted: #F4F4F5;
-  --muted-foreground: #737373;
+  /* #6B6B6B, not shadcn's #737373: that one is 4.3:1 on --muted, just under
+     the 4.5:1 body-text floor. This clears it on every light surface. */
+  --muted-foreground: #6B6B6B;
   --accent: #E5E5E5;
   --accent-foreground: #171717;
   --destructive: #EF4444;
@@ -1147,6 +1149,15 @@ html.transitioning *::after {
     grid-auto-flow: dense;
     grid-auto-rows: 300px;
   }
+}
+
+/* The rail's pre-hydration collapsed pose. The root layout's inline script
+   sets the class from the sidebar_state cookie before first paint;
+   SidebarCookieSync (sidebar-layout.tsx) lifts it once React's own state is
+   collapsed, so the width never transitions from open to shut on load. */
+html.sidebar-collapsed [data-slot="sidebar"] {
+  width: 0 !important;
+  transition: none !important;
 }
 
 /* ============================================================================

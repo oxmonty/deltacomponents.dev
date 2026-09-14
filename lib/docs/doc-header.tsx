@@ -61,6 +61,7 @@ export function DocHeader({
       );
     }
 
+    const label = `${direction === "prev" ? "Previous" : "Next"}: ${link.name}`;
     return (
       <Tooltip
         content={
@@ -69,13 +70,10 @@ export function DocHeader({
           </span>
         }
       >
-        <Link
-          href={link.href}
-          aria-label={`${direction === "prev" ? "Previous" : "Next"}: ${link.name}`}
-          className="outline-none"
-          tabIndex={-1}
-        >
-          <Button variant="ghost" size={iconSize}>
+        <Link href={link.href} aria-label={label} className="outline-none" tabIndex={-1}>
+          {/* The link is out of the tab order, so the button is what focus
+              lands on — it needs the name too. */}
+          <Button variant="ghost" size={iconSize} aria-label={label}>
             <ArrowRight className={rotate} />
           </Button>
         </Link>

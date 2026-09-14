@@ -1,11 +1,10 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { Button } from "@/registry/ui/button";
 import { Tooltip } from "@/registry/ui/tooltip";
 import GlyphBasic from "@/content/demos/glyph/glyph-basic";
 import AlertDemo from "@/content/demos/alert/alert-demo";
-import { Code } from "@/registry/ui/code";
-import { Editor } from "@/registry/ui/editor";
 import { PATRICK_DARK } from "@/lib/docs/code-themes";
 import {
   Tabs,
@@ -23,6 +22,42 @@ import {
   ProductCardTitle,
 } from "@/registry/ui/product-card";
 import { BUTTON_ITEMS, TOOLTIP_COPY, TABS_ITEMS } from "@/app/components/demo-data";
+
+// A seeded document rather than an empty editor: the card has to show what
+// the component does in one glance, and an empty editor shows a placeholder.
+// One of each construct — heading, inline marks, a bullet glyph, a checked
+// task — because the concealment is the point and you only see it happen
+// against syntax that ISN'T there.
+const EDITOR_DOC = `# Field notes
+
+Click or touch here to begin editing — the syntax hides wherever the caret isn't.
+
+- Bullets, [links](https://deltacomponents.dev) and \`code\`
+
+- [x] Conceal the marks away from the caret
+- [ ] Swap the typography set
+`;
+
+// Client-only, loaded after hydration: Prism and CodeMirror are the two
+// heaviest things on the showcase and both cards sit below the fold on a
+// phone. Each placeholder holds the mounted size so nothing shifts when the
+// chunk lands — the Code one is the block's measured height at the default
+// size, the Editor one is the same text the component itself shows until
+// CodeMirror takes over.
+// ponytail: the Code placeholder is a fixed height; measure again if the
+// snippet or its typography changes.
+const Code = dynamic(() => import("@/registry/ui/code").then((m) => m.Code), {
+  ssr: false,
+  loading: () => <div aria-hidden className="h-[313px] w-full" />,
+});
+const Editor = dynamic(() => import("@/registry/ui/editor").then((m) => m.Editor), {
+  ssr: false,
+  loading: () => (
+    <div aria-hidden className="text-base leading-7 whitespace-pre-wrap">
+      {EDITOR_DOC}
+    </div>
+  ),
+});
 
 function ButtonPreview() {
   return (
@@ -123,20 +158,6 @@ function TabsPreview() {
   );
 }
 
-// A seeded document rather than an empty editor: the card has to show what
-// the component does in one glance, and an empty editor shows a placeholder.
-// One of each construct — heading, inline marks, a bullet glyph, a checked
-// task — because the concealment is the point and you only see it happen
-// against syntax that ISN'T there.
-const EDITOR_DOC = `# Field notes
-
-Click or touch here to begin editing — the syntax hides wherever the caret isn't.
-
-- Bullets, [links](https://deltacomponents.dev) and \`code\`
-
-- [x] Conceal the marks away from the caret
-- [ ] Swap the typography set
-`;
 
 function EditorPreview() {
   return (

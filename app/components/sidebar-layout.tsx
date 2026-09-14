@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useRef, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/registry/lib/utils";
 import {
@@ -19,6 +19,12 @@ import { pageOrder } from "@/lib/docs/components";
 
 // Left/right arrows walk the same order the sidebar and pager use.
 const pagePaths = pageOrder.map((p) => p.href);
+
+/** Set on <html> by the root layout's inline script when the sidebar_state
+ *  cookie says collapsed; see SidebarCookieSync. app/layout.tsx repeats the
+ *  literal (a server component can't import a client module's constant), so
+ *  change both. */
+const SIDEBAR_COLLAPSED_CLASS = "sidebar-collapsed";
 
 /** Toasts the sidebar's "[" toggle the way the settings shortcuts toast
  *  theirs: a bare "[" press arms a short window, and the provider's own
@@ -84,6 +90,24 @@ function DesktopReopenTrigger() {
   );
 }
 
+/** Restores the persisted collapsed state on the client. The root layout is
+ *  static (reading the cookie on the server made every page dynamic, which
+ *  pushed the metadata out of <head> and made nothing cacheable), so the
+ *  inline script in app/layout.tsx puts `sidebar-collapsed` on <html> before
+ *  first paint and globals.css pins the rail shut under it. This syncs React
+ *  to that, then lifts the class only once the state matches — lifting it
+ *  earlier would let the width transition run from 16rem to 0. */
+function SidebarCookieSync() {
+  const { open, setOpen } = useSidebar();
+  useLayoutEffect(() => {
+    if (document.documentElement.classList.contains(SIDEBAR_COLLAPSED_CLASS)) setOpen(false);
+  }, [setOpen]);
+  useEffect(() => {
+    if (!open) document.documentElement.classList.remove(SIDEBAR_COLLAPSED_CLASS);
+  }, [open]);
+  return null;
+}
+
 /** Closes the mobile sheet whenever the route changes. */
 function CloseSheetOnNavigate() {
   const { setOpenMobile } = useSidebar();
@@ -94,13 +118,7 @@ function CloseSheetOnNavigate() {
   return null;
 }
 
-interface SidebarLayoutProps {
-  children: ReactNode;
-  /** Server-read sidebar_state cookie value (see app/layout.tsx). */
-  defaultOpen?: boolean;
-}
-
-export function SidebarLayout({ children, defaultOpen = true }: SidebarLayoutProps) {
+export function SidebarLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   // Arrow key navigation between pages — ref-based so held keys keep advancing
@@ -154,11 +172,12 @@ export function SidebarLayout({ children, defaultOpen = true }: SidebarLayoutPro
   return (
     <RightRailProvider>
       {/* The Sidebar component, dogfooded: the provider owns the desktop
-          collapse (⌘B + cookie persistence via app/layout.tsx) and the
-          mobile sheet. The site switches rail ↔ sheet at xl, so the
+          collapse ("[" + cookie persistence, restored by SidebarCookieSync)
+          and the mobile sheet. The site switches rail ↔ sheet at xl, so the
           breakpoint is 1280 instead of the component's 768 default. */}
-      <SidebarProvider defaultOpen={defaultOpen} mobileBreakpoint={1280} className="min-h-screen">
+      <SidebarProvider mobileBreakpoint={1280} className="min-h-screen">
         <SiteSidebar />
+        <SidebarCookieSync />
         <CloseSheetOnNavigate />
 
         {/* Desktop collapse uses [ or the rail; mobile's own menu lives in

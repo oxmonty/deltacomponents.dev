@@ -100,7 +100,13 @@ export function GitHubStarButton({ showCount = true }: { showCount?: boolean }) 
       // deliberately ignored at that size, so passing it there renders an
       // empty button.
       leadingIcon={showCount ? GitHubIcon : undefined}
-      aria-label="View on GitHub"
+      // The visible count has to appear in the name, or the label-in-name
+      // check fails for every screen reader user who reads it off the screen.
+      aria-label={
+        showCount && stars !== null
+          ? `${formatStars(stars)} stars on GitHub`
+          : "View on GitHub"
+      }
       className={shapeCtx.button}
       onClick={() =>
         window.open(

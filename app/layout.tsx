@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import { cookies } from "next/headers";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -23,6 +22,11 @@ import { inter } from "@/app/fonts";
  *  address bar with this, so a value off by a shade reads as a seam across
  *  the bottom of the screen. */
 const META_THEME_COLORS = { light: "#FAFAFA", dark: "#171717" };
+
+/** Mirrors SIDEBAR_COLLAPSED_CLASS in sidebar-layout.tsx. A literal here
+ *  rather than the import: that module is client-side, and a server
+ *  component importing its constant gets a client reference, not the string. */
+const SIDEBAR_COLLAPSED_CLASS = "sidebar-collapsed";
 
 // The root defaults every route inherits and merges over. `createMetadata`
 // supplies the dynamic OG card; the icons and manifest are site-wide and have
@@ -73,17 +77,16 @@ export const metadata: Metadata = {
   manifest: "/metadata/site.webmanifest",
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // Server-side read of the sidebar's persisted open state so the rail
-  // renders in its last position with no post-hydration flicker. A missing
-  // cookie means open — the component's own default.
-  const cookieStore = await cookies();
-  const sidebarDefaultOpen = cookieStore.get("sidebar_state")?.value !== "false";
-
+  // No request APIs here (the sidebar cookie used to be read with
+  // `cookies()`): one dynamic read in the root made every route dynamic,
+  // which streams the metadata into <body> — where crawlers that only scan
+  // <head> miss it — and sends every page with no-store. The cookie is now
+  // applied by the inline script below, before first paint.
   return (
     // Deliberately NO data-scroll-behavior attribute. It reads like the opt-in
     // for smooth route scrolling and is the opposite: it tells the router the
@@ -100,14 +103,21 @@ export default async function RootLayout({
             Written before the script below so the script has a tag to find;
             MetaThemeColor keeps it in step after mount. */}
         <meta name="theme-color" content={META_THEME_COLORS.light} />
+        {/* The star count is fetched after hydration; opening the connection
+            early takes the DNS + TLS round trips off that wait. */}
+        <link rel="preconnect" href="https://api.github.com" crossOrigin="anonymous" />
         {/* Dark mode is a class on <html>, so a system-dark visitor would get
             one light frame before ThemeProvider's effect runs. This blocks
             paint for a microsecond and applies it up front — the class and the
             address-bar tint together. Theme is not persisted, so the OS
-            preference is the whole story. */}
+            preference is the whole story.
+
+            The same trick restores a collapsed sidebar: the cookie the rail
+            writes is read here and pinned as a class, which globals.css turns
+            into a shut rail until SidebarCookieSync has caught React up. */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `try{if(matchMedia('(prefers-color-scheme: dark)').matches){document.documentElement.classList.add('dark');document.querySelector('meta[name="theme-color"]').setAttribute('content','${META_THEME_COLORS.dark}')}}catch(e){}`,
+            __html: `try{if(matchMedia('(prefers-color-scheme: dark)').matches){document.documentElement.classList.add('dark');document.querySelector('meta[name="theme-color"]').setAttribute('content','${META_THEME_COLORS.dark}')}if(/(?:^|; )sidebar_state=false(?:;|$)/.test(document.cookie)){document.documentElement.classList.add('${SIDEBAR_COLLAPSED_CLASS}')}}catch(e){}`,
           }}
         />
       </head>
@@ -134,13 +144,15 @@ export default async function RootLayout({
                     re-waiting the hover delay. Without it every Tooltip falls
                     back to its own provider and the grouping is lost. */}
                 <TooltipProvider>
-                  <SidebarLayout defaultOpen={sidebarDefaultOpen}>{children}</SidebarLayout>
+                  <SidebarLayout>{children}</SidebarLayout>
                   <SettingsToast />
                   <HashScroll />
                   <RouteScrollTop />
                   <MetaThemeColor colors={META_THEME_COLORS} />
-                  <Analytics />
-                  <SpeedInsights />
+                  {/* Both scripts are served by Vercel's edge, so off it they
+                      only 404 in the console. */}
+                  {process.env.VERCEL && <Analytics />}
+                  {process.env.VERCEL && <SpeedInsights />}
                 </TooltipProvider>
               </IconPlaygroundProvider>
             </ThemeProvider>
