@@ -163,11 +163,12 @@ export function SiteCommandMenu() {
         />
         <Dialog.Popup
           className={cn(
-            // No hairline: a 4px halo around the panel instead. --accent, not
-            // --border: the border token is foreground at 12% over nothing,
-            // which disappears against the dimmed scrim, while accent is an
-            // opaque step between the card and the scrim in both themes.
-            "bg-card fixed top-[10vh] left-1/2 z-50 w-[min(560px,calc(100vw-2rem))] -translate-x-1/2 overflow-hidden bg-clip-padding shadow-2xl ring-4 ring-accent outline-none",
+            // No hairline: a 4px halo around the panel instead. Light rings
+            // in --accent, an opaque step between the card and the scrim
+            // (--border is foreground at 12% over nothing and vanishes
+            // there); dark rings far softer, where accent glared. Dark also
+            // takes the Customise card's muted ground rather than --card.
+            "bg-card dark:bg-muted fixed top-[10vh] left-1/2 z-50 w-[min(560px,calc(100vw-2rem))] -translate-x-1/2 overflow-hidden bg-clip-padding shadow-2xl ring-4 ring-accent dark:ring-foreground/10 outline-none",
             shape.bg,
             "transition-[opacity,transform] duration-(--motion-moderate) ease-spring",
             "data-[ending-style]:duration-(--motion-moderate-exit)",
@@ -247,7 +248,9 @@ export function SiteCommandMenu() {
             })}
           </div>
 
-          <div className="border-border/60 bg-muted text-muted-foreground flex h-9 items-center gap-4 border-t px-3 text-[11px]">
+          {/* One step off the panel: muted on the light card, card on the
+              dark muted panel, so the band shows in both. */}
+          <div className="border-border/60 bg-muted dark:bg-card text-muted-foreground flex h-9 items-center gap-4 border-t px-3 text-[11px]">
             <span className="flex items-center gap-1.5">
               <Kbd>↑</Kbd>
               <Kbd>↓</Kbd> navigate
