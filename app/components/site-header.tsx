@@ -6,13 +6,16 @@ import { GitHubStarButton } from "@/app/components/right-panel";
  * Sticky mobile-only header: the rail and right panel already carry
  * everything at xl and up, so this never renders there. Replaces the old
  * floating sidebar trigger and the sidebar sheet's mobile footer — both now
- * live here (see MobileNav).
+ * live here (see MobileNav). The rail arrives earlier, at lg, so from there
+ * the hamburger goes and the header is just the theme and GitHub controls.
  */
 export function SiteHeader() {
   return (
     <header className="bg-background sticky top-0 z-40 w-full xl:hidden">
       <div className="flex h-14 items-center gap-2 px-4">
-        <MobileNav />
+        <div className="lg:hidden">
+          <MobileNav />
+        </div>
         <div className="flex-1" />
         <ThemeToggle />
         {/* Icon only: the star count is right-panel chrome, and on a phone it

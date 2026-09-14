@@ -65,7 +65,7 @@ function SidebarShortcutToast() {
 
 /** Desktop reopen affordance: collapsing the rail (the "[" key, the rail
  *  click) would otherwise leave NO visible way back — the layout's only
- *  trigger is the xl:hidden mobile one. The trigger fades in at the rail's
+ *  trigger is the mobile one. The trigger fades in at the rail's
  *  top-left, carrying its own "Expand sidebar [" tooltip, and fades away
  *  once the rail is open again — the mirror of the right panel's
  *  "Properties panel" reopen button. */
@@ -73,7 +73,7 @@ function DesktopReopenTrigger() {
   const { open } = useSidebar();
   return (
     // Permanently rendered (rather than mounted/unmounted) so the
-    // appear/disappear is a plain CSS transition: `xl:` scopes the open state
+    // appear/disappear is a plain CSS transition: `lg:` scopes the open state
     // to desktop only (mirrors the old `max-xl:hidden`), and `inert` keeps it
     // out of the tab order and off-screen readers while the rail is expanded.
     <div
@@ -82,8 +82,8 @@ function DesktopReopenTrigger() {
       className={cn(
         "fixed top-4 left-4 z-50 hidden opacity-0 scale-95",
         "transition-[opacity,transform,display] duration-(--motion-fast-exit) ease-spring transition-discrete",
-        "xl:data-[open=true]:block xl:data-[open=true]:opacity-100 xl:data-[open=true]:scale-100 xl:data-[open=true]:duration-(--motion-fast)",
-        "xl:starting:data-[open=true]:opacity-0 xl:starting:data-[open=true]:scale-95",
+        "lg:data-[open=true]:block lg:data-[open=true]:opacity-100 lg:data-[open=true]:scale-100 lg:data-[open=true]:duration-(--motion-fast)",
+        "lg:starting:data-[open=true]:opacity-0 lg:starting:data-[open=true]:scale-95",
       )}
     >
       <SidebarTrigger />
@@ -175,9 +175,11 @@ export function SidebarLayout({ children }: { children: ReactNode }) {
       <SiteCommandMenuProvider>
       {/* The Sidebar component, dogfooded: the provider owns the desktop
           collapse ("[" + cookie persistence, restored by SidebarCookieSync)
-          and the mobile sheet. The site switches rail ↔ sheet at xl, so the
-          breakpoint is 1280 instead of the component's 768 default. */}
-      <SidebarProvider mobileBreakpoint={1280} className="min-h-screen">
+          and the mobile sheet. The rail shows from lg (1024) — a laptop-width
+          window keeps it — while the right panel waits for xl; between the
+          two the mobile header stays for its theme and GitHub controls, minus
+          the hamburger. */}
+      <SidebarProvider mobileBreakpoint={1024} className="min-h-screen">
         <SiteSidebar />
         <SidebarCookieSync />
         <CloseSheetOnNavigate />
