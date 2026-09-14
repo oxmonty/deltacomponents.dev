@@ -119,7 +119,14 @@ function CloseSheetOnNavigate() {
   return null;
 }
 
-export function SidebarLayout({ children }: { children: ReactNode }) {
+export function SidebarLayout({
+  children,
+  stars = null,
+}: {
+  children: ReactNode;
+  /** GitHub star count, fetched by the root layout on the server. */
+  stars?: number | null;
+}) {
   const pathname = usePathname();
   const router = useRouter();
   // Arrow key navigation between pages — ref-based so held keys keep advancing
@@ -198,7 +205,7 @@ export function SidebarLayout({ children }: { children: ReactNode }) {
         </SidebarInset>
 
         {/* Desktop right panel */}
-        <RightPanel />
+        <RightPanel stars={stars} />
       </SidebarProvider>
       </SiteCommandMenuProvider>
     </RightRailProvider>

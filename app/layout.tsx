@@ -77,11 +77,29 @@ export const metadata: Metadata = {
   manifest: "/metadata/site.webmanifest",
 };
 
-export default function RootLayout({
+/** The GitHub star count, on the server so it is in the first HTML rather
+ *  than arriving after hydration and resizing the button. Revalidated
+ *  hourly through the fetch cache, which keeps the layout static. */
+async function fetchStars(): Promise<number | null> {
+  try {
+    const res = await fetch(`https://api.github.com/repos/${site.repo}`, {
+      headers: { Accept: "application/vnd.github.v3+json" },
+      next: { revalidate: 3600 },
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return typeof data?.stargazers_count === "number" ? data.stargazers_count : null;
+  } catch {
+    return null;
+  }
+}
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const stars = await fetchStars();
   // No request APIs here (the sidebar cookie used to be read with
   // `cookies()`): one dynamic read in the root made every route dynamic,
   // which streams the metadata into <body> — where crawlers that only scan
@@ -103,9 +121,6 @@ export default function RootLayout({
             Written before the script below so the script has a tag to find;
             MetaThemeColor keeps it in step after mount. */}
         <meta name="theme-color" content={META_THEME_COLORS.light} />
-        {/* The star count is fetched after hydration; opening the connection
-            early takes the DNS + TLS round trips off that wait. */}
-        <link rel="preconnect" href="https://api.github.com" crossOrigin="anonymous" />
         {/* Dark mode is a class on <html>, so a system-dark visitor would get
             one light frame before ThemeProvider's effect runs. This blocks
             paint for a microsecond and applies it up front — the class and the
@@ -144,7 +159,7 @@ export default function RootLayout({
                     re-waiting the hover delay. Without it every Tooltip falls
                     back to its own provider and the grouping is lost. */}
                 <TooltipProvider>
-                  <SidebarLayout>{children}</SidebarLayout>
+                  <SidebarLayout stars={stars}>{children}</SidebarLayout>
                   <SettingsToast />
                   <HashScroll />
                   <RouteScrollTop />

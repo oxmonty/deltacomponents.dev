@@ -54,59 +54,33 @@ function GitHubIcon({ size = 16, className }: { size?: number; className?: strin
   );
 }
 
-/** Standalone GitHub star-count button — rendered next to the "Customise" heading. */
-// One fetch per page load, shared by every instance (right panel + the
-// sidebar sheet's footer). Without the cache, each sheet open remounted the
-// button and refired the unauthenticated API call — GitHub rate-limits those
-// per IP, after which the count silently disappeared.
-let cachedStars: number | null = null;
-let starsPromise: Promise<number | null> | null = null;
+/** Standalone GitHub star button — rendered next to the "Customise" heading.
+ *  The count comes from the root layout's server fetch, so it is in the
+ *  first HTML and the button never resizes after paint. Shown only past
+ *  100 stars: under that it is a number nobody needs to read. */
+const STAR_COUNT_MIN = 100;
 
-function fetchStars(): Promise<number | null> {
-  starsPromise ??= fetch(`https://api.github.com/repos/${REPO}`, {
-    headers: { Accept: "application/vnd.github.v3+json" },
-  })
-    .then((res) => (res.ok ? res.json() : null))
-    .then((data) => {
-      if (data?.stargazers_count != null) cachedStars = data.stargazers_count;
-      return cachedStars;
-    })
-    .catch(() => null);
-  return starsPromise;
-}
-
-export function GitHubStarButton({ showCount = true }: { showCount?: boolean }) {
+export function GitHubStarButton({
+  stars = null,
+  showCount = true,
+}: {
+  stars?: number | null;
+  showCount?: boolean;
+}) {
   const shapeCtx = useShape();
-  const [stars, setStars] = useState<number | null>(cachedStars);
-
-  useEffect(() => {
-    // No count on screen, no reason to spend an unauthenticated call on it —
-    // GitHub rate-limits those per IP, and the right panel needs the budget.
-    if (!showCount || cachedStars !== null) return;
-    let cancelled = false;
-    fetchStars().then((count) => {
-      if (!cancelled && count !== null) setStars(count);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [showCount]);
+  const count = showCount && stars !== null && stars > STAR_COUNT_MIN ? stars : null;
 
   return (
     <Button
       variant="ghost"
-      size={showCount ? "sm" : "icon"}
+      size={count !== null ? "sm" : "icon"}
       // An icon-only Button takes its glyph as children — `leadingIcon` is
       // deliberately ignored at that size, so passing it there renders an
       // empty button.
-      leadingIcon={showCount ? GitHubIcon : undefined}
+      leadingIcon={count !== null ? GitHubIcon : undefined}
       // The visible count has to appear in the name, or the label-in-name
       // check fails for every screen reader user who reads it off the screen.
-      aria-label={
-        showCount && stars !== null
-          ? `${formatStars(stars)} stars on GitHub`
-          : "View on GitHub"
-      }
+      aria-label={count !== null ? `${formatStars(count)} stars on GitHub` : "View on GitHub"}
       className={shapeCtx.button}
       onClick={() =>
         window.open(
@@ -116,11 +90,9 @@ export function GitHubStarButton({ showCount = true }: { showCount?: boolean }) 
         )
       }
     >
-      {!showCount && <GitHubIcon />}
-      {showCount && stars !== null && (
-        <span style={{ fontVariantNumeric: "tabular-nums" }}>
-          {formatStars(stars)}
-        </span>
+      {count === null && <GitHubIcon />}
+      {count !== null && (
+        <span style={{ fontVariantNumeric: "tabular-nums" }}>{formatStars(count)}</span>
       )}
     </Button>
   );
@@ -235,7 +207,7 @@ function SettingsContent() {
 }
 
 /** Desktop-only right column that mirrors the left sidebar styling. */
-export function RightPanel() {
+export function RightPanel({ stars = null }: { stars?: number | null }) {
   // The bare "]" key shows/hides the panel — the mirror of the left rail's
   // "[" (the sidebar provider only ever claims its own side's key, so "]" is
   // free while no right-side Sidebar is mounted). Same guards as the other
@@ -376,7 +348,7 @@ export function RightPanel() {
               >
                 Customise
               </h2>
-              <GitHubStarButton />
+              <GitHubStarButton stars={stars} />
             </div>
             <SettingsContent />
             {/* Desktop's home for the credit. Below xl this panel is gone and
