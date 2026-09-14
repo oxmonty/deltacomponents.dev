@@ -22,19 +22,10 @@ export default function Page() {
           next={next}
         >
           <div className="mt-2 flex items-center gap-2">
-            {/* "Learn more" is the right label on the page, where the title
-                above it says what there is to learn about. Out of that
-                context — a link list, a crawler — it says nothing, so the
-                accessible name carries the subject. */}
-            <Link
-              href="/docs"
-              className="outline-none"
-              tabIndex={-1}
-              aria-label="Learn more about Delta Components"
-            >
-              <Button variant="primary">
-                Learn more
-              </Button>
+            {/* Named for where it goes, not "Learn more": out of context — a
+                link list, a crawler — a generic label says nothing. */}
+            <Link href="/docs" className="outline-none" tabIndex={-1}>
+              <Button variant="primary">Read the introduction</Button>
             </Link>
           </div>
         </DocHeader>
