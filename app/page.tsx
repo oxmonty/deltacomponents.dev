@@ -22,10 +22,10 @@ export default function Page() {
           next={next}
         >
           <div className="mt-2 flex items-center gap-2">
-            {/* Named for where it goes, not "Learn more": out of context — a
-                link list, a crawler — a generic label says nothing. */}
+            {/* Not "Learn more": that is on the descriptive-link-text
+                blocklist. "Get started" is not — only the bare "start" is. */}
             <Link href="/docs" className="outline-none" tabIndex={-1}>
-              <Button variant="primary">Read the introduction</Button>
+              <Button variant="primary">Get started</Button>
             </Link>
           </div>
         </DocHeader>
