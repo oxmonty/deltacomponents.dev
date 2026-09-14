@@ -16,9 +16,10 @@ import { cn } from "@/registry/lib/utils";
 import { useIcon } from "@/registry/lib/icon-context";
 import { useShape } from "@/lib/docs/shape-context";
 import { useSize } from "@/lib/docs/size-context";
+import { useGlobalKey } from "@/lib/docs/use-global-key";
 import { labelOf, sectionList, visibleComponents } from "@/lib/docs/components";
 
-/** The site's own search: ⌘K anywhere, or the field at the top of the rail.
+/** The site's own search: "f" anywhere, or the field at the top of the rail.
  *  Every page the sidebar lists, in one filtered list, with the keyboard
  *  driving it — arrows move the highlight, Enter opens, Escape closes. */
 
@@ -70,17 +71,11 @@ export function useSiteCommandMenu(): SiteCommandMenuContextValue {
 export function SiteCommandMenuProvider({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
 
-  // ⌘K / Ctrl+K toggles from anywhere — inside a field too, the way it does
-  // in every app that has it.
-  useEffect(() => {
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key.toLowerCase() !== "k" || !(e.metaKey || e.ctrlKey) || e.altKey || e.shiftKey) return;
-      e.preventDefault();
-      setOpen((prev) => !prev);
-    };
-    document.addEventListener("keydown", onKeyDown);
-    return () => document.removeEventListener("keydown", onKeyDown);
-  }, []);
+  // A bare "f", like the "r" and "s" settings shortcuts. The hook ignores
+  // the key while anything editable has focus — an input, the Editor's
+  // CodeMirror surface — and while an open popup owns it, so typing an "f"
+  // never opens this.
+  useGlobalKey("f", () => setOpen(true));
 
   const value = useMemo(() => ({ open, setOpen }), [open]);
   return <SiteCommandMenuContext.Provider value={value}>{children}</SiteCommandMenuContext.Provider>;
@@ -223,7 +218,7 @@ export function SiteCommandMenu() {
               return (
                 <div key={item.href}>
                   {startsGroup && (
-                    <div className="text-muted-foreground flex h-8 items-center px-2 text-[12px]">
+                    <div className="text-muted-foreground/60 flex h-8 items-center px-2 text-[12px]">
                       {item.group}
                     </div>
                   )}
@@ -252,7 +247,7 @@ export function SiteCommandMenu() {
             })}
           </div>
 
-          <div className="border-border/60 text-muted-foreground flex h-9 items-center gap-4 border-t px-3 text-[11px]">
+          <div className="border-border/60 bg-muted text-muted-foreground flex h-9 items-center gap-4 border-t px-3 text-[11px]">
             <span className="flex items-center gap-1.5">
               <Kbd>↑</Kbd>
               <Kbd>↓</Kbd> navigate

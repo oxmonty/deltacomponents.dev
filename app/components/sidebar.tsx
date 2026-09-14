@@ -21,7 +21,7 @@ import { labelOf, sectionList, visibleComponents } from "@/lib/docs/components";
 
 /** The rail's search field: a button dressed as SidebarInput (same field
  *  ladder, same height and radius) that opens the site command menu, with
- *  the ⌘K chip always showing so the shortcut is learnt from the rail. A
+ *  the F chip always showing so the shortcut is learnt from the rail. A
  *  button rather than a real input because typing happens in the menu — an
  *  input that opens a dialog on focus reopens it the moment the dialog hands
  *  focus back. */
@@ -56,7 +56,7 @@ function NavSearch() {
         Search…
       </button>
       <kbd className="text-muted-foreground pointer-events-none absolute top-1/2 right-2 -translate-y-1/2 font-sans text-[11px]">
-        ⌘K
+        F
       </kbd>
     </div>
   );
