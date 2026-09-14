@@ -166,9 +166,11 @@ export function SiteCommandMenu() {
             // No hairline: a 4px halo around the panel instead. Light rings
             // in --accent, an opaque step between the card and the scrim
             // (--border is foreground at 12% over nothing and vanishes
-            // there); dark rings far softer, where accent glared. Dark also
-            // takes the Customise card's muted ground rather than --card.
-            "bg-card dark:bg-muted fixed top-[10vh] left-1/2 z-50 w-[min(560px,calc(100vw-2rem))] -translate-x-1/2 overflow-hidden bg-clip-padding shadow-2xl ring-4 ring-accent dark:ring-foreground/10 outline-none",
+            // there); dark rings in --sidebar-ring, the one solid grey a step
+            // under accent, which glared — a translucent ring showed the
+            // scrim through it. Dark also takes the Customise card's muted
+            // ground rather than --card.
+            "bg-card dark:bg-muted fixed top-[10vh] left-1/2 z-50 w-[min(560px,calc(100vw-2rem))] -translate-x-1/2 overflow-hidden bg-clip-padding shadow-2xl ring-4 ring-accent dark:ring-sidebar-ring outline-none",
             shape.bg,
             "transition-[opacity,transform] duration-(--motion-moderate) ease-spring",
             "data-[ending-style]:duration-(--motion-moderate-exit)",
