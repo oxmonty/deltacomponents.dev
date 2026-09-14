@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -7,11 +8,62 @@ import {
   SidebarContent,
   SidebarGroup,
   SidebarGroupLabel,
+  SidebarHeader,
+  SidebarInput,
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
 } from "@/app/components/ui/sidebar";
+import { useIcon } from "@/registry/lib/icon-context";
+import { useSize } from "@/lib/docs/size-context";
 import { labelOf, sectionList, visibleComponents } from "@/lib/docs/components";
+
+/** The rail's search field, on the rows' own rhythm: the icon on the rows'
+ *  leading axis, the text on their text axis, and the ⌘K chip waiting at the
+ *  trailing edge until hover or focus — the placeholder owns the field at
+ *  rest. ⌘K / Ctrl+K focuses it from anywhere; Escape clears and leaves. */
+function NavSearch({ value, onChange }: { value: string; onChange: (next: string) => void }) {
+  const SearchIcon = useIcon("search");
+  const iconSize = useSize().icon;
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key.toLowerCase() !== "k" || !(e.metaKey || e.ctrlKey) || e.altKey || e.shiftKey) return;
+      e.preventDefault();
+      inputRef.current?.focus();
+      inputRef.current?.select();
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, []);
+
+  return (
+    <div className="group/search relative">
+      <SearchIcon
+        size={iconSize}
+        strokeWidth={1.5}
+        className="text-muted-foreground pointer-events-none absolute top-1/2 left-2 -translate-y-1/2"
+      />
+      <SidebarInput
+        ref={inputRef}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key !== "Escape") return;
+          onChange("");
+          e.currentTarget.blur();
+        }}
+        placeholder="Search…"
+        aria-label="Search the navigation"
+        className="pr-12 pl-8"
+      />
+      <kbd className="text-muted-foreground pointer-events-none absolute top-1/2 right-2 -translate-y-1/2 font-sans text-[11px] opacity-0 transition-opacity duration-80 group-hover/search:opacity-100 group-focus-within/search:opacity-100">
+        ⌘K
+      </kbd>
+    </div>
+  );
+}
 
 interface NavEntry {
   slug: string;
@@ -67,6 +119,7 @@ function NavGroup({
   pathname: string;
   ariaLabel: string;
 }) {
+  if (entries.length === 0) return null;
   return (
     <SidebarGroup>
       {label && (
@@ -95,38 +148,54 @@ function NavGroup({
 /** The site's own navigation rail — the Sidebar component, dogfooded. */
 export function SiteSidebar() {
   const pathname = usePathname();
+  const [query, setQuery] = useState("");
+  // Plain substring match on the visible label: nine components do not need
+  // more, and it means "what you typed is in what you see".
+  const needle = query.trim().toLowerCase();
+  const matches = (name: string) => !needle || name.toLowerCase().includes(needle);
+  const sections = sectionList.filter((section) => matches(section.name));
+  const components = visibleComponents.filter((entry) => matches(labelOf(entry)));
 
   return (
     <Sidebar collapsible="offcanvas" bordered={false} rail={false} className="ml-2">
+      <SidebarHeader className="pt-4 pb-0">
+        <NavSearch value={query} onChange={setQuery} />
+      </SidebarHeader>
       <SidebarContent className="py-2">
         {/* Top-level navigation. Carries a group label like the Components
             group below it, so the rail reads as two labelled sections rather
             than a loose pair of links above a titled list. */}
-        <SidebarGroup>
-          <SidebarGroupLabel>
-            Sections
-            <span className="text-[11px]">{sectionList.length}</span>
-          </SidebarGroupLabel>
-          <SidebarMenu aria-label="Main navigation">
-            {sectionList.map((section) => (
-              <SidebarMenuItem key={section.href}>
-                <SidebarMenuButton
-                  render={<Link href={section.href} />}
-                  isActive={pathname === section.href}
-                >
-                  {section.name}
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            ))}
-          </SidebarMenu>
-        </SidebarGroup>
+        {sections.length > 0 && (
+          <SidebarGroup>
+            <SidebarGroupLabel>
+              Sections
+              <span className="text-[11px]">{sections.length}</span>
+            </SidebarGroupLabel>
+            <SidebarMenu aria-label="Main navigation">
+              {sections.map((section) => (
+                <SidebarMenuItem key={section.href}>
+                  <SidebarMenuButton
+                    render={<Link href={section.href} />}
+                    isActive={pathname === section.href}
+                  >
+                    {section.name}
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroup>
+        )}
 
         <NavGroup
           label="Components"
-          entries={visibleComponents}
+          entries={components}
           pathname={pathname}
           ariaLabel="Component navigation"
         />
+
+        {sections.length === 0 && components.length === 0 && (
+          <p className="text-muted-foreground px-4 py-2 text-[12px]">No matches</p>
+        )}
       </SidebarContent>
     </Sidebar>
   );
