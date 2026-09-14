@@ -46,10 +46,34 @@ Click or touch here to begin editing — the syntax hides wherever the caret isn
 // CodeMirror takes over.
 // ponytail: the Code placeholder is a fixed height; measure again if the
 // snippet or its typography changes.
-const Code = dynamic(() => import("@/registry/ui/code").then((m) => m.Code), {
-  ssr: false,
-  loading: () => <div aria-hidden className="h-[313px] w-full" />,
-});
+//
+// The Code block fades in as its chunk lands — the motion guidelines' own
+// idiom (`starting:` + the moderate tier), on a wrapper that mounts WITH
+// the chunk so the starting style fires then, not at page load. The Editor
+// deliberately doesn't: its placeholder is the same text the component
+// shows, so a fade would blink identical text off and on.
+function FadeIn({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="starting:opacity-0 transition-opacity duration-(--motion-moderate) ease-spring">
+      {children}
+    </div>
+  );
+}
+const Code = dynamic(
+  () =>
+    import("@/registry/ui/code").then((m) => {
+      const Faded = (props: React.ComponentProps<typeof m.Code>) => (
+        <FadeIn>
+          <m.Code {...props} />
+        </FadeIn>
+      );
+      return Faded;
+    }),
+  {
+    ssr: false,
+    loading: () => <div aria-hidden className="h-[302px] w-full" />,
+  }
+);
 const Editor = dynamic(() => import("@/registry/ui/editor").then((m) => m.Editor), {
   ssr: false,
   loading: () => (
