@@ -434,7 +434,11 @@ function createMarks(elements?: EditorElements): Marks {
   const at = (key: keyof EditorElements) => resolve(elements, key);
   const marked = (key: keyof EditorElements) => {
     const { tag, className } = at(key);
-    return Decoration.mark({ tagName: tag, class: className });
+    // The link keeps its href off (Cmd+click is what opens it), so it says
+    // what it is with a role instead — for screen readers, and for crawlers
+    // that otherwise report a bare <a> as an uncrawlable link.
+    const attributes = tag === "a" ? { role: "link" } : undefined;
+    return Decoration.mark({ tagName: tag, class: className, attributes });
   };
   const strong = marked("strong");
   const em = marked("em");
