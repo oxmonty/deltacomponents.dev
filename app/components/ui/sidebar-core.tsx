@@ -494,13 +494,18 @@ export function slotElement(
 // fed by custom properties so the two transitions can still run at different
 // speeds: `--fade-duration` set responsively below, `--width-duration` set
 // inline by SidebarShell from its drag/open state.
+//
+// The starting-style opacity is gated on <html data-hydrated> (set once
+// after mount by the site layout): @starting-style also fires on an
+// element's first render, which faded the rail in on every hard load. Gated,
+// the first paint is instant and only a later breakpoint crossing fades.
 const BREAKPOINT_FADE_BASE =
   "transition-[opacity,display,width,margin] [transition-timing-function:ease-out,ease-out,var(--ease-spring),var(--ease-spring)] [transition-duration:var(--fade-duration),var(--fade-duration),var(--width-duration),var(--width-duration)] [transition-behavior:allow-discrete]";
 const BREAKPOINT_HIDDEN: Record<number, string> = {
-  640: "max-sm:hidden max-sm:opacity-0 max-sm:[--fade-duration:var(--motion-moderate)] sm:[--fade-duration:var(--motion-slow)] sm:starting:opacity-0",
-  768: "max-md:hidden max-md:opacity-0 max-md:[--fade-duration:var(--motion-moderate)] md:[--fade-duration:var(--motion-slow)] md:starting:opacity-0",
-  1024: "max-lg:hidden max-lg:opacity-0 max-lg:[--fade-duration:var(--motion-moderate)] lg:[--fade-duration:var(--motion-slow)] lg:starting:opacity-0",
-  1280: "max-xl:hidden max-xl:opacity-0 max-xl:[--fade-duration:var(--motion-moderate)] xl:[--fade-duration:var(--motion-slow)] xl:starting:opacity-0",
+  640: "max-sm:hidden max-sm:opacity-0 max-sm:[--fade-duration:var(--motion-moderate)] sm:[--fade-duration:var(--motion-slow)] in-data-hydrated:sm:starting:opacity-0",
+  768: "max-md:hidden max-md:opacity-0 max-md:[--fade-duration:var(--motion-moderate)] md:[--fade-duration:var(--motion-slow)] in-data-hydrated:md:starting:opacity-0",
+  1024: "max-lg:hidden max-lg:opacity-0 max-lg:[--fade-duration:var(--motion-moderate)] lg:[--fade-duration:var(--motion-slow)] in-data-hydrated:lg:starting:opacity-0",
+  1280: "max-xl:hidden max-xl:opacity-0 max-xl:[--fade-duration:var(--motion-moderate)] xl:[--fade-duration:var(--motion-slow)] in-data-hydrated:xl:starting:opacity-0",
 };
 
 interface SidebarShellProps extends HTMLAttributes<HTMLDivElement> {

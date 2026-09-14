@@ -109,6 +109,16 @@ function SidebarCookieSync() {
   return null;
 }
 
+/** Marks <html> once the page has mounted. The side panels' breakpoint
+ *  cross-fades key their @starting-style on it, so a hard load paints them
+ *  instantly and only a later resize across the breakpoint fades. */
+function HydratedMarker() {
+  useEffect(() => {
+    document.documentElement.setAttribute("data-hydrated", "");
+  }, []);
+  return null;
+}
+
 /** Closes the mobile sheet whenever the route changes. */
 function CloseSheetOnNavigate() {
   const { setOpenMobile } = useSidebar();
@@ -189,6 +199,7 @@ export function SidebarLayout({
       <SidebarProvider mobileBreakpoint={1024} className="min-h-screen">
         <SiteSidebar />
         <SidebarCookieSync />
+        <HydratedMarker />
         <CloseSheetOnNavigate />
         <SiteCommandMenu />
 

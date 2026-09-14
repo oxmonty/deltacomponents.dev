@@ -850,7 +850,7 @@ html.transitioning *::after {
    starting opacity — required for an element to animate *out of* `display:none`
    (otherwise it would pop in). Because the panel's space is already reserved at
    that width, the appear is a pure opacity fade with no layout shift (it also
-   fades in once on initial wide-screen load). Browsers without
+   no longer fades on initial load, see below). Browsers without
    `transition-behavior` degrade gracefully to the old instant switch. */
 
 .fade-block-xl {
@@ -869,8 +869,11 @@ html.transitioning *::after {
       opacity 0.24s ease-out,
       display 0.24s allow-discrete;
   }
+  /* Gated on the post-mount marker so the first paint is instant; without
+     it @starting-style also fired on initial render and faded the panel in
+     on every hard load. */
   @starting-style {
-    .fade-block-xl {
+    html[data-hydrated] .fade-block-xl {
       opacity: 0;
     }
   }
