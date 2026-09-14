@@ -168,10 +168,11 @@ export function SiteCommandMenu() {
         />
         <Dialog.Popup
           className={cn(
-            // No hairline: a 4px ring in the translucent border colour reads
-            // as a soft halo around the panel, and bg-clip-padding keeps the
-            // panel's own fill from showing through it.
-            "bg-card fixed top-[10vh] left-1/2 z-50 w-[min(560px,calc(100vw-2rem))] -translate-x-1/2 overflow-hidden bg-clip-padding shadow-2xl ring-4 ring-border outline-none",
+            // No hairline: a 4px halo around the panel instead. --accent, not
+            // --border: the border token is foreground at 12% over nothing,
+            // which disappears against the dimmed scrim, while accent is an
+            // opaque step between the card and the scrim in both themes.
+            "bg-card fixed top-[10vh] left-1/2 z-50 w-[min(560px,calc(100vw-2rem))] -translate-x-1/2 overflow-hidden bg-clip-padding shadow-2xl ring-4 ring-accent outline-none",
             shape.bg,
             "transition-[opacity,transform] duration-(--motion-moderate) ease-spring",
             "data-[ending-style]:duration-(--motion-moderate-exit)",
