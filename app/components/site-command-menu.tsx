@@ -168,7 +168,10 @@ export function SiteCommandMenu() {
         />
         <Dialog.Popup
           className={cn(
-            "bg-card border-border fixed top-[10vh] left-1/2 z-50 w-[min(560px,calc(100vw-2rem))] -translate-x-1/2 overflow-hidden border shadow-lg outline-none",
+            // No hairline: a 4px ring in the translucent border colour reads
+            // as a soft halo around the panel, and bg-clip-padding keeps the
+            // panel's own fill from showing through it.
+            "bg-card fixed top-[10vh] left-1/2 z-50 w-[min(560px,calc(100vw-2rem))] -translate-x-1/2 overflow-hidden bg-clip-padding shadow-2xl ring-4 ring-border outline-none",
             shape.bg,
             "transition-[opacity,transform] duration-(--motion-moderate) ease-spring",
             "data-[ending-style]:duration-(--motion-moderate-exit)",
