@@ -168,7 +168,7 @@ export function SiteCommandMenu() {
         />
         <Dialog.Popup
           className={cn(
-            "bg-card border-border fixed top-[15vh] left-1/2 z-50 w-[min(560px,calc(100vw-2rem))] -translate-x-1/2 overflow-hidden border shadow-lg outline-none",
+            "bg-card border-border fixed top-[10vh] left-1/2 z-50 w-[min(560px,calc(100vw-2rem))] -translate-x-1/2 overflow-hidden border shadow-lg outline-none",
             shape.bg,
             "transition-[opacity,transform] duration-(--motion-moderate) ease-spring",
             "data-[ending-style]:duration-(--motion-moderate-exit)",
