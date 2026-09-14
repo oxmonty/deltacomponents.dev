@@ -232,6 +232,11 @@ export const TOC: Record<string, TocEntry[]> = {
       "id": "text-first",
       "text": "Text first",
       "depth": 2
+    },
+    {
+      "id": "inspiration",
+      "text": "Inspiration",
+      "depth": 2
     }
   ],
   "/docs/mp3-player": [
