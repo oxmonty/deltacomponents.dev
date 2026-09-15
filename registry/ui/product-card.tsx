@@ -161,10 +161,30 @@ function ProductCardImage({
   ...props
 }: ProductCardImageProps) {
   const { variant, size, animated } = useProductCardContext()
+  const wellRef = React.useRef<HTMLDivElement>(null)
+  // Touch screens have no hover, and a tap's :active is too brief for the
+  // lift to finish, so a tap pins the lift here and the next tap anywhere
+  // else releases it — the hold a pointer gets from hovering. Desktop keeps
+  // hover alone: a click there would otherwise leave the image raised.
+  const [pressed, setPressed] = React.useState(false)
+  React.useEffect(() => {
+    if (!pressed) return
+    const release = (event: PointerEvent) => {
+      if (!wellRef.current?.contains(event.target as Node)) setPressed(false)
+    }
+    document.addEventListener("pointerdown", release)
+    return () => document.removeEventListener("pointerdown", release)
+  }, [pressed])
+  const pressToHold = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (animated && event.pointerType === "touch") setPressed(true)
+  }
 
   return (
     <div
+      ref={wellRef}
       data-slot="product-card-image"
+      data-pressed={pressed || undefined}
+      onPointerDown={pressToHold}
       className={cn(
         "group/card-image relative aspect-square w-full overflow-hidden",
         "transition-colors duration-(--motion-fast) ease-spring",
@@ -174,14 +194,7 @@ function ProductCardImage({
         // resolve an arbitrary variant against a standard modifier, so a
         // caller passing `hover:bg-amber-100` used to lose the hover to the
         // component and the well snapped back to muted on mouse-enter.
-        "bg-muted hover:bg-muted/80 active:bg-muted/80",
-        // Touch only (the cursor is invisible there, so this is not the
-        // pointer the card root refuses to fake): iOS emulates :hover on a
-        // tap only for elements it deems clickable, and cursor: pointer is
-        // what marks one. Without it a tap gave a ~100ms :active that cut
-        // the lift short; with it the lift completes and holds until the
-        // next tap elsewhere, the way the card used to behave.
-        animated && "pointer-coarse:cursor-pointer",
+        "bg-muted hover:bg-muted/80 active:bg-muted/80 data-[pressed]:bg-muted/80",
         className
       )}
       {...props}
@@ -198,6 +211,7 @@ function ProductCardImage({
           animated && [
             "transition-transform duration-(--motion-slow) ease-spring",
             "group-hover/card-image:-translate-y-2 group-active/card-image:-translate-y-2",
+            "group-data-[pressed]/card-image:-translate-y-2",
           ],
           imagePadding[size],
           variant === "inner" && imagePaddingInner[size],
