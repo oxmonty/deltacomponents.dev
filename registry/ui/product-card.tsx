@@ -175,6 +175,13 @@ function ProductCardImage({
         // caller passing `hover:bg-amber-100` used to lose the hover to the
         // component and the well snapped back to muted on mouse-enter.
         "bg-muted hover:bg-muted/80 active:bg-muted/80",
+        // Touch only (the cursor is invisible there, so this is not the
+        // pointer the card root refuses to fake): iOS emulates :hover on a
+        // tap only for elements it deems clickable, and cursor: pointer is
+        // what marks one. Without it a tap gave a ~100ms :active that cut
+        // the lift short; with it the lift completes and holds until the
+        // next tap elsewhere, the way the card used to behave.
+        animated && "pointer-coarse:cursor-pointer",
         className
       )}
       {...props}
