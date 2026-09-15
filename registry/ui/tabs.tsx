@@ -372,10 +372,11 @@ function TabsList({ children, className, ref, ...props }: TabsListProps) {
           aria-hidden="true"
           data-slot="tabs-hover"
           className={cn(
-            // Insets rather than a height table, so the wash follows whatever
-            // height the list is given. The extra 2px at the bottom keeps it
-            // clear of the underline bar it shares the row with.
-            "bg-muted pointer-events-none absolute top-1 bottom-1.5 z-0 left-0",
+            // Insets rather than a height, so the wash follows whatever
+            // height the list is given — and per size, so it centres on the
+            // label, which rides high in its row (see underlineHoverInset).
+            "bg-muted pointer-events-none absolute z-0 left-0",
+            underlineHoverInset[size],
             "w-(--tab-hover-w) translate-x-(--tab-hover-x) opacity-0",
             "group-data-[tab-hover=true]/tabs:opacity-100",
             PLACED_TRANSITION,
@@ -435,6 +436,17 @@ const underlineTriggerPadding: Record<TabSize, string> = {
   sm: "px-2.5 pt-2 pb-2.5",
   default: "px-3 pt-2 pb-3",
   lg: "px-4 pt-2.5 pb-4",
+};
+
+// The hover wash's vertical insets, per size. The label is centred between
+// the unequal paddings above, so it sits (pb - pt) / 2 above the row's
+// middle; for the wash to centre on the label rather than the row, its
+// bottom inset must exceed its top inset by that same pb - pt. Each pair
+// sums to 10, so the wash keeps one height and stays 4px clear of the bar.
+const underlineHoverInset: Record<TabSize, string> = {
+  sm: "top-1 bottom-1.5",
+  default: "top-[3px] bottom-[7px]",
+  lg: "top-0.5 bottom-2",
 };
 
 interface TabsTriggerProps extends React.ComponentProps<"button"> {
