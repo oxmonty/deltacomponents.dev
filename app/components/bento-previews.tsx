@@ -71,7 +71,7 @@ const Code = dynamic(
     }),
   {
     ssr: false,
-    loading: () => <div aria-hidden className="h-[302px] w-full" />,
+    loading: () => <div aria-hidden className="h-[302px] w-full max-md:h-full" />,
   }
 );
 const Editor = dynamic(() => import("@/registry/ui/editor").then((m) => m.Editor), {
@@ -112,8 +112,12 @@ function TooltipPreview() {
 function CodePreview() {
   return (
     // Narrower than the stage on purpose: edge-to-edge the block reads as
-    // cropped rather than as a card sitting on a surface.
-    <div className="w-full max-w-[440px]">
+    // cropped rather than as a card sitting on a surface. Fixed height
+    // below md, where the card takes its height from its content: the block
+    // lands after hydration, and Safari measures its lines a few px off
+    // Chrome, so the box it lands in must not depend on it. From md the
+    // grid's 300px rows already pin the card.
+    <div className="w-full max-w-[440px] max-md:h-[302px]">
       <Code
         filename="tally.rs"
         language="rust"
