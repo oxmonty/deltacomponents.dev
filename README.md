@@ -23,12 +23,6 @@ and `make check` is what CI runs.
 Please read the
 [contribution guidelines](https://deltacomponentsdev.vercel.app/docs/contributing).
 
-## Inspiration
-
-The layout and colour palette were inspired by the work at
-[Fluid Functionalism](https://fluidfunctionalism.com), which is well worth
-checking out.
-
 ## License
 
 Licensed under the [MIT license](LICENSE).
