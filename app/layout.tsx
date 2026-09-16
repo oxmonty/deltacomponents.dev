@@ -146,7 +146,7 @@ export default async function RootLayout({
             of globals.css zeroes every motion tier under
             `prefers-reduced-motion: reduce`, so every transition on the site
             collapses to instant with no per-component switch needed — see
-            agents/motion-guidelines.md. */}
+            .agents/motion-guidelines.md. */}
         <ShapeProvider defaultShape="rounded">
           <ShapeShortcut />
           <SizeProvider>

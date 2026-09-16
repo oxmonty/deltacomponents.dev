@@ -23,7 +23,7 @@ command, a props table by a markdown table. A new component gets that for free;
 a new *component tag* in MDX does not, so add a case there if you introduce
 one, or it will reach an agent as raw JSX.
 
-`agents/component-documentation-guidelines.md` is the companion to this file —
+`.agents/component-documentation-guidelines.md` is the companion to this file —
 it covers the *mechanics* (registry entry, props-table type, the ghost-span
 pattern). This file covers the *shape of the page*.
 

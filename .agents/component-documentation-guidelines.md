@@ -140,7 +140,7 @@ use the consumer's path directly.
 Run `make demos` after adding or renaming a demo, and `make toc` after adding or
 renaming a heading.
 
-**See the [component-docs skill](/agents/skills/component-docs/SKILL.md) for the
+**See the [component-docs skill](/.agents/skills/component-docs/SKILL.md) for the
 full page structure** — heading order, which example sections exist, and the
 props-table rules.
 

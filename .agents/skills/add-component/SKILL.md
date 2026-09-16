@@ -25,14 +25,14 @@ Import siblings by their real path (`@/registry/ui/...`, `@/registry/lib/...`). 
 build rewrites those to the consumer's `@/components/ui/...` on publish, so
 never hand-write a consumer path in source — it would not resolve here.
 
-Conventions live in `agents/component-documentation-guidelines.md` — read it
+Conventions live in `.agents/component-documentation-guidelines.md` — read it
 before writing the source. The ones that bite: `"use client"`, `forwardRef`
 with `displayName`, CVA for variants, `@/` aliases for internal imports, and
 the ghost-span pattern for any text that changes weight on state.
 
 Motion is CSS. Three duration tiers and one easing, as custom properties —
 there is no animation library in this repo and nothing may add one. See
-`agents/motion-guidelines.md`.
+`.agents/motion-guidelines.md`.
 
 ## 2. Add the registry entry
 
