@@ -43,9 +43,11 @@
      as near-white, leaving anything sitting on it (a Tabs track, say) with no
      separation. A greyer value gives muted real semantic presence. */
   --muted: #F4F4F5;
-  /* #6B6B6B, not shadcn's #737373: that one is 4.3:1 on --muted, just under
-     the 4.5:1 body-text floor. This clears it on every light surface. */
-  --muted-foreground: #6B6B6B;
+  /* #666666, not shadcn's #737373: that one is 4.3:1 on --muted, just under
+     the 4.5:1 body-text floor. This clears it on every light surface and on
+     the --active wash (#6B6B6B was 4.35:1 there, so an unlit label over an
+     active row failed Lighthouse). */
+  --muted-foreground: #666666;
   --accent: #E5E5E5;
   --accent-foreground: #171717;
   --destructive: #EF4444;
