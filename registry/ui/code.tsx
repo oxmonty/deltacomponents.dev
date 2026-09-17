@@ -633,7 +633,7 @@ export function Code({
           className={cn("overflow-x-auto", !scrollbar && "scrollbar-hide")}
         >
           <div
-            className={cn("relative py-4", !paintFromTheme && "bg-card")}
+            className={cn("relative w-max min-w-full", !paintFromTheme && "bg-card")}
             style={
               paintFromTheme
                 ? { backgroundColor: selectedTheme.plain?.backgroundColor }
@@ -656,7 +656,7 @@ export function Code({
                   data-slot="code-pre"
                   className={cn(
                     highlightClassName,
-                    "w-full overflow-x-auto px-4 leading-relaxed font-normal"
+                    "w-max min-w-full px-4 py-4 leading-relaxed font-normal"
                   )}
                   style={{
                     ...style,
