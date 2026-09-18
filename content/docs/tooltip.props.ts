@@ -26,8 +26,8 @@ export const tooltipProps: PropDef[] = [
   {
     name: "delayDuration",
     type: "number",
-    default: "200",
-    description: "Milliseconds to wait before showing the tooltip on hover.",
+    default: "40",
+    description: "Milliseconds to wait on hover before the tooltip starts opening. The 160ms entrance runs after it, so the default puts a fully visible tooltip 200ms after the pointer arrives.",
   },
   {
     name: "followCursor",

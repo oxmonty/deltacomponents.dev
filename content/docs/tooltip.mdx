@@ -41,6 +41,12 @@ import { Tooltip } from "@/components/ui/tooltip";
 
 ## Delay
 
+`delayDuration` is the wait before the tooltip *starts* opening, not the wait
+before the reader can see it. The 160ms entrance (the fade, the 4px slide and
+the zoom) runs after it, and only the sum of the two is perceptible, so the
+40ms default is a 200ms budget with that entrance already taken out. Set it to
+200 and a tooltip arrives 360ms after the pointer does.
+
 <ComponentPreview name="tooltip-delay" />
 
 ## API Reference

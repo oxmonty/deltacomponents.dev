@@ -36,7 +36,14 @@ function TooltipPortalContainer({
 // Provider
 // ---------------------------------------------------------------------------
 
-const DEFAULT_DELAY = 300;
+// What the reader waits is the delay PLUS the entrance, and only the sum is
+// perceptible to them — a 200ms delay in front of a 160ms fade is a 360ms
+// tooltip. 200ms is the budget from hover to a tooltip that is fully there, so
+// the entrance (`--motion-moderate`, 160ms, on the popup below) comes out of
+// it and this is the remainder. A number, not a `calc()` on the token: it is
+// handed to Base UI as a JS timer, which cannot read a CSS custom property.
+// Retune it if that tier ever moves.
+const DEFAULT_DELAY = 40;
 
 // Tracks whether an app-level <TooltipProvider> is above us. Each Tooltip
 // only wraps itself in a local primitive Provider when there isn't one —
@@ -46,7 +53,8 @@ const TooltipGroupContext = createContext(false);
 
 interface TooltipProviderProps {
   children: ReactNode;
-  /** Hover delay before tooltips open, in ms. Defaults to 300. */
+  /** Hover delay before tooltips open, in ms. Defaults to 40 — the 200ms a
+   *  tooltip has to become fully visible, less the 160ms entrance. */
   delayDuration?: number;
   /** After a tooltip closes, adjacent tooltips opened within this window
    *  skip the hover delay, in ms. Defaults to 300. */
@@ -85,8 +93,9 @@ interface TooltipProps {
   children: React.ReactElement;
   side?: TooltipSide;
   sideOffset?: number;
-  /** Hover delay before this tooltip opens, in ms. Defaults to 300, or to the
-   *  ambient TooltipProvider's delayDuration when one is present. */
+  /** Hover delay before this tooltip opens, in ms. Defaults to 40, or to the
+   *  ambient TooltipProvider's delayDuration when one is present. The entrance
+   *  runs after it, so the tooltip is fully visible 160ms later. */
   delayDuration?: number;
   className?: string;
   /** Extra classes for the portalled positioner element — pass a z utility
