@@ -34,15 +34,64 @@ export function RouteScrollTop() {
     // heading into view and hauling the page to the top would undo it.
     if (window.location.hash) return;
 
-    window.scrollTo({
-      top: 0,
-      // An explicit `behavior` overrides the stylesheet, so the reduced-motion
-      // rule in globals.css can't speak for this one — same check HashScroll
-      // makes for fragment links.
-      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
-        ? "auto"
-        : "smooth",
-    });
+    // An explicit `behavior` overrides the stylesheet, so the reduced-motion
+    // rule in globals.css can't speak for this one — same check HashScroll
+    // makes for fragment links.
+    const behavior: ScrollBehavior = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches
+      ? "auto"
+      : "smooth";
+
+    const toTop = () => window.scrollTo({ top: 0, behavior });
+    toTop();
+
+    // An instant scroll is already there; only a glide can be taken away.
+    if (behavior === "auto") return;
+
+    // Safari drops an in-flight smooth scroll when the document height changes
+    // under it — which is what the route commit does a frame or two after this
+    // runs. Leaving a tall page for a shorter one, the clamp to the new maximum
+    // cancels the glide before it moves a pixel, and the reader lands on the
+    // new page still at the bottom (product-card → editor, at phone widths, did
+    // exactly this). Nothing reports the cancellation, so the only way to know
+    // is to watch: if the position stalls short of the top, ask again.
+    //
+    // A scroll of the reader's own ends it. They have taken over, and hauling
+    // them back to the top would be the worse bug.
+    const takeover = ["wheel", "touchstart", "keydown"] as const;
+    let frame = 0;
+    let elapsed = 0;
+    let stalled = 0;
+    let lastY = -1;
+
+    const stop = () => {
+      cancelAnimationFrame(frame);
+      for (const event of takeover) window.removeEventListener(event, stop);
+    };
+
+    const watch = () => {
+      const y = window.scrollY;
+      // Landed, or out of budget — a second is far longer than the glide.
+      if (y === 0 || elapsed++ > 60) return stop();
+      if (y === lastY) {
+        // Three still frames is a stall, not the easing's slow tail.
+        if (++stalled >= 3) {
+          toTop();
+          stalled = 0;
+        }
+      } else {
+        stalled = 0;
+      }
+      lastY = y;
+      frame = requestAnimationFrame(watch);
+    };
+
+    for (const event of takeover)
+      window.addEventListener(event, stop, { passive: true });
+    frame = requestAnimationFrame(watch);
+
+    return stop;
   }, [pathname]);
 
   return null;
