@@ -408,6 +408,14 @@ html {
   html {
     scroll-behavior: smooth;
   }
+
+  /* Not while an editor demo has focus. The page is the editor's scroller, so
+     every caret-into-view becomes a glide — and on a phone the keyboard opening
+     asks for several at once, which reads as the page being taken away. Here
+     rather than in the component: a consumer's scroll behaviour is theirs. */
+  html:has([data-slot="editor"]:focus-within) {
+    scroll-behavior: auto;
+  }
 }
 
 /* Radix popups (dropdown, select, dialog) lock scroll through
