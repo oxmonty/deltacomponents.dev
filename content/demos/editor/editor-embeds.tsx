@@ -52,6 +52,24 @@ export function classify(url: string): Classified | null {
   return null;
 }
 
+// loading="lazy" starts fetching thousands of pixels before the viewport, so
+// a player far down a page would still load with it. The src is held back
+// until the player is about to be seen.
+const pendingLoads = new WeakMap<HTMLElement, IntersectionObserver>();
+
+function loadWhenNear(player: HTMLIFrameElement | HTMLVideoElement, src: string) {
+  const observer = new IntersectionObserver(
+    (entries) => {
+      if (!entries.some((entry) => entry.isIntersecting)) return;
+      player.src = src;
+      observer.disconnect();
+    },
+    { rootMargin: "200px" },
+  );
+  observer.observe(player);
+  pendingLoads.set(player, observer);
+}
+
 class EmbedWidget extends WidgetType {
   constructor(readonly embed: Classified) {
     super();
@@ -65,50 +83,55 @@ class EmbedWidget extends WidgetType {
 
   get estimatedHeight() {
     if (this.embed.kind === "spotify") return this.embed.height;
-    if (this.embed.kind === "image") return 224;
-    return 252; // 16:9 at the 448px max width below
+    return 315; // 16:9 at a 560px column; an image's real height lands on load
   }
 
-  toDOM() {
+  toDOM(view: EditorView) {
     const wrapper = document.createElement("div");
     wrapper.className = "py-2";
 
     if (this.embed.kind === "image") {
       const img = document.createElement("img");
-      // Not loading="lazy": at `w-auto` an unloaded image is zero pixels wide,
+      // Not loading="lazy": at `h-auto` an unloaded image is zero pixels tall,
       // and a zero-area image never counts as near the viewport. CodeMirror
       // only builds widgets for the lines on screen, which is the laziness.
       img.src = this.embed.src;
       img.alt = "";
-      img.className = "h-56 w-auto max-w-full rounded-md object-contain";
+      img.className = "block h-auto w-full rounded-md";
+      // The height is only known once it loads; the lines below have moved.
+      img.addEventListener("load", () => view.requestMeasure());
       wrapper.appendChild(img);
       return wrapper;
     }
 
     if (this.embed.kind === "video") {
       const video = document.createElement("video");
-      video.src = this.embed.src;
+      loadWhenNear(video, this.embed.src);
       video.controls = true;
       video.preload = "metadata";
-      video.className = "block w-full max-w-md aspect-video rounded-md border-0";
+      video.className = "block aspect-video w-full rounded-md border-0";
       wrapper.appendChild(video);
       return wrapper;
     }
 
     const iframe = document.createElement("iframe");
-    iframe.src = this.embed.src;
-    iframe.loading = "lazy";
+    loadWhenNear(iframe, this.embed.src);
     iframe.allow = "encrypted-media; picture-in-picture; fullscreen";
     iframe.referrerPolicy = "strict-origin-when-cross-origin";
     iframe.title = this.embed.kind === "youtube" ? "YouTube video" : "Spotify player";
     if (this.embed.kind === "spotify") {
-      iframe.className = "block w-full max-w-md rounded-md border-0";
+      iframe.className = "block w-full rounded-md border-0";
       iframe.style.height = `${this.embed.height}px`;
     } else {
-      iframe.className = "block w-full max-w-md aspect-video rounded-md border-0";
+      iframe.className = "block aspect-video w-full rounded-md border-0";
     }
     wrapper.appendChild(iframe);
     return wrapper;
+  }
+
+  destroy(dom: HTMLElement) {
+    const player = dom.firstElementChild;
+    if (player instanceof HTMLElement) pendingLoads.get(player)?.disconnect();
   }
 }
 
@@ -218,11 +241,23 @@ export const embeds = [embedField, focusNotifier];
 const NOTE = [
   "# Embeds",
   "",
-  "Paste a YouTube, Spotify, image, or video link on its own line, then move the caret off it to see it grow into a player or a picture.",
+  "A link alone on a line becomes what it points to. Paste one of your own, then move the caret off the line.",
   "",
-  "/images/essays/write-like-you-talk.jpg",
+  "## YouTube",
   "",
-  "The rest of the document works exactly as it did before — this only changes what a link on its own line can become.",
+  "https://www.youtube.com/watch?v=aircAruvnKk",
+  "",
+  "## Spotify",
+  "",
+  "https://open.spotify.com/track/6K4t31amVTZDgR3sKmwUJJ",
+  "",
+  "## Image",
+  "",
+  "/images/editor-embed-sample.webp",
+  "",
+  "## Video",
+  "",
+  "/videos/swainsons-hawk.mp4",
 ].join("\n");
 
 export default function EditorEmbeds() {
