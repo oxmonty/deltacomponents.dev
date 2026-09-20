@@ -25,9 +25,7 @@ Please read the
 
 ## Inspiration
 
-Delta Components is inspired by
-[Fluid Functionalism](https://fluidfunctionalism.com). It is an independent
-project, and is not affiliated with or endorsed by it.
+Delta Components took inspiration from [Fluid Functionalism](https://fluidfunctionalism.com) and its use of layout and color palette — another shadcn registry worth checking out.
 
 ## License
 
