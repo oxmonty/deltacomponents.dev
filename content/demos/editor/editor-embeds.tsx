@@ -115,6 +115,8 @@ class EmbedWidget extends WidgetType {
       const video = document.createElement("video");
       loadWhenNear(video, this.embed.src);
       video.controls = true;
+      // Without this iOS takes the video fullscreen the moment it plays.
+      video.playsInline = true;
       video.preload = "metadata";
       video.className = "block aspect-video w-full rounded-md border-0";
       wrapper.appendChild(video);
@@ -127,8 +129,13 @@ class EmbedWidget extends WidgetType {
     iframe.referrerPolicy = "strict-origin-when-cross-origin";
     iframe.title = this.embed.kind === "youtube" ? "YouTube video" : "Spotify player";
     if (this.embed.kind === "spotify") {
-      iframe.className = "block w-full rounded-md border-0";
+      iframe.className = "block w-full border-0";
       iframe.style.height = `${this.embed.height}px`;
+      // Spotify's card has 12px corners of its own; any other radius leaves
+      // the iframe's background showing in them. `normal` keeps a dark page
+      // from painting an opaque canvas behind the transparent corners.
+      iframe.style.borderRadius = "12px";
+      iframe.style.colorScheme = "normal";
     } else {
       iframe.className = "block aspect-video w-full rounded-md border-0";
     }
@@ -251,17 +258,25 @@ const NOTE = [
   "",
   "## YouTube",
   "",
+  "A **watch**, **share** or **shorts** link grows a player. It comes from `youtube-nocookie.com`, and only once it is about to scroll into view.",
+  "",
   "https://www.youtube.com/watch?v=aircAruvnKk",
   "",
   "## Spotify",
+  "",
+  "Tracks and episodes get the *compact* player. Albums, playlists and shows get the tall one.",
   "",
   "https://open.spotify.com/track/6K4t31amVTZDgR3sKmwUJJ",
   "",
   "## Image",
   "",
+  "Any link whose path ends in an image extension. It fills the column and keeps its own proportions.",
+  "",
   "https://deltacomponents.dev/images/editor-embed-sample.webp",
   "",
   "## Video",
+  "",
+  "An `.mp4`, `.webm` or `.mov` plays where it sits, with the browser's own controls.",
   "",
   "https://deltacomponents.dev/videos/swainsons-hawk.mp4",
 ].join("\n");
