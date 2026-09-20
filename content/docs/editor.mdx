@@ -48,6 +48,9 @@ Emphasis styles as soon as you open it, without waiting for the closing
 delimiter, because headings do and it reads as inconsistent when inline
 constructs don't.
 
+Only the lines on screen are decorated, so what a keystroke costs does not
+grow with the document: a 60,000-word draft types like a note.
+
 ## Typography
 
 <ComponentPreview name="editor-typography" align="top" minHeightClass="min-h-[360px]" />
@@ -108,6 +111,7 @@ and there is no cancel gesture to go with an autosave.
 | `Enter` | Continues the list or task you are in. Twice leaves it. |
 | `Backspace` | At the head of a list row, removes the marker before the text. |
 | `Escape` / `Cmd+Enter` | Blur, which flushes a pending save. |
+| `Cmd+V` on a selection | With a URL on the clipboard, links the selection to it. Anything else pastes as usual. |
 | `Cmd+click` | Open the link under the pointer. A plain click edits it. |
 
 ## Mobile
