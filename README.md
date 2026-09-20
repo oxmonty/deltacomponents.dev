@@ -5,8 +5,8 @@ that make the difference. Free and open source via the shadcn registry.
 
 ## Documentation
 
-Visit [deltacomponentsdev.vercel.app](https://deltacomponentsdev.vercel.app) to
-view the full documentation.
+Visit [deltacomponents.dev](https://deltacomponents.dev) to view the full
+documentation.
 
 ## Getting started
 
@@ -21,7 +21,13 @@ and `make check` is what CI runs.
 ## Contributing
 
 Please read the
-[contribution guidelines](https://deltacomponentsdev.vercel.app/docs/contributing).
+[contribution guidelines](https://deltacomponents.dev/docs/contributing).
+
+## Inspiration
+
+Delta Components is inspired by
+[Fluid Functionalism](https://fluidfunctionalism.com). It is an independent
+project, and is not affiliated with or endorsed by it.
 
 ## License
 
