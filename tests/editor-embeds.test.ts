@@ -1,0 +1,71 @@
+import { describe, expect, it } from "vitest";
+import { EditorState, type StateField } from "@codemirror/state";
+import type { DecorationSet } from "@codemirror/view";
+import { classify, embeds } from "@/content/demos/editor/editor-embeds";
+
+// The field itself isn't exported (the demo exports only `classify`, `embeds`
+// and its default component) — read its decorations back through the same
+// StateField instance the extension array carries.
+function fieldDecorations(state: EditorState): DecorationSet {
+  const field = embeds[0] as StateField<{ decorations: DecorationSet }>;
+  return state.field(field).decorations;
+}
+
+describe("classify", () => {
+  it("recognizes a YouTube URL", () => {
+    expect(classify("https://www.youtube.com/watch?v=dQw4w9WgXcQ")).toEqual({
+      kind: "youtube",
+      src: "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ",
+    });
+  });
+
+  it("recognizes a Spotify track URL", () => {
+    expect(classify("https://open.spotify.com/track/4uLU6hMCjMI75M1A2tKUQC")).toEqual({
+      kind: "spotify",
+      src: "https://open.spotify.com/embed/track/4uLU6hMCjMI75M1A2tKUQC",
+      height: 152,
+    });
+  });
+
+  it("recognizes an image URL, including a root-relative one", () => {
+    expect(classify("/images/essays/write-like-you-talk.jpg")).toEqual({
+      kind: "image",
+      src: "/images/essays/write-like-you-talk.jpg",
+    });
+  });
+
+  it("recognizes a video URL", () => {
+    expect(classify("https://example.com/clip.mp4")).toEqual({
+      kind: "video",
+      src: "https://example.com/clip.mp4",
+    });
+  });
+
+  it("returns null for a URL nothing can embed", () => {
+    expect(classify("https://example.com/about")).toBeNull();
+  });
+});
+
+describe("embeds", () => {
+  it("chips and mounts the embed on an image line the caret is not on", () => {
+    // given: an image URL on its own line, selection sitting on the line above
+    const doc = "intro\n/images/essays/write-like-you-talk.jpg\n";
+    const state = EditorState.create({ doc, extensions: [embeds], selection: { anchor: 0 } });
+
+    // when: reading the field's decorations without ever focusing the editor
+    const ranges: unknown[] = [];
+    const cursor = fieldDecorations(state).iter();
+    while (cursor.value) {
+      ranges.push(cursor.value);
+      cursor.next();
+    }
+
+    // then: the image line gets both the collapsed chip and the block embed
+    expect(ranges).toHaveLength(2);
+  });
+
+  it("leaves a line with no embeddable URL undecorated", () => {
+    const state = EditorState.create({ doc: "just some prose\n", extensions: [embeds] });
+    expect(fieldDecorations(state).size).toBe(0);
+  });
+});

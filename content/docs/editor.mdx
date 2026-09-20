@@ -102,6 +102,24 @@ typing would move their caret and let undo restore state they never wrote, so
 the component does not offer it. Undo is the editor's own history — `Cmd+Z`,
 and there is no cancel gesture to go with an autosave.
 
+## Extensions
+
+<ComponentPreview name="editor-embeds" align="top" minHeightClass="min-h-[420px]" />
+
+The core stays a text surface: no iframes, no network requests, nothing a
+consumer didn't ask for. `extensions` is where the rest goes — plain
+CodeMirror extensions, appended after the editor's own. The demo above adds
+link embeds in a single self-contained file: a link alone on a line keeps its
+text while the caret is on it, collapses to its domain once the caret leaves,
+and grows a player or a picture beneath it either way.
+
+Two things to know. The embed only mounts after the caret has left the line for
+the first time, because every prefix of a URL being typed is itself a valid
+URL — mounting eagerly would load a new iframe on every keystroke. And
+link-preview cards (a title and a thumbnail for an arbitrary URL) are left out
+on purpose: they need a server route to fetch the page's own metadata, which
+is more than a copy-paste component can assume you have.
+
 ## Keyboard
 
 | Keys | Does |

@@ -155,6 +155,11 @@ export const TOC: Record<string, TocEntry[]> = {
       "depth": 2
     },
     {
+      "id": "extensions",
+      "text": "Extensions",
+      "depth": 2
+    },
+    {
       "id": "keyboard",
       "text": "Keyboard",
       "depth": 2

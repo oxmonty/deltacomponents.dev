@@ -1,7 +1,7 @@
 "use client";
 
 import { forwardRef, useCallback, useEffect, useRef, useState } from "react";
-import { Compartment, EditorState } from "@codemirror/state";
+import { Compartment, EditorState, type Extension } from "@codemirror/state";
 import { EditorView } from "@codemirror/view";
 
 import {
@@ -41,6 +41,10 @@ export interface EditorProps {
   /** Which element each markdown construct renders as, and its classes.
    *  Omitted keys fall back to `defaultElements`. */
   elements?: EditorElements;
+  /** Extra CodeMirror extensions, appended after the editor's own. Read once
+   *  at mount like `defaultValue` — reconfiguring would rebuild state the
+   *  user is mid-edit in. */
+  extensions?: Extension;
   className?: string;
 }
 
@@ -63,6 +67,7 @@ export const Editor = forwardRef<HTMLDivElement, EditorProps>(function Editor(
     showSaveStatus = true,
     onSaveState,
     elements,
+    extensions,
     className,
   },
   ref,
@@ -78,7 +83,7 @@ export const Editor = forwardRef<HTMLDivElement, EditorProps>(function Editor(
 
   // Read once at mount: re-seeding the document from props mid-edit would
   // fight the user for the caret.
-  const seedRef = useRef({ defaultValue, placeholder, elements });
+  const seedRef = useRef({ defaultValue, placeholder, elements, extensions });
 
   // The editor owns the document after mount; these refs only orchestrate
   // saving. `savedRef` is the last value known to be STORED and `sendingRef`
@@ -147,6 +152,7 @@ export const Editor = forwardRef<HTMLDivElement, EditorProps>(function Editor(
         extensions: [
           liveMarkdownBase(seed.placeholder),
           elementsCompartment.of(livePreview(seed.elements)),
+          seed.extensions ?? [],
           EditorView.updateListener.of((update) => {
             if (!update.docChanged) return;
             const doc = update.state.doc.toString();

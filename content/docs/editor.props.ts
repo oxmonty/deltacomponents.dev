@@ -9,6 +9,7 @@ export const editorProps: PropDef[] = [
   { name: "showSaveStatus", type: "boolean", default: "true", description: "The indicator pinned to the top-right corner while there is something to report. Turn it off to render your own from `onSaveState`." },
   { name: "onSaveState", type: '(state: "idle" | "dirty" | "saving" | "saved" | "error") => void', description: "Every change of save state, for a status line of your own elsewhere on the page." },
   { name: "elements", type: "EditorElements", description: "Which element each markdown construct renders as, and its classes — see the table below. Omitted keys fall back to `defaultElements`, and changing the map swaps the type set in place without disturbing the document or its history." },
+  { name: "extensions", type: "Extension", description: "Extra CodeMirror extensions, appended after the editor's own. Read once at mount like `defaultValue` — this is the seam for anything the core leaves out, such as embeds, mentions, or slash commands. See Extensions below." },
   { name: "className", type: "string", description: "Merged onto the root through `tailwind-merge`. The editor inherits its font, size, leading and `min-height` from here, so `font-serif text-lg leading-8` restyles the whole surface — including the pre-hydration fallback." },
 ];
 
