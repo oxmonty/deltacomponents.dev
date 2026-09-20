@@ -10,7 +10,9 @@ type Classified =
   | { kind: "image"; src: string }
   | { kind: "video"; src: string };
 
-const CANDIDATE_LINE = /^(?:https?:\/\/|\/)\S+$/;
+// Absolute URLs only. A root-relative path would load from the reader's own
+// origin with their cookies, which is more than a pasted line should be able to do.
+const CANDIDATE_LINE = /^https?:\/\/\S+$/;
 const YOUTUBE_ID = /^[\w-]{11}$/;
 
 function matchYouTubeId(parsed: URL): string | null {
@@ -45,10 +47,14 @@ export function classify(url: string): Classified | null {
       return { kind: "spotify", src: `https://open.spotify.com/embed/${spotify.type}/${spotify.id}`, height };
     }
   } catch {
-    // Not an absolute URL — YouTube and Spotify never match a relative path.
+    return null;
   }
-  if (/\.(jpe?g|png|gif|webp|avif|svg)(\?.*)?$/i.test(url)) return { kind: "image", src: url };
-  if (/\.(mp4|webm|mov)(\?.*)?$/i.test(url)) return { kind: "video", src: url };
+  // Only the path decides. Matching the whole string would let
+  // "https://app.example/api/logout?next=.png" through as an image, and an
+  // <img> fires that GET with whatever cookies the reader has there.
+  const path = url.split(/[?#]/)[0];
+  if (/\.(jpe?g|png|gif|webp|avif|svg)$/i.test(path)) return { kind: "image", src: url };
+  if (/\.(mp4|webm|mov)$/i.test(path)) return { kind: "video", src: url };
   return null;
 }
 
@@ -97,6 +103,7 @@ class EmbedWidget extends WidgetType {
       // only builds widgets for the lines on screen, which is the laziness.
       img.src = this.embed.src;
       img.alt = "";
+      img.referrerPolicy = "no-referrer";
       img.className = "block h-auto w-full rounded-md";
       // The height is only known once it loads; the lines below have moved.
       img.addEventListener("load", () => view.requestMeasure());
@@ -136,7 +143,6 @@ class EmbedWidget extends WidgetType {
 }
 
 function chipLabel(url: string): string {
-  if (url.startsWith("/")) return url.split("/").pop() || url;
   try {
     return new URL(url).hostname.replace(/^www\./, "");
   } catch {
@@ -253,11 +259,11 @@ const NOTE = [
   "",
   "## Image",
   "",
-  "/images/editor-embed-sample.webp",
+  "https://deltacomponents.dev/images/editor-embed-sample.webp",
   "",
   "## Video",
   "",
-  "/videos/swainsons-hawk.mp4",
+  "https://deltacomponents.dev/videos/swainsons-hawk.mp4",
 ].join("\n");
 
 export default function EditorEmbeds() {

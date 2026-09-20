@@ -27,17 +27,30 @@ describe("classify", () => {
     });
   });
 
-  it("recognizes an image URL, including a root-relative one", () => {
-    expect(classify("/images/essays/write-like-you-talk.jpg")).toEqual({
+  it("recognizes an image URL", () => {
+    expect(classify("https://example.com/photo.jpg")).toEqual({
       kind: "image",
-      src: "/images/essays/write-like-you-talk.jpg",
+      src: "https://example.com/photo.jpg",
     });
+  });
+
+  it("leaves a root-relative path alone, so a pasted line cannot reach the reader's own origin", () => {
+    expect(classify("/images/photo.jpg")).toBeNull();
+    expect(classify("//example.com/photo.jpg")).toBeNull();
   });
 
   it("recognizes a video URL", () => {
     expect(classify("https://example.com/clip.mp4")).toEqual({
       kind: "video",
       src: "https://example.com/clip.mp4",
+    });
+  });
+
+  it("decides from the path, so a query string cannot pass an endpoint off as an image", () => {
+    expect(classify("https://example.com/api/logout?next=.png")).toBeNull();
+    expect(classify("https://example.com/photo.png?width=800")).toEqual({
+      kind: "image",
+      src: "https://example.com/photo.png?width=800",
     });
   });
 
@@ -49,7 +62,7 @@ describe("classify", () => {
 describe("embeds", () => {
   it("chips and mounts the embed on an image line the caret is not on", () => {
     // given: an image URL on its own line, selection sitting on the line above
-    const doc = "intro\n/images/essays/write-like-you-talk.jpg\n";
+    const doc = "intro\nhttps://example.com/photo.jpg\n";
     const state = EditorState.create({ doc, extensions: [embeds], selection: { anchor: 0 } });
 
     // when: reading the field's decorations without ever focusing the editor
