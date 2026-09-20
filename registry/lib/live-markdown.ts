@@ -19,8 +19,8 @@ import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
 import {
   deleteMarkupBackward,
   insertNewlineContinueMarkupCommand,
-  markdown,
   markdownLanguage,
+  pasteURLAsLink,
 } from "@codemirror/lang-markdown";
 import { syntaxTree } from "@codemirror/language";
 import {
@@ -430,7 +430,7 @@ interface Marks {
   unclosed: { re: RegExp; len: number; deco: Decoration }[];
 }
 
-function createMarks(elements?: EditorElements): Marks {
+export function createMarks(elements?: EditorElements): Marks {
   const at = (key: keyof EditorElements) => resolve(elements, key);
   const marked = (key: keyof EditorElements) => {
     const { tag, className } = at(key);
@@ -476,151 +476,170 @@ function createMarks(elements?: EditorElements): Marks {
  *  `hasFocus` gates the caret-reveal: an unfocused editor still HAS a
  *  selection (position 0 on load), which would otherwise keep the first
  *  construct's syntax revealed until the user clicks — everything conceals
- *  when the editor isn't focused. */
-function computeLiveDecorations(
+ *  when the editor isn't focused.
+ *
+ *  Walks only `visible` (the viewport, plus CodeMirror's own overdraw
+ *  margin) rather than the whole document — cost per keystroke must not grow
+ *  with document length. */
+export function computeLiveDecorations(
   state: EditorState,
   hasFocus: boolean,
   marks: Marks,
+  visible: readonly { from: number; to: number }[],
 ): DecorationSet {
   const ranges: Range<Decoration>[] = [];
   const sel = state.selection.main;
   const touches = (from: number, to: number) => hasFocus && sel.from <= to && sel.to >= from;
-  // Inline constructs the parser DID match, per line — used to scan only
-  // leftover text for unclosed delimiters below.
-  const covered: [number, number][] = [];
+  const tree = syntaxTree(state);
 
-  syntaxTree(state).iterate({
-    enter: (node) => {
-      if (node.name.startsWith("ATXHeading")) {
-        const level = Number(node.name.slice("ATXHeading".length));
-        const line = state.doc.lineAt(node.from);
-        ranges.push(marks.headingLines[level - 1].range(line.from));
-        const tag = marks.headingTags[level - 1];
-        if (tag && node.to > node.from) ranges.push(tag.range(node.from, node.to));
-        if (!touches(node.from, node.to)) {
-          const mark = node.node.getChild("HeaderMark");
-          if (mark) {
-            // Swallow the space after "#" too, so the text sits flush left.
-            const end = state.doc.sliceString(mark.to, mark.to + 1) === " " ? mark.to + 1 : mark.to;
-            ranges.push(marks.hide.range(mark.from, end));
-          }
-        }
-        return;
-      }
-      switch (node.name) {
-        case "StrongEmphasis":
-        case "Emphasis": {
-          covered.push([node.from, node.to]);
-          ranges.push(
-            (node.name === "StrongEmphasis" ? marks.strong : marks.em).range(node.from, node.to),
-          );
+  for (const { from: rangeFrom, to: rangeTo } of visible) {
+    // Inline constructs the parser DID match, per line — used to scan only
+    // leftover text for unclosed delimiters below.
+    const covered: [number, number][] = [];
+
+    tree.iterate({
+      from: rangeFrom,
+      to: rangeTo,
+      enter: (node) => {
+        if (node.name.startsWith("ATXHeading")) {
+          const level = Number(node.name.slice("ATXHeading".length));
+          const line = state.doc.lineAt(node.from);
+          ranges.push(marks.headingLines[level - 1].range(line.from));
+          const tag = marks.headingTags[level - 1];
+          if (tag && node.to > node.from) ranges.push(tag.range(node.from, node.to));
           if (!touches(node.from, node.to)) {
-            for (const mark of node.node.getChildren("EmphasisMark")) {
-              ranges.push(marks.hide.range(mark.from, mark.to));
+            const mark = node.node.getChild("HeaderMark");
+            if (mark) {
+              // Swallow the space after "#" too, so the text sits flush left.
+              const end = state.doc.sliceString(mark.to, mark.to + 1) === " " ? mark.to + 1 : mark.to;
+              ranges.push(marks.hide.range(mark.from, end));
             }
           }
-          break;
+          return;
         }
-        case "InlineCode": {
-          covered.push([node.from, node.to]);
-          ranges.push(marks.code.range(node.from, node.to));
-          if (!touches(node.from, node.to)) {
-            for (const mark of node.node.getChildren("CodeMark")) {
-              ranges.push(marks.hide.range(mark.from, mark.to));
+        switch (node.name) {
+          case "StrongEmphasis":
+          case "Emphasis": {
+            covered.push([node.from, node.to]);
+            ranges.push(
+              (node.name === "StrongEmphasis" ? marks.strong : marks.em).range(node.from, node.to),
+            );
+            if (!touches(node.from, node.to)) {
+              for (const mark of node.node.getChildren("EmphasisMark")) {
+                ranges.push(marks.hide.range(mark.from, mark.to));
+              }
             }
+            break;
           }
-          break;
-        }
-        case "ListItem": {
-          ranges.push(marks.listLine.range(state.doc.lineAt(node.from).from));
-          break;
-        }
-        case "ListMark": {
-          const item = node.node.parent; // ListItem
-          if (item?.parent?.name !== "BulletList") break; // ordered numbers stay as-is
-          const isTask = item.getChild("Task") !== null;
-          // Bullets render as glyphs even with the caret adjacent — a fresh
-          // "- " from Enter shows its bullet before any content is typed.
-          // Backspace still removes the marker via deleteMarkupBackward.
-          if (isTask) {
-            // Task rows: the checkbox carries the affordance — hide "- ".
-            const end = state.doc.sliceString(node.to, node.to + 1) === " " ? node.to + 1 : node.to;
-            ranges.push(marks.hide.range(node.from, end));
-          } else {
-            // Nesting depth picks the glyph (• then ◦).
-            let depth = 0;
-            for (let p = item.parent.parent; p; p = p.parent) {
-              if (p.name === "BulletList" || p.name === "OrderedList") depth++;
+          case "InlineCode": {
+            covered.push([node.from, node.to]);
+            ranges.push(marks.code.range(node.from, node.to));
+            if (!touches(node.from, node.to)) {
+              for (const mark of node.node.getChildren("CodeMark")) {
+                ranges.push(marks.hide.range(mark.from, mark.to));
+              }
             }
+            break;
+          }
+          case "ListItem": {
+            ranges.push(marks.listLine.range(state.doc.lineAt(node.from).from));
+            break;
+          }
+          case "ListMark": {
+            const item = node.node.parent; // ListItem
+            if (item?.parent?.name !== "BulletList") break; // ordered numbers stay as-is
+            const isTask = item.getChild("Task") !== null;
+            // Bullets render as glyphs even with the caret adjacent — a fresh
+            // "- " from Enter shows its bullet before any content is typed.
+            // Backspace still removes the marker via deleteMarkupBackward.
+            if (isTask) {
+              // Task rows: the checkbox carries the affordance — hide "- ".
+              const end = state.doc.sliceString(node.to, node.to + 1) === " " ? node.to + 1 : node.to;
+              ranges.push(marks.hide.range(node.from, end));
+            } else {
+              // Nesting depth picks the glyph (• then ◦).
+              let depth = 0;
+              for (let p = item.parent.parent; p; p = p.parent) {
+                if (p.name === "BulletList" || p.name === "OrderedList") depth++;
+              }
+              ranges.push(
+                Decoration.replace({
+                  widget: new BulletWidget(depth === 0 ? "•" : "◦", marks.bullet),
+                }).range(node.from, node.to),
+              );
+            }
+            break;
+          }
+          case "TaskMarker": {
+            const checked = state.doc.sliceString(node.from, node.to).toLowerCase().includes("x");
             ranges.push(
               Decoration.replace({
-                widget: new BulletWidget(depth === 0 ? "•" : "◦", marks.bullet),
+                widget: new CheckboxWidget(checked, marks.checkbox),
               }).range(node.from, node.to),
             );
-          }
-          break;
-        }
-        case "TaskMarker": {
-          const checked = state.doc.sliceString(node.from, node.to).toLowerCase().includes("x");
-          ranges.push(
-            Decoration.replace({
-              widget: new CheckboxWidget(checked, marks.checkbox),
-            }).range(node.from, node.to),
-          );
-          if (checked) {
-            const line = state.doc.lineAt(node.to);
-            if (line.to > node.to + 1) {
-              ranges.push(marks.taskDone.range(node.to + 1, line.to));
+            if (checked) {
+              const line = state.doc.lineAt(node.to);
+              if (line.to > node.to + 1) {
+                ranges.push(marks.taskDone.range(node.to + 1, line.to));
+              }
             }
+            break;
           }
-          break;
-        }
-        case "Link": {
-          // [label](url) — conceal to just the styled label; reveal raw when
-          // the selection is anywhere inside. Cmd+click opens (handler below).
-          const linkMarks = node.node.getChildren("LinkMark");
-          if (linkMarks.length < 2) break;
-          covered.push([node.from, node.to]);
-          const labelFrom = linkMarks[0].to;
-          const labelTo = linkMarks[1].from;
-          if (labelTo > labelFrom) ranges.push(marks.link.range(labelFrom, labelTo));
-          if (!touches(node.from, node.to)) {
-            ranges.push(marks.hide.range(node.from, labelFrom));
-            ranges.push(marks.hide.range(labelTo, node.to));
+          case "Link": {
+            // [label](url) — conceal to just the styled label; reveal raw when
+            // the selection is anywhere inside. Cmd+click opens (handler below).
+            const linkMarks = node.node.getChildren("LinkMark");
+            if (linkMarks.length < 2) break;
+            covered.push([node.from, node.to]);
+            const labelFrom = linkMarks[0].to;
+            const labelTo = linkMarks[1].from;
+            if (labelTo > labelFrom) ranges.push(marks.link.range(labelFrom, labelTo));
+            if (!touches(node.from, node.to)) {
+              ranges.push(marks.hide.range(node.from, labelFrom));
+              ranges.push(marks.hide.range(labelTo, node.to));
+            }
+            break;
           }
-          break;
         }
+      },
+    });
+
+    // Eager styling for unclosed constructs: scan each line's text that isn't
+    // part of a parsed construct; the first unmatched delimiter styles the
+    // rest of the line, and (like closed constructs) the delimiter itself
+    // conceals once the caret leaves the range.
+    //
+    // `covered` is in tree pre-order, so already ascending by `from`: `first`
+    // only moves forward, where filtering it per line was quadratic.
+    let first = 0;
+    const firstLine = state.doc.lineAt(rangeFrom).number;
+    const lastLine = state.doc.lineAt(rangeTo).number;
+    for (let lineNo = firstLine; lineNo <= lastLine; lineNo++) {
+      const line = state.doc.line(lineNo);
+      if (line.length === 0) continue;
+      while (first < covered.length && covered[first][1] <= line.from) first++;
+      const segments: [number, number][] = [];
+      let cursor = line.from;
+      for (let j = first; j < covered.length && covered[j][0] < line.to; j++) {
+        const [f, t] = covered[j];
+        if (t <= line.from) continue;
+        if (f > cursor) segments.push([cursor, Math.min(f, line.to)]);
+        cursor = Math.max(cursor, t);
       }
-    },
-  });
+      if (cursor < line.to) segments.push([cursor, line.to]);
 
-  // Eager styling for unclosed constructs: scan each line's text that isn't
-  // part of a parsed construct; the first unmatched delimiter styles the rest
-  // of the line, and (like closed constructs) the delimiter itself conceals
-  // once the caret leaves the range.
-  for (let lineNo = 1; lineNo <= state.doc.lines; lineNo++) {
-    const line = state.doc.line(lineNo);
-    if (line.length === 0) continue;
-    const lineCovered = covered.filter(([f, t]) => f < line.to && t > line.from);
-    const segments: [number, number][] = [];
-    let cursor = line.from;
-    for (const [f, t] of lineCovered.sort((a, b) => a[0] - b[0])) {
-      if (f > cursor) segments.push([cursor, Math.min(f, line.to)]);
-      cursor = Math.max(cursor, t);
-    }
-    if (cursor < line.to) segments.push([cursor, line.to]);
-
-    outer: for (const [segFrom, segTo] of segments) {
-      const segText = state.doc.sliceString(segFrom, segTo);
-      for (const { re, len, deco } of marks.unclosed) {
-        const m = re.exec(segText);
-        if (!m) continue;
-        const delimFrom = segFrom + m.index;
-        ranges.push(deco.range(delimFrom + len, line.to));
-        if (!touches(delimFrom, line.to)) {
-          ranges.push(marks.hide.range(delimFrom, delimFrom + len));
+      outer: for (const [segFrom, segTo] of segments) {
+        const segText = state.doc.sliceString(segFrom, segTo);
+        for (const { re, len, deco } of marks.unclosed) {
+          const m = re.exec(segText);
+          if (!m) continue;
+          const delimFrom = segFrom + m.index;
+          ranges.push(deco.range(delimFrom + len, line.to));
+          if (!touches(delimFrom, line.to)) {
+            ranges.push(marks.hide.range(delimFrom, delimFrom + len));
+          }
+          break outer;
         }
-        break outer;
       }
     }
   }
@@ -651,7 +670,7 @@ export function livePreview(elements?: EditorElements): Extension {
     class {
       decorations: DecorationSet;
       constructor(view: EditorView) {
-        this.decorations = computeLiveDecorations(view.state, view.hasFocus, marks);
+        this.decorations = computeLiveDecorations(view.state, view.hasFocus, marks, view.visibleRanges);
       }
       update(update: ViewUpdate) {
         // IME guard: rebuilding decorations mid-composition detaches the
@@ -665,14 +684,22 @@ export function livePreview(elements?: EditorElements): Extension {
         // nor the selection. Without it, a document whose first parse pass
         // ran out of budget — a long one, or a busy page with several
         // editors — keeps the decorations of the fragment that WAS parsed and
-        // shows the rest as raw markdown, at random.
+        // shows the rest as raw markdown, at random. `viewportChanged` covers
+        // scrolling into a new part of the document, which touches none of
+        // the above but still needs its own now-visible range decorated.
         if (
           update.docChanged ||
           update.selectionSet ||
           update.focusChanged ||
+          update.viewportChanged ||
           syntaxTree(update.startState) !== syntaxTree(update.state)
         ) {
-          this.decorations = computeLiveDecorations(update.state, update.view.hasFocus, marks);
+          this.decorations = computeLiveDecorations(
+            update.state,
+            update.view.hasFocus,
+            marks,
+            update.view.visibleRanges,
+          );
         }
       }
     },
@@ -685,11 +712,16 @@ export function livePreview(elements?: EditorElements): Extension {
  *  `livePreview()`. */
 export function liveMarkdownBase(placeholderText = ""): Extension[] {
   return [
-    // The built-in keymap is replaced below: its default Enter command turns
-    // a tight list non-tight on the second empty item (blank line + carried
-    // bullet) — nonTightLists: false makes double-Enter exit the list,
-    // removing the empty item's marker instead.
-    markdown({ base: markdownLanguage, addKeymap: false }),
+    // The keymap below is ours rather than markdownKeymap: its default Enter
+    // command turns a tight list non-tight on the second empty item (blank
+    // line + carried bullet) — nonTightLists: false makes double-Enter exit
+    // the list, removing the empty item's marker instead.
+    //
+    // The bare language, not markdown(): that wrapper drags the HTML, CSS
+    // and JS language packages (plus autocomplete) into a prose editor.
+    // pasteURLAsLink is the one piece of it this editor uses.
+    markdownLanguage,
+    pasteURLAsLink,
     keymap.of([
       { key: "Enter", run: insertNewlineContinueMarkupCommand({ nonTightLists: false }) },
       { key: "Backspace", run: deleteMarkupBackward },
