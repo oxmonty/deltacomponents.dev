@@ -193,7 +193,7 @@ export const demos: Record<string, DemoEntry> = {
   },
   "image-zoom": {
     Component: DemoImageImageZoom,
-    source: "import { Image } from \"@/components/ui/image\";\n\nexport default function ImageZoom() {\n  return (\n    <div className=\"w-full max-w-[560px]\">\n      <Image\n        src=\"/images/editor-embed-sample.webp\"\n        alt=\"A painted battle scene of knights on horseback in red, green and yellow\"\n        width={1200}\n        height={672}\n      />\n    </div>\n  );\n}",
+    source: "import { Image } from \"@/components/ui/image\";\n\nexport default function ImageZoom() {\n  return (\n    <div className=\"w-full max-w-[320px]\">\n      <Image\n        src=\"/images/image-zoom-sample.webp\"\n        alt=\"A painting of sheep resting on an orange and green hillside among open laptops, with a figure in orange working on one under a blue sky\"\n        width={560}\n        height={748}\n      />\n    </div>\n  );\n}",
   },
   "mp3-player-demo": {
     Component: DemoMp3PlayerMp3PlayerDemo,
