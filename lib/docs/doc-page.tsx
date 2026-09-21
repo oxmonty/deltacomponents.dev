@@ -34,7 +34,9 @@ export function DocPage({
   const { prev, next } = neighbours(slug ? `/docs/${slug}` : "");
 
   return (
-    <div className="flex flex-col gap-8 px-5 sm:px-6">
+    // The gutter Image's bleed reads to size its negative margin, kept equal
+    // to this column's own padding so a bled image reaches the screen edge.
+    <div className="flex flex-col gap-8 px-5 sm:px-6 [--image-bleed-gutter:1.25rem] sm:[--image-bleed-gutter:1.5rem]">
       <DocHeader title={heading} description={blurb} prev={prev} next={next} copyable />
 
       {/* The body writes its own Installation section — it is content, and a

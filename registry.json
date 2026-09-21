@@ -562,7 +562,8 @@
       "title": "Embed",
       "description": "Turns a URL into what it points to: a YouTube facade, a lazy Spotify player, an image, a video, or a plain link card, decided from the URL alone.",
       "registryDependencies": [
-        "utils"
+        "utils",
+        "image"
       ],
       "files": [
         {
@@ -587,6 +588,26 @@
         }
       ],
       "docs": "Docs & live playground: https://deltacomponents.dev/docs/embed.",
+      "categories": [
+        "components"
+      ]
+    },
+    {
+      "name": "image",
+      "type": "registry:ui",
+      "title": "Image",
+      "description": "A figure with an optional caption, a native-dialog zoom sized from the picture's own proportions, and an edge-to-edge bleed for a landscape image.",
+      "registryDependencies": [
+        "utils"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/image.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/image.tsx"
+        }
+      ],
+      "docs": "Docs & live playground: https://deltacomponents.dev/docs/image.",
       "categories": [
         "components"
       ]

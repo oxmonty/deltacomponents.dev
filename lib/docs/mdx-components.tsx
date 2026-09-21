@@ -2,6 +2,7 @@ import type { MDXComponents } from "mdx/types";
 import type { ComponentProps } from "react";
 
 import { Code } from "@/registry/ui/code";
+import { Image } from "@/registry/ui/image";
 import { ComponentPreview } from "@/lib/docs/component-preview";
 import { AnchoredHeading, DocProse } from "@/lib/docs/doc-page";
 import { InstallTabs } from "@/lib/docs/install-tabs";
@@ -175,6 +176,7 @@ export const mdxComponents: MDXComponents = {
 
   // Components a page can use without importing them.
   ComponentPreview,
+  Image,
   InstallTabs,
   Playground,
   PropsTable,

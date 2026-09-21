@@ -309,6 +309,58 @@ export const TOC: Record<string, TocEntry[]> = {
       "depth": 2
     }
   ],
+  "/docs/image": [
+    {
+      "id": "installation",
+      "text": "Installation",
+      "depth": 2
+    },
+    {
+      "id": "usage",
+      "text": "Usage",
+      "depth": 2
+    },
+    {
+      "id": "zoom",
+      "text": "Zoom",
+      "depth": 2
+    },
+    {
+      "id": "close-control",
+      "text": "Close control",
+      "depth": 2
+    },
+    {
+      "id": "dimensions",
+      "text": "Dimensions",
+      "depth": 2
+    },
+    {
+      "id": "bleed",
+      "text": "Bleed",
+      "depth": 2
+    },
+    {
+      "id": "api-reference",
+      "text": "API Reference",
+      "depth": 2
+    },
+    {
+      "id": "image",
+      "text": "Image",
+      "depth": 3
+    },
+    {
+      "id": "imageclose",
+      "text": "ImageClose",
+      "depth": 3
+    },
+    {
+      "id": "accessibility",
+      "text": "Accessibility",
+      "depth": 2
+    }
+  ],
   "/docs": [
     {
       "id": "how-to-use-it",

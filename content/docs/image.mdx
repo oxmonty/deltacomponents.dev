@@ -1,0 +1,126 @@
+---
+description: "A figure with a caption and a zoom sized from the picture's own proportions"
+---
+
+import { imageProps, imageCloseProps } from "./image.props";
+
+<ComponentPreview name="image-demo" />
+
+## Installation
+
+<InstallTabs slug="image" />
+
+## Usage
+
+```tsx
+import { Image } from "@/components/ui/image";
+
+<Image src="/painting.jpg" alt="A battle scene" width={1200} height={672} />
+```
+
+The name matches `next/image`'s conventional import, so a file reaching for
+both aliases one of them:
+
+```tsx
+import NextImage from "next/image";
+import { Image } from "@/components/ui/image";
+```
+
+## Zoom
+
+Clicking or tapping the image opens it in a native `<dialog>`. Escape or a
+click anywhere inside closes it and returns focus to the image. The enlarged
+view is sized from the picture's own proportions: full width on a phone,
+whichever edge binds first — top and bottom for a landscape photo, the sides
+for a portrait one — on a wider screen.
+
+<ComponentPreview name="image-zoom" align="top" />
+
+Pass `zoomable={false}` for a plain figure with no button and no dialog.
+
+## Close control
+
+Escape and a click anywhere already close the enlarged view, but neither is
+visible, and a reader on a phone has no Escape key. Whatever you put inside
+`Image` is drawn in the enlarged view, over the picture, and `ImageClose` is a
+holder for a button there: pinned to the top right corner of the screen, in
+the same place for every image. Any click inside the enlarged view closes it,
+so the button needs no handler. Focus goes to the view itself when it opens,
+so a tap never leaves a focus ring on the button, and one Tab reaches it. A
+`Button` inside comes out as a pill: `ImageClose` sets `--radius-button`,
+which your own `className` still overrides.
+
+<ComponentPreview name="image-close-control" align="top" />
+
+The secondary button is the one to reach for. It has a fill of its own, so
+the icon stays legible over any picture; tertiary and ghost are transparent
+and would disappear into a busy one, and primary competes with the image.
+
+## Dimensions
+
+`width` and `height` reserve the image's space before the file arrives, so
+nothing shifts once it loads, and tell the component its proportions on the
+server. Leave them off and it measures the picture itself once it is on the
+page — one render later, and only after the browser has it.
+
+## Bleed
+
+A **landscape** image can run past its column to the edge of the screen;
+a portrait one never does, since edge to edge it would run taller than the
+screen it's on. `bleed` (below the `md` breakpoint) or `bleed="always"`
+turns it on; a portrait image, or one whose ratio isn't known yet, ignores
+either.
+
+The distance to the edge comes from `--image-bleed-gutter`, a CSS variable
+set once on the surrounding text column (default `1rem`). To reach the
+window's edge rather than the column's on a wide screen, set the gutter from
+the viewport — for a column centred at 680px, that's
+`calc((100vw - 680px) / 2)` — and clip the overshoot on an ancestor, since
+`100vw` includes the scrollbar.
+
+The example below isn't inside a `ComponentPreview`, on purpose: that frame
+has its own border and padding, so nothing inside it can reach the actual
+edge of the screen.
+
+<Image
+  src="/images/editor-embed-sample.webp"
+  alt="A painted battle scene of knights on horseback in red, green and yellow"
+  width={1200}
+  height={672}
+  bleed
+  caption="On a phone this runs to both edges of the screen. On a wider one it sits in the column."
+/>
+
+```tsx
+<div className="[--image-bleed-gutter:1.25rem]">
+  <Image
+    src="/painting.jpg"
+    alt="A painted battle scene of knights on horseback in red, green and yellow"
+    width={1200}
+    height={672}
+    bleed
+    caption="On a phone this runs to both edges of the screen. On a wider one it sits in the column."
+  />
+</div>
+```
+
+## API Reference
+
+### Image
+
+Any other `<img>` attribute passes through to the thumbnail.
+
+<PropsTable props={imageProps} />
+
+### ImageClose
+
+Any other `<span>` attribute passes through.
+
+<PropsTable props={imageCloseProps} />
+
+## Accessibility
+
+The trigger is a real button, labelled from the alt text (`Enlarge: …`), so a
+screen reader announces what it's about to open. The dialog is labelled too
+and closes on Escape. `alt` is required by the type — there is no prop-level
+way to forget it, only the deliberate empty string for a decorative image.

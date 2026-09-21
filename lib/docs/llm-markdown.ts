@@ -47,6 +47,27 @@ function stripModuleImports(source: string): string {
     .join("\n");
 }
 
+/** Turns a live `<Image src=… alt=… caption=… />` in the page body into a
+ *  markdown image, with the caption in italics on its own line — but only
+ *  outside a fenced block, so a `tsx` sample that merely *shows* `<Image>`
+ *  usage (Usage, or a demo's own embedded source) is left as code. */
+function replaceLiveImageTags(source: string): string {
+  return source
+    .split(/(^(?:```|~~~).*\n[\s\S]*?^(?:```|~~~)[ \t]*$)/m)
+    .map((segment, i) =>
+      i % 2 === 1
+        ? segment
+        : segment.replace(/<Image\b([\s\S]*?)\/>/g, (_match, attrs: string) => {
+            const src = /\bsrc="([^"]*)"/.exec(attrs)?.[1] ?? "";
+            const alt = /\balt="([^"]*)"/.exec(attrs)?.[1] ?? "";
+            const caption = /\bcaption="([^"]*)"/.exec(attrs)?.[1];
+            const image = `![${alt}](${src})`;
+            return caption ? `${image}\n\n*${caption}*` : image;
+          })
+    )
+    .join("");
+}
+
 export async function docPageAsMarkdown(slug: string): Promise<string | null> {
   const entry = componentList.find((c) => c.slug === slug);
   if (!entry) return null;
@@ -75,6 +96,11 @@ export async function docPageAsMarkdown(slug: string): Promise<string | null> {
   } catch {
     // A page with no props file is fine.
   }
+
+  // Run before the demo/install/props expansions below add their own fenced
+  // blocks — at this point the only fences are ones the page's author wrote
+  // by hand, which is exactly what must stay untouched.
+  source = replaceLiveImageTags(source);
 
   const body = stripModuleImports(source)
     .replace(/<ComponentPreview\s+name="([^"]+)"[^>]*\/>/g, (match, name: string) => {
