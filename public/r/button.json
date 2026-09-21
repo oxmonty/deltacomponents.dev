@@ -9,9 +9,9 @@
     "lucide-react"
   ],
   "registryDependencies": [
-    "https://deltacomponentsdev.vercel.app/r/utils.json",
-    "https://deltacomponentsdev.vercel.app/r/icon-context.json",
-    "https://deltacomponentsdev.vercel.app/r/tokens.json"
+    "https://www.deltacomponents.dev/r/utils.json",
+    "https://www.deltacomponents.dev/r/icon-context.json",
+    "https://www.deltacomponents.dev/r/tokens.json"
   ],
   "files": [
     {

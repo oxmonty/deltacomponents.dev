@@ -1,7 +1,7 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry.json",
   "name": "delta",
-  "homepage": "https://deltacomponentsdev.vercel.app",
+  "homepage": "https://www.deltacomponents.dev",
   "items": [
     {
       "name": "surfaces",

@@ -4,8 +4,8 @@
   "title": "Embed",
   "description": "Turns a URL into what it points to: a YouTube facade, a lazy Spotify player, an image, a video, or a plain link card, decided from the URL alone.",
   "registryDependencies": [
-    "https://deltacomponentsdev.vercel.app/r/utils.json",
-    "https://deltacomponentsdev.vercel.app/r/image.json"
+    "https://www.deltacomponents.dev/r/utils.json",
+    "https://www.deltacomponents.dev/r/image.json"
   ],
   "files": [
     {

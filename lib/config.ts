@@ -7,10 +7,9 @@ function origin(host: string | undefined): string | undefined {
  * The canonical origin: the canonical link, og:url, metadataBase, the sitemap,
  * robots.txt, and the `shadcn add` URL the install tab prints.
  *
- * deltacomponents.dev is not served yet, so it is deliberately NOT the
- * fallback — hardcoding it would have every page canonicalise to a domain that
- * 404s, and would print an install command that cannot resolve. The deployment
- * names itself instead.
+ * The domain is not written here. It is the Vercel project's production
+ * domain, and the deployment names itself from that — so moving the site, or
+ * forking it, changes every one of those without touching this file.
  *
  * `VERCEL_PROJECT_PRODUCTION_URL`, not `VERCEL_URL`: the latter is the
  * per-deployment hostname, so every preview would self-canonicalise and each
@@ -22,9 +21,9 @@ function origin(host: string | undefined): string | undefined {
  * bundle, and the bare name would be `undefined` there. Vercel sets both for a
  * Next.js project.
  *
- * Set `NEXT_PUBLIC_SITE_URL` to override — that is the switch to flip when the
- * real domain goes live, and the point at which this fallback can go back to
- * being a literal.
+ * Set `NEXT_PUBLIC_SITE_URL` to override, for a host Vercel does not know as
+ * the production domain. `registry.json`'s `homepage` is the one place the
+ * domain IS written down, because the registry build has no deployment to ask.
  */
 const url =
   process.env.NEXT_PUBLIC_SITE_URL ||

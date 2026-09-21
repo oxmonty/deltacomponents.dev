@@ -4,7 +4,7 @@
   "title": "Image",
   "description": "A figure with an optional caption, a native-dialog zoom sized from the picture's own proportions, and an edge-to-edge bleed for a landscape image.",
   "registryDependencies": [
-    "https://deltacomponentsdev.vercel.app/r/utils.json"
+    "https://www.deltacomponents.dev/r/utils.json"
   ],
   "files": [
     {

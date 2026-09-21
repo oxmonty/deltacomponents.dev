@@ -4,7 +4,7 @@
   "title": "Glyph",
   "description": "The Twitter/X-style verified checkmark, with the check cut out of the rosette as a real hole via an SVG mask so whatever sits behind it shows through.",
   "registryDependencies": [
-    "https://deltacomponentsdev.vercel.app/r/utils.json"
+    "https://www.deltacomponents.dev/r/utils.json"
   ],
   "files": [
     {

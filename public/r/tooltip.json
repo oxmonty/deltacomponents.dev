@@ -7,9 +7,9 @@
     "@base-ui/react"
   ],
   "registryDependencies": [
-    "https://deltacomponentsdev.vercel.app/r/utils.json",
-    "https://deltacomponentsdev.vercel.app/r/motion.json",
-    "https://deltacomponentsdev.vercel.app/r/font-weight.json"
+    "https://www.deltacomponents.dev/r/utils.json",
+    "https://www.deltacomponents.dev/r/motion.json",
+    "https://www.deltacomponents.dev/r/font-weight.json"
   ],
   "files": [
     {

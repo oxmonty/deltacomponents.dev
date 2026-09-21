@@ -8,10 +8,10 @@
     "prismjs"
   ],
   "registryDependencies": [
-    "https://deltacomponentsdev.vercel.app/r/utils.json",
-    "https://deltacomponentsdev.vercel.app/r/button.json",
-    "https://deltacomponentsdev.vercel.app/r/tokens.json",
-    "https://deltacomponentsdev.vercel.app/r/clipboard.json"
+    "https://www.deltacomponents.dev/r/utils.json",
+    "https://www.deltacomponents.dev/r/button.json",
+    "https://www.deltacomponents.dev/r/tokens.json",
+    "https://www.deltacomponents.dev/r/clipboard.json"
   ],
   "files": [
     {

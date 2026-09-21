@@ -4,8 +4,8 @@
   "title": "Alert",
   "description": "Inline callout carried by a pastel fill alone, no border or icon, that turns into pastel ink on a faint wash in dark mode.",
   "registryDependencies": [
-    "https://deltacomponentsdev.vercel.app/r/utils.json",
-    "https://deltacomponentsdev.vercel.app/r/font-weight.json"
+    "https://www.deltacomponents.dev/r/utils.json",
+    "https://www.deltacomponents.dev/r/font-weight.json"
   ],
   "files": [
     {

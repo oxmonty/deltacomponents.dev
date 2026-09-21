@@ -4,7 +4,7 @@
   "title": "Surface Class Lookup",
   "description": "Static lookup tables for bg-surface-N and shadow-surface-N utilities. Required because Tailwind v4 cannot detect template-literal class names.",
   "registryDependencies": [
-    "https://deltacomponentsdev.vercel.app/r/surfaces.json"
+    "https://www.deltacomponents.dev/r/surfaces.json"
   ],
   "files": [
     {
