@@ -181,3 +181,36 @@ describe("computeLiveDecorations", () => {
     expect(liveMarkdownBase().flat(5)).toContain(pasteURLAsLink);
   });
 });
+
+describe("block markers wait for their space", () => {
+  const marks = createMarks();
+  const decorate = (doc: string) => {
+    // given: an unfocused editor, so nothing is revealed for the caret's sake
+    const state = parsedState(doc);
+    return serialize(computeLiveDecorations(state, false, marks, fullRange(state)));
+  };
+
+  it("leaves a bare marker as the text that was typed", () => {
+    for (const doc of ["*", "-", "+", "1.", "#", "##", "######"]) {
+      expect(decorate(doc), JSON.stringify(doc)).toEqual([]);
+    }
+  });
+
+  it("leaves a bare marker alone when it follows other content", () => {
+    expect(decorate("intro\n\n*")).toEqual([]);
+    expect(decorate("intro\n\n#")).toEqual([]);
+  });
+
+  it("treats the marker as a bullet, a numbered row or a heading once a space follows", () => {
+    for (const doc of ["* ", "- ", "+ ", "1. ", "# ", "## "]) {
+      expect(decorate(doc).length, JSON.stringify(doc)).toBeGreaterThan(0);
+    }
+  });
+
+  it("still opens emphasis from a star that is followed by text", () => {
+    // given: "*it" is the start of *italic*, never a list
+    const decorations = decorate("*it");
+    expect(decorations.length).toBeGreaterThan(0);
+    expect(decorations.join(" ")).not.toContain("cm-md-li");
+  });
+});

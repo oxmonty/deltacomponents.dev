@@ -495,6 +495,11 @@ export function computeLiveDecorations(
   const ranges: Range<Decoration>[] = [];
   const sel = state.selection.main;
   const touches = (from: number, to: number) => hasFocus && sel.from <= to && sel.to >= from;
+  // A block marker only counts once a space follows it. Markdown already
+  // calls a lone "*" or "#" an empty list item or heading, so without this a
+  // "*" typed to open *italic* flashes a bullet, and "#" jumps to heading size
+  // before there is a heading. Until the space it is the text that was typed.
+  const committed = (markerEnd: number) => /[ \t]/.test(state.doc.sliceString(markerEnd, markerEnd + 1));
   const tree = syntaxTree(state);
 
   for (const { from: rangeFrom, to: rangeTo } of visible) {
@@ -507,18 +512,20 @@ export function computeLiveDecorations(
       to: rangeTo,
       enter: (node) => {
         if (node.name.startsWith("ATXHeading")) {
+          const headerMark = node.node.getChild("HeaderMark");
+          if (!headerMark || !committed(headerMark.to)) return;
           const level = Number(node.name.slice("ATXHeading".length));
           const line = state.doc.lineAt(node.from);
           ranges.push(marks.headingLines[level - 1].range(line.from));
           const tag = marks.headingTags[level - 1];
           if (tag && node.to > node.from) ranges.push(tag.range(node.from, node.to));
           if (!touches(node.from, node.to)) {
-            const mark = node.node.getChild("HeaderMark");
-            if (mark) {
-              // Swallow the space after "#" too, so the text sits flush left.
-              const end = state.doc.sliceString(mark.to, mark.to + 1) === " " ? mark.to + 1 : mark.to;
-              ranges.push(marks.hide.range(mark.from, end));
-            }
+            // Swallow the space after "#" too, so the text sits flush left.
+            const end =
+              state.doc.sliceString(headerMark.to, headerMark.to + 1) === " "
+                ? headerMark.to + 1
+                : headerMark.to;
+            ranges.push(marks.hide.range(headerMark.from, end));
           }
           return;
         }
@@ -547,10 +554,13 @@ export function computeLiveDecorations(
             break;
           }
           case "ListItem": {
+            const listMark = node.node.getChild("ListMark");
+            if (!listMark || !committed(listMark.to)) break;
             ranges.push(marks.listLine.range(state.doc.lineAt(node.from).from));
             break;
           }
           case "ListMark": {
+            if (!committed(node.to)) break;
             const item = node.node.parent; // ListItem
             if (item?.parent?.name !== "BulletList") break; // ordered numbers stay as-is
             const isTask = item.getChild("Task") !== null;
