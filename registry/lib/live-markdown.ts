@@ -405,6 +405,11 @@ class CheckboxWidget extends WidgetType {
         changes: { from: pos, to: pos + 3, insert: this.checked ? "[ ]" : "[x]" },
       });
     });
+    // Ticking a task is not editing. Without this the press focuses the
+    // editor it lands in, and on a phone that raises the keyboard over the
+    // list being ticked. Cancelling the press keeps focus wherever it was —
+    // the click, and so the toggle, still goes through.
+    label.addEventListener("mousedown", (event) => event.preventDefault());
     label.appendChild(input);
     return label;
   }
