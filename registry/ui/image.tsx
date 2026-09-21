@@ -50,6 +50,10 @@ function Image({
 
   React.useEffect(() => setMounted(true), [])
 
+  // Set while the view is open; see openDialog.
+  const stopWatchingScroll = React.useRef<(() => void) | null>(null)
+  React.useEffect(() => () => stopWatchingScroll.current?.(), [])
+
   // Known from the props when given; otherwise read off the thumbnail once
   // its pixels are in. `width`/`height` land during SSR, so most callers pay
   // no measuring effect at all.
@@ -92,6 +96,15 @@ function Image({
     // ring on anything the page focuses itself, tap or not. Focus goes to the
     // view instead: no ring after a tap, one Tab to the control by keyboard.
     dialog.focus()
+    // A modal dialog blocks clicks on the page behind it, not scrolling. A
+    // reader who scrolls has moved on, so the view closes rather than trapping
+    // them. The threshold lets a finger drift during a tap without closing it.
+    const startY = window.scrollY
+    const closeOnceScrolled = () => {
+      if (Math.abs(window.scrollY - startY) > 48) dialog.close()
+    }
+    window.addEventListener("scroll", closeOnceScrolled, { passive: true })
+    stopWatchingScroll.current = () => window.removeEventListener("scroll", closeOnceScrolled)
     onZoomChange?.(true)
   }
 
@@ -155,7 +168,11 @@ function Image({
             ref={dialogRef}
             tabIndex={-1}
             onClick={() => dialogRef.current?.close()}
-            onClose={() => onZoomChange?.(false)}
+            onClose={() => {
+              stopWatchingScroll.current?.()
+              stopWatchingScroll.current = null
+              onZoomChange?.(false)
+            }}
             aria-label={
               alt
                 ? `${alt} (enlarged). Press Escape to close.`

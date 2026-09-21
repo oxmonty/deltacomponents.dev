@@ -29,7 +29,9 @@ import { Image } from "@/components/ui/image";
 ## Zoom
 
 Clicking or tapping the image opens it in a native `<dialog>`. Escape or a
-click anywhere inside closes it and returns focus to the image. The enlarged
+click anywhere inside closes it and returns focus to the image. So does
+scrolling the page: a dialog blocks clicks on what is behind it, not scrolling,
+and a reader who scrolls has moved on. The enlarged
 view is sized from the picture's own proportions: full width on a phone,
 whichever edge binds first — top and bottom for a landscape photo, the sides
 for a portrait one — on a wider screen.
