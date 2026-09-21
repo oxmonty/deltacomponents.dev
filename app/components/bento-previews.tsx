@@ -6,6 +6,7 @@ import { Tooltip } from "@/registry/ui/tooltip";
 import GlyphBasic from "@/content/demos/glyph/glyph-basic";
 import AlertDemo from "@/content/demos/alert/alert-demo";
 import { LinkPreview } from "@/registry/ui/embed";
+import { Image } from "@/registry/ui/image";
 import { PATRICK_DARK } from "@/lib/docs/code-themes";
 import {
   Tabs,
@@ -190,10 +191,32 @@ function TabsPreview() {
 
 function EmbedPreview() {
   // LinkPreview, not a YouTube or Spotify part: the showcase loads a lot of
-  // cards at once, and this is the only part that makes no network request.
+  // cards at once. The metadata is passed in so the card never asks the
+  // preview route for it, and the tile is too narrow for the image to sit
+  // beside the text, so it stays stacked at every width.
   return (
     <div className="w-full max-w-[280px]">
-      <LinkPreview url="https://codemirror.net/docs/guide/" />
+      <LinkPreview
+        url="https://patrickprunty.com"
+        title="Patrick Prunty"
+        description="Software engineer and writer"
+        image="https://www.patrickprunty.com/images/og.png"
+        className="sm:flex-col [&_img]:sm:w-full"
+      />
+    </div>
+  );
+}
+
+function ImagePreview() {
+  return (
+    <div className="w-full max-w-[340px]">
+      <Image
+        src="/images/editor-embed-sample.webp"
+        alt="A painted battle scene of knights on horseback in red, green and yellow"
+        width={1200}
+        height={672}
+        caption="Click or tap to enlarge"
+      />
     </div>
   );
 }
@@ -219,4 +242,5 @@ export const previewMap: Record<string, React.FC> = {
   alert: AlertDemo,
   embed: EmbedPreview,
   editor: EditorPreview,
+  image: ImagePreview,
 };

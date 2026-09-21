@@ -12,7 +12,11 @@ export interface ComponentEntry {
   isUpdated?: boolean;
   /** Tailwind bg class overriding the default blue `isNew` dot in the sidebar. */
   dotColor?: string;
-  gridSize?: "large" | "medium" | "small";
+  gridSize?: "large" | "medium" | "small" | "tall";
+  /** Overrides where the size would put the tile on the `xl` showcase grid:
+   *  `xl:col-start-2` sits a wide tile on the right, `xl:col-start-1` a narrow
+   *  one on the left. A wide tile moved right needs a narrow one moved left. */
+  gridClassName?: string;
   /** Visible while developing, absent from a production build. */
   draft?: boolean;
 }
@@ -37,13 +41,14 @@ export function labelOf(entry: Pick<ComponentEntry, "name" | "label">): string {
 
 export const componentList: ComponentEntry[] = [
   { slug: "code", name: "Code", isNew: true, gridSize: "large" },
-  { slug: "product-card", name: "ProductCard", isNew: true, gridSize: "large" },
+  { slug: "product-card", name: "ProductCard", isNew: true, gridSize: "large", gridClassName: "xl:col-start-2" },
   { slug: "editor", name: "Editor", isNew: true, gridSize: "large" },
   { slug: "tabs", name: "Tabs", isNew: true, gridSize: "medium" },
   { slug: "button", name: "Button", gridSize: "small" },
   { slug: "tooltip", name: "Tooltip", gridSize: "small" },
   { slug: "alert", name: "Alert", isNew: true, gridSize: "medium" },
-  { slug: "embed", name: "Embed", isNew: true, gridSize: "medium" },
+  { slug: "embed", name: "Embed", isNew: true, gridSize: "tall", gridClassName: "xl:col-start-1" },
+  { slug: "image", name: "Image", isNew: true, gridSize: "medium" },
   { slug: "glyph", name: "Glyph", isNew: true, gridSize: "small", draft: true },
   { slug: "mp3-player", name: "MP3Player", gridSize: "medium", draft: true },
 ];

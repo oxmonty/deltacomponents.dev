@@ -7,10 +7,16 @@ import { fontWeights } from "@/registry/lib/font-weight";
 import { Badge } from "@/app/components/ui/badge";
 import { useIcon } from "@/registry/lib/icon-context";
 
+// From `xl` the columns are narrow, slim, narrow. A wide tile takes a narrow
+// one plus the slim one, a little under two thirds, and can do so from either
+// side; a narrow tile is a little over a third. Every row is one of each, so
+// each size is pinned: wide to the left and narrow to the right unless a tile's
+// own `gridClassName` in lib/docs/components.ts says otherwise.
 const sizeClasses: Record<string, string> = {
-  large: "md:col-span-2 md:row-span-2",
-  medium: "md:col-span-2",
-  small: "col-span-1",
+  large: "md:col-span-2 md:row-span-2 xl:col-start-1",
+  medium: "md:col-span-2 xl:col-start-1",
+  small: "col-span-1 xl:col-start-3",
+  tall: "col-span-1 md:row-span-2 xl:col-start-3",
 };
 
 interface BentoCardProps {

@@ -19,7 +19,7 @@ interface BentoGridProps {
 //   [ alert   ][ ]
 // The sidebar keeps componentList's reading order; slugs missing here follow
 // in that order, and dense flow drops a one-column card into the first gap.
-const SHOWCASE_ORDER = ["code", "button", "tooltip", "product-card", "tabs", "editor", "alert", "embed"];
+const SHOWCASE_ORDER = ["code", "button", "tooltip", "product-card", "tabs", "editor", "alert", "embed", "image"];
 
 function showcaseRank(slug: string) {
   const i = SHOWCASE_ORDER.indexOf(slug);
@@ -29,7 +29,7 @@ function showcaseRank(slug: string) {
 export function BentoGrid({ components }: BentoGridProps) {
   const ordered = [...components].sort((a, b) => showcaseRank(a.slug) - showcaseRank(b.slug));
   return (
-    <div className="bento-grid grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+    <div className="bento-grid grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_minmax(0,0.56fr)_minmax(0,1fr)]">
       {ordered.map((c) => {
         const Preview = previewMap[c.slug];
         if (!Preview) return null;
@@ -40,6 +40,7 @@ export function BentoGrid({ components }: BentoGridProps) {
             name={labelOf(c)}
             isNew={c.isNew}
             gridSize={c.gridSize}
+            className={c.gridClassName}
           >
             <Preview />
           </BentoCard>
