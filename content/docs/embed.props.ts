@@ -84,12 +84,12 @@ export const imageEmbedProps: PropDef[] = [
     name: "alt",
     type: "string",
     default: '""',
-    description: "Alt text. Empty by default, since a caller passing a bare URL rarely has one to give.",
+    description: "Alt text. Optional here, unlike on Image, since a caller passing a bare URL rarely has one to give.",
   },
   {
-    name: "className",
-    type: "string",
-    description: "Additional classes applied to the root.",
+    name: "...props",
+    type: "ImageProps",
+    description: "Everything else the registry's Image takes: `caption`, `zoomable`, `bleed`, `width`, `height`, `className`, children for the enlarged view. `referrerPolicy` defaults to `no-referrer`, because the URL is usually someone else's server.",
   },
 ];
 

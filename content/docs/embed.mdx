@@ -24,6 +24,11 @@ A **watch**, **share** or **shorts** link becomes a thumbnail and a button. The
 player itself is close to a megabyte of third-party script, so it only loads
 once someone presses play, from `youtube-nocookie.com`.
 
+On a touch device it starts muted. A phone won't play sound unless the tap
+landed inside the player, and this one lands on the thumbnail; asked for sound
+anyway, YouTube shows a play button of its own and the viewer taps twice.
+Muted, it plays on the first tap, and the sound is one tap away in the player.
+
 <ComponentPreview name="embed-youtube" align="top" />
 
 ## Spotify
@@ -48,7 +53,11 @@ address beneath it, which is what a pasted link with nothing else settles for.
 
 ## Image
 
-Any link whose path ends in an image extension.
+Any link whose path ends in an image extension. It is drawn with the
+registry's [Image](/docs/image), so it enlarges on a click, and `ImageEmbed`
+takes everything that component does: a `caption`, `width` and `height`,
+`bleed`, `zoomable={false}` for a plain picture. Installing Embed brings Image
+with it.
 
 <ComponentPreview name="embed-image" align="top" />
 

@@ -4,6 +4,7 @@ import * as React from "react"
 
 import { cn } from "@/registry/lib/utils"
 import { classifyUrl, type EmbedSource } from "@/registry/lib/embed"
+import { Image, type ImageProps } from "@/registry/ui/image"
 import type { LinkPreviewData } from "@/registry/lib/link-preview"
 
 // loading="lazy" does defer the request, but the browser starts it thousands
@@ -84,7 +85,11 @@ interface YouTubeEmbedProps {
 // a page shouldn't pay for it until someone actually presses play. Until
 // then this is a thumbnail and a button.
 function YouTubeEmbed({ videoId, title = "YouTube video", className }: YouTubeEmbedProps) {
-  const [playing, setPlaying] = React.useState(false)
+  // A phone will not start a video with sound unless the tap landed inside
+  // the player, and this one lands on the thumbnail. Asked to autoplay with
+  // sound, YouTube falls back to its own play button and the viewer taps
+  // twice. Muted autoplay is allowed, so a touch device starts that way.
+  const [playing, setPlaying] = React.useState<false | "sound" | "muted">(false)
   // 1280x720 is the largest thumbnail YouTube publishes, and it only exists
   // for some videos. A missing one is not an error: YouTube answers 404 with
   // a valid 120x90 grey placeholder, which loads fine. It is 4:3 where the
@@ -107,7 +112,9 @@ function YouTubeEmbed({ videoId, title = "YouTube video", className }: YouTubeEm
     >
       {playing ? (
         <iframe
-          src={`https://www.youtube-nocookie.com/embed/${encodeURIComponent(videoId)}?autoplay=1`}
+          src={`https://www.youtube-nocookie.com/embed/${encodeURIComponent(videoId)}?autoplay=1${
+            playing === "muted" ? "&mute=1&playsinline=1" : ""
+          }`}
           title={title}
           className="absolute inset-0 h-full w-full border-0"
           allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
@@ -117,7 +124,9 @@ function YouTubeEmbed({ videoId, title = "YouTube video", className }: YouTubeEm
       ) : (
         <button
           type="button"
-          onClick={() => setPlaying(true)}
+          onClick={() =>
+            setPlaying(window.matchMedia("(pointer: coarse)").matches ? "muted" : "sound")
+          }
           aria-label={`Play: ${title}`}
           className={cn(
             "group absolute inset-0 h-full w-full cursor-pointer",
@@ -150,16 +159,22 @@ function YouTubeEmbed({ videoId, title = "YouTube video", className }: YouTubeEm
             aria-hidden="true"
             className="pointer-events-none absolute inset-0 flex items-center justify-center"
           >
-            <span
-              className={cn(
-                "flex size-14 items-center justify-center rounded-full bg-black/55",
-                "transition-colors duration-(--motion-fast) ease-spring group-hover:bg-black/70"
-              )}
-            >
-              <svg viewBox="0 0 16 16" className="ml-0.5 size-5 fill-white">
-                <path d="M4 2.5v11l10-5.5z" />
-              </svg>
-            </span>
+            {/* Our own drawing, not YouTube's mark: a plain rounded rectangle
+                in their red, which is how their player shows its button. The
+                red is a literal because it is a brand colour, not one of the
+                theme's. */}
+            <svg viewBox="0 0 68 48" className="h-12 w-[68px]">
+              <rect
+                width="68"
+                height="48"
+                rx="12"
+                className={cn(
+                  "fill-[#f00] transition-colors duration-(--motion-fast) ease-spring",
+                  "group-hover:fill-[#c00]"
+                )}
+              />
+              <path d="M27 14v20l18-10z" className="fill-white" />
+            </svg>
           </span>
         </button>
       )}
@@ -234,30 +249,15 @@ function VideoEmbed({ src, className, ...videoProps }: VideoEmbedProps) {
   )
 }
 
-interface ImageEmbedProps {
-  src: string
+type ImageEmbedProps = Omit<ImageProps, "alt"> & {
+  /** Optional here, unlike on Image: a pasted URL never came with any. */
   alt?: string
-  className?: string
 }
 
-function ImageEmbed({ src, alt = "", className }: ImageEmbedProps) {
-  return (
-    /* eslint-disable-next-line @next/next/no-img-element -- a registry
-       component installs into any React project, so it must not depend on
-       next/image; the consumer swaps this for their framework's loader. */
-    <img
-      data-slot="image-embed"
-      src={src}
-      alt={alt}
-      loading="lazy"
-      decoding="async"
-      referrerPolicy="no-referrer"
-      className={cn(
-        "block h-auto w-full rounded-[var(--radius-bg,var(--radius,0.5rem))]",
-        className
-      )}
-    />
-  )
+// The registry's Image, so an embedded picture enlarges on a click like any
+// other. No referrer by default: the URL is usually someone else's server.
+function ImageEmbed({ alt = "", ...props }: ImageEmbedProps) {
+  return <Image alt={alt} referrerPolicy="no-referrer" {...props} />
 }
 
 interface LinkPreviewProps {
