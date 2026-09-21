@@ -108,17 +108,19 @@ and there is no cancel gesture to go with an autosave.
 
 The core stays a text surface: no iframes, no network requests, nothing a
 consumer didn't ask for. `extensions` is where the rest goes — plain
-CodeMirror extensions, appended after the editor's own. The demo above adds
-link embeds in a single self-contained file: a link alone on a line keeps its
-text while the caret is on it, collapses to its domain once the caret leaves,
-and grows a player or a picture beneath it either way.
+CodeMirror extensions, appended after the editor's own. The demo above pairs
+the editor with [Embed](/docs/embed) through a small CodeMirror widget: a link
+alone on a line keeps its text while the caret is on it, collapses to its
+domain once the caret leaves, and mounts an `<Embed url>` beneath it either
+way, in a widget whose `toDOM` renders it into a React root and whose
+`ResizeObserver` tells CodeMirror when the mounted embed's real height lands.
 
 Two things to know. The embed only mounts after the caret has left the line for
 the first time, because every prefix of a URL being typed is itself a valid
-URL — mounting eagerly would load a new iframe on every keystroke. And
-link-preview cards (a title and a thumbnail for an arbitrary URL) are left out
-on purpose: they need a server route to fetch the page's own metadata, which
-is more than a copy-paste component can assume you have.
+URL — mounting eagerly would load a new iframe on every keystroke. And a plain
+link's card is filled in the same way it is anywhere else `Embed` renders one:
+by the component's own preview route, see [The preview
+route](/docs/embed#the-preview-route).
 
 ## Keyboard
 

@@ -2,150 +2,61 @@
 
 import { StateEffect, StateField, type EditorState, type Range } from "@codemirror/state";
 import { Decoration, EditorView, WidgetType, type DecorationSet } from "@codemirror/view";
+import { createRoot, type Root } from "react-dom/client";
 import { Editor } from "@/registry/ui/editor";
+import { classifyUrl, type EmbedSource } from "@/registry/lib/embed";
+import { Embed } from "@/registry/ui/embed";
 
-type Classified =
-  | { kind: "youtube"; src: string }
-  | { kind: "spotify"; src: string; height: number }
-  | { kind: "image"; src: string }
-  | { kind: "video"; src: string };
-
-// Absolute URLs only. A root-relative path would load from the reader's own
-// origin with their cookies, which is more than a pasted line should be able to do.
-const CANDIDATE_LINE = /^https?:\/\/\S+$/;
-const YOUTUBE_ID = /^[\w-]{11}$/;
-
-function matchYouTubeId(parsed: URL): string | null {
-  const host = parsed.hostname.replace(/^(www\.|m\.)/, "");
-  if (host === "youtu.be") {
-    const id = parsed.pathname.slice(1);
-    return YOUTUBE_ID.test(id) ? id : null;
-  }
-  if (host !== "youtube.com") return null;
-  if (parsed.pathname === "/watch") {
-    const id = parsed.searchParams.get("v");
-    return id && YOUTUBE_ID.test(id) ? id : null;
-  }
-  const path = parsed.pathname.match(/^\/(?:shorts|embed)\/([\w-]{11})$/);
-  return path ? path[1] : null;
-}
-
-function matchSpotify(parsed: URL): { type: string; id: string } | null {
-  if (parsed.hostname !== "open.spotify.com") return null;
-  const match = parsed.pathname.match(/^\/(track|playlist|album|episode|show)\/([A-Za-z0-9]+)$/);
-  return match ? { type: match[1], id: match[2] } : null;
-}
-
-export function classify(url: string): Classified | null {
-  try {
-    const parsed = new URL(url);
-    const youtubeId = matchYouTubeId(parsed);
-    if (youtubeId) return { kind: "youtube", src: `https://www.youtube-nocookie.com/embed/${youtubeId}` };
-    const spotify = matchSpotify(parsed);
-    if (spotify) {
-      const height = spotify.type === "track" || spotify.type === "episode" ? 152 : 352;
-      return { kind: "spotify", src: `https://open.spotify.com/embed/${spotify.type}/${spotify.id}`, height };
-    }
-  } catch {
-    return null;
-  }
-  // Only the path decides. Matching the whole string would let
-  // "https://app.example/api/logout?next=.png" through as an image, and an
-  // <img> fires that GET with whatever cookies the reader has there.
-  const path = url.split(/[?#]/)[0];
-  if (/\.(jpe?g|png|gif|webp|avif|svg)$/i.test(path)) return { kind: "image", src: url };
-  if (/\.(mp4|webm|mov)$/i.test(path)) return { kind: "video", src: url };
-  return null;
-}
-
-// loading="lazy" starts fetching thousands of pixels before the viewport, so
-// a player far down a page would still load with it. The src is held back
-// until the player is about to be seen.
-const pendingLoads = new WeakMap<HTMLElement, IntersectionObserver>();
-
-function loadWhenNear(player: HTMLIFrameElement | HTMLVideoElement, src: string) {
-  const observer = new IntersectionObserver(
-    (entries) => {
-      if (!entries.some((entry) => entry.isIntersecting)) return;
-      player.src = src;
-      observer.disconnect();
-    },
-    { rootMargin: "200px" },
-  );
-  observer.observe(player);
-  pendingLoads.set(player, observer);
-}
+// Keyed by the mounted DOM node so destroy() can find the React root and the
+// observer that belong to it.
+const widgetInstances = new WeakMap<HTMLElement, { root: Root; observer: ResizeObserver }>();
 
 class EmbedWidget extends WidgetType {
-  constructor(readonly embed: Classified) {
+  constructor(
+    readonly url: string,
+    readonly source: EmbedSource,
+  ) {
     super();
   }
 
   // Keyed on the URL so CodeMirror keeps the same DOM across unrelated
-  // edits instead of reloading an iframe per keystroke.
+  // edits instead of remounting the embed per keystroke.
   eq(other: EmbedWidget) {
-    return other.embed.kind === this.embed.kind && other.embed.src === this.embed.src;
+    return other.url === this.url;
   }
 
   get estimatedHeight() {
-    if (this.embed.kind === "spotify") return this.embed.height;
-    return 315; // 16:9 at a 560px column; an image's real height lands on load
+    if (this.source.kind === "spotify") {
+      return this.source.type === "track" || this.source.type === "episode" ? 152 : 352;
+    }
+    if (this.source.kind === "link") return 102;
+    return 315; // 16:9 at a 560px column; an image's real height lands on mount
   }
 
   toDOM(view: EditorView) {
-    const wrapper = document.createElement("div");
-    wrapper.className = "py-2";
+    const dom = document.createElement("div");
+    dom.className = "py-2";
 
-    if (this.embed.kind === "image") {
-      const img = document.createElement("img");
-      // Not loading="lazy": at `h-auto` an unloaded image is zero pixels tall,
-      // and a zero-area image never counts as near the viewport. CodeMirror
-      // only builds widgets for the lines on screen, which is the laziness.
-      img.src = this.embed.src;
-      img.alt = "";
-      img.referrerPolicy = "no-referrer";
-      img.className = "block h-auto w-full rounded-md";
-      // The height is only known once it loads; the lines below have moved.
-      img.addEventListener("load", () => view.requestMeasure());
-      wrapper.appendChild(img);
-      return wrapper;
-    }
+    const root = createRoot(dom);
+    root.render(<Embed url={this.url} />);
 
-    if (this.embed.kind === "video") {
-      const video = document.createElement("video");
-      loadWhenNear(video, this.embed.src);
-      video.controls = true;
-      // Without this iOS takes the video fullscreen the moment it plays.
-      video.playsInline = true;
-      video.preload = "metadata";
-      video.className = "block aspect-video w-full rounded-md border-0";
-      wrapper.appendChild(video);
-      return wrapper;
-    }
+    // React renders after this method returns, and an image's real height
+    // lands later still — CodeMirror has to be told when the box it measured
+    // turns out to be wrong.
+    const observer = new ResizeObserver(() => view.requestMeasure());
+    observer.observe(dom);
+    widgetInstances.set(dom, { root, observer });
 
-    const iframe = document.createElement("iframe");
-    loadWhenNear(iframe, this.embed.src);
-    iframe.allow = "encrypted-media; picture-in-picture; fullscreen";
-    iframe.referrerPolicy = "strict-origin-when-cross-origin";
-    iframe.title = this.embed.kind === "youtube" ? "YouTube video" : "Spotify player";
-    if (this.embed.kind === "spotify") {
-      iframe.className = "block w-full border-0";
-      iframe.style.height = `${this.embed.height}px`;
-      // Spotify's card has 12px corners of its own; any other radius leaves
-      // the iframe's background showing in them. `normal` keeps a dark page
-      // from painting an opaque canvas behind the transparent corners.
-      iframe.style.borderRadius = "12px";
-      iframe.style.colorScheme = "normal";
-    } else {
-      iframe.className = "block aspect-video w-full rounded-md border-0";
-    }
-    wrapper.appendChild(iframe);
-    return wrapper;
+    return dom;
   }
 
   destroy(dom: HTMLElement) {
-    const player = dom.firstElementChild;
-    if (player instanceof HTMLElement) pendingLoads.get(player)?.disconnect();
+    const instance = widgetInstances.get(dom);
+    if (!instance) return;
+    instance.observer.disconnect();
+    // CodeMirror destroys widgets from inside its own update; React refuses a
+    // synchronous unmount called from there.
+    queueMicrotask(() => instance.root.unmount());
   }
 }
 
@@ -202,9 +113,8 @@ function buildDecorations(
   for (let lineNumber = 1; lineNumber <= state.doc.lines; lineNumber++) {
     const line = state.doc.line(lineNumber);
     const url = line.text.trim();
-    if (!CANDIDATE_LINE.test(url)) continue;
-    const embed = classify(url);
-    if (!embed) continue;
+    const source = classifyUrl(url);
+    if (!source) continue;
 
     const caretOnLine = hasFocus && sel.from <= line.to && sel.to >= line.from;
     if (!caretOnLine) {
@@ -216,7 +126,9 @@ function buildDecorations(
     if (!caretOnLine || previousActivated.has(url)) {
       activated.add(url);
       ranges.push(
-        Decoration.widget({ widget: new EmbedWidget(embed), block: true, side: 1 }).range(line.to),
+        Decoration.widget({ widget: new EmbedWidget(url, source), block: true, side: 1 }).range(
+          line.to,
+        ),
       );
     }
   }
@@ -258,15 +170,21 @@ const NOTE = [
   "",
   "## YouTube",
   "",
-  "A **watch**, **share** or **shorts** link grows a player. It comes from `youtube-nocookie.com`, and only once it is about to scroll into view.",
+  "A **watch**, **share** or **shorts** link grows a player. It comes from `youtube-nocookie.com`, and only once you press play.",
   "",
-  "https://www.youtube.com/watch?v=aircAruvnKk",
+  "https://www.youtube.com/watch?v=eVjP9Vnh2xE",
   "",
   "## Spotify",
   "",
   "Tracks and episodes get the *compact* player. Albums, playlists and shows get the tall one.",
   "",
   "https://open.spotify.com/track/6K4t31amVTZDgR3sKmwUJJ",
+  "",
+  "## Link",
+  "",
+  "Any other link becomes a card, filled in from the page's own title, description and picture.",
+  "",
+  "https://patrickprunty.com",
   "",
   "## Image",
   "",
