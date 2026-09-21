@@ -335,9 +335,14 @@ function LinkPreview({ url, title, description, image, className, endpoint = "/a
       target="_blank"
       rel="noopener noreferrer"
       className={cn(
-        "border-border/60 bg-card flex w-full flex-col overflow-hidden border sm:flex-row",
+        "border-border/60 bg-card relative flex w-full flex-col overflow-hidden border sm:flex-row",
         "rounded-[var(--radius-bg,var(--radius,0.5rem))]",
-        "transition-colors duration-(--motion-fast) ease-spring hover:bg-accent",
+        // A wash laid over the card rather than a second fill: `--hover` is
+        // translucent, so as the background itself it would replace the
+        // card's colour, and in dark mode it lands on exactly that colour.
+        "after:pointer-events-none after:absolute after:inset-0 after:bg-[var(--hover)] after:opacity-0",
+        "after:transition-opacity after:duration-(--motion-fast) after:ease-spring",
+        "hover:after:opacity-100 active:after:bg-[var(--active)]",
         "outline-none focus-visible:ring-1 focus-visible:ring-[color:var(--focus-ring,#6B97FF)]",
         className
       )}
