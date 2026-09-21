@@ -114,6 +114,8 @@ alone on a line keeps its text while the caret is on it, collapses to its
 domain once the caret leaves, and mounts an `<Embed url>` beneath it either
 way, in a widget whose `toDOM` renders it into a React root and whose
 `ResizeObserver` tells CodeMirror when the mounted embed's real height lands.
+A picture enlarges on a click, because Embed draws one with the registry's
+[Image](/docs/image).
 
 Two things to know. The embed only mounts after the caret has left the line for
 the first time, because every prefix of a URL being typed is itself a valid

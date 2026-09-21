@@ -36,6 +36,13 @@ class EmbedWidget extends WidgetType {
   toDOM(view: EditorView) {
     const dom = document.createElement("div");
     dom.className = "py-2";
+    // A press in here lands inside the editor's editable area, so the browser
+    // focuses the editor and a phone raises the keyboard over the picture
+    // being opened. Cancelling the press keeps focus where it was; the click
+    // still goes through. Not on a video, whose timeline is dragged.
+    dom.addEventListener("mousedown", (event) => {
+      if (!(event.target as Element).closest("video")) event.preventDefault();
+    });
 
     const root = createRoot(dom);
     root.render(<Embed url={this.url} />);
@@ -188,7 +195,7 @@ const NOTE = [
   "",
   "## Image",
   "",
-  "Any link whose path ends in an image extension. It fills the column and keeps its own proportions.",
+  "Any link whose path ends in an image extension. It fills the column and keeps its own proportions. Click it to enlarge.",
   "",
   "https://deltacomponents.dev/images/editor-embed-sample.webp",
   "",
