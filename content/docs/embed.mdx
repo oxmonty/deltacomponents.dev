@@ -1,0 +1,140 @@
+---
+description: "Turns a URL into what it points to, decided from the URL alone"
+---
+
+import { embedProps, youtubeEmbedProps, spotifyEmbedProps, videoEmbedProps, imageEmbedProps, linkPreviewProps } from "./embed.props";
+
+<ComponentPreview name="embed-demo" />
+
+## Installation
+
+<InstallTabs slug="embed" />
+
+## Usage
+
+```tsx
+import { Embed } from "@/components/ui/embed";
+
+<Embed url="https://www.youtube.com/watch?v=eVjP9Vnh2xE" />
+```
+
+## YouTube
+
+A **watch**, **share** or **shorts** link becomes a thumbnail and a button. The
+player itself is close to a megabyte of third-party script, so it only loads
+once someone presses play, from `youtube-nocookie.com`.
+
+<ComponentPreview name="embed-youtube" align="top" />
+
+## Spotify
+
+A track or episode link gets the compact player; an album, playlist or show
+gets the tall one. Either way the iframe's `src` is only set once the player
+is about to scroll into view, so a page of link drops doesn't front-load every
+player on it at once.
+
+<ComponentPreview name="embed-spotify" align="top" />
+
+## Link
+
+Anything else valid becomes a card. The URL alone is enough: with the preview
+route installed, `LinkPreview` fetches the page's own title, description and
+image and fills the card in. Pass `title`, `description` or `image` yourself
+to skip the fetch, and `endpoint={null}` to turn it off outright. Without the
+route — or before the fetch resolves — the card stays the hostname with the
+address beneath it, which is what a pasted link with nothing else settles for.
+
+<ComponentPreview name="embed-link" align="top" />
+
+## Image
+
+Any link whose path ends in an image extension.
+
+<ComponentPreview name="embed-image" align="top" />
+
+## Video
+
+An `.mp4`, `.webm` or `.mov` plays where it sits, with the browser's own
+controls, held back the same way the Spotify player is.
+
+Pass a `poster` when you have one: it shows at once and costs nothing until
+someone presses play. Without it the opening frame stands in, which Safari
+only paints when asked for a moment just past zero, so the component asks.
+
+<ComponentPreview name="embed-video" align="top" />
+
+## From untrusted text
+
+`Embed` is the one part here that doesn't trust its input. The others
+(`YouTubeEmbed`, `ImageEmbed` and the rest) take whatever a developer hands
+them; `Embed` takes a raw string, such as a pasted line or a comment body, and
+decides what it is with `classifyUrl`.
+
+Two rules do the work. Only an absolute `http(s)` URL counts: a root- or
+protocol-relative path would load from the reader's own origin, with their
+cookies. And image or video is decided from the URL's path alone, so a query
+string can't pass an endpoint off as one.
+
+| Given | It renders |
+| --- | --- |
+| `https://www.youtube.com/watch?v=eVjP9Vnh2xE` | A YouTube player |
+| `https://example.com/api/logout?next=.png` | A link card, not an image |
+| `/images/photo.png` | Nothing |
+| `not a url at all` | Nothing |
+
+This is the same classifier the [Editor](/docs/editor)'s Extensions example
+pairs with a small CodeMirror widget, so a link alone on a line in the editor
+becomes exactly what it becomes here.
+
+## The preview route
+
+A browser can't read another site's HTML — cross-origin `fetch` from the page
+itself is blocked, so filling in a link's title, description and image needs
+a server that can. `Embed` and `LinkPreview` call `/api/link-preview` for
+that; installing the component installs the route alongside it, at
+`app/api/link-preview/route.ts`.
+
+It refuses:
+
+- Anything but `http`/`https`, a non-default port, or a URL carrying a
+  username or password.
+- Any address the DNS lookup resolves to that isn't on the public internet —
+  loopback, the private ranges, link-local (where cloud metadata endpoints
+  live), and their IPv6 equivalents — checked at connection time, so a
+  hostname can't pass the check and then resolve somewhere else.
+- More than 3 redirects, each re-checked the same way as the original URL.
+- A response that isn't `text/html` or `application/xhtml+xml` — the fields
+  come back empty rather than erroring.
+
+And it limits itself to a 5-second timeout and 512 KiB of the response body,
+since a preview's tags are in the `head`.
+
+Two caveats. It needs the Node runtime, not the edge — `dns.lookup`'s custom
+resolver depends on it. And rate limiting is deployment-specific — a CDN,
+middleware, an API gateway — so it's left to you.
+
+## API Reference
+
+### Embed
+
+<PropsTable props={embedProps} />
+
+### YouTubeEmbed
+
+<PropsTable props={youtubeEmbedProps} />
+
+### SpotifyEmbed
+
+<PropsTable props={spotifyEmbedProps} />
+
+### VideoEmbed
+
+<PropsTable props={videoEmbedProps} />
+
+### ImageEmbed
+
+<PropsTable props={imageEmbedProps} />
+
+### LinkPreview
+
+<PropsTable props={linkPreviewProps} />

@@ -5,6 +5,7 @@ import { Button } from "@/registry/ui/button";
 import { Tooltip } from "@/registry/ui/tooltip";
 import GlyphBasic from "@/content/demos/glyph/glyph-basic";
 import AlertDemo from "@/content/demos/alert/alert-demo";
+import { LinkPreview } from "@/registry/ui/embed";
 import { PATRICK_DARK } from "@/lib/docs/code-themes";
 import {
   Tabs,
@@ -187,6 +188,16 @@ function TabsPreview() {
 }
 
 
+function EmbedPreview() {
+  // LinkPreview, not a YouTube or Spotify part: the showcase loads a lot of
+  // cards at once, and this is the only part that makes no network request.
+  return (
+    <div className="w-full max-w-[280px]">
+      <LinkPreview url="https://codemirror.net/docs/guide/" />
+    </div>
+  );
+}
+
 function EditorPreview() {
   return (
     // text-base, not text-sm: an editable field under 16px makes iOS zoom the
@@ -206,5 +217,6 @@ export const previewMap: Record<string, React.FC> = {
   tooltip: TooltipPreview,
   "glyph": GlyphBasic,
   alert: AlertDemo,
+  embed: EmbedPreview,
   editor: EditorPreview,
 };

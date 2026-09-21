@@ -557,6 +557,41 @@
       ]
     },
     {
+      "name": "embed",
+      "type": "registry:ui",
+      "title": "Embed",
+      "description": "Turns a URL into what it points to: a YouTube facade, a lazy Spotify player, an image, a video, or a plain link card, decided from the URL alone.",
+      "registryDependencies": [
+        "utils"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/embed.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/embed.tsx"
+        },
+        {
+          "path": "registry/lib/embed.ts",
+          "type": "registry:lib",
+          "target": "lib/embed.ts"
+        },
+        {
+          "path": "registry/lib/link-preview.ts",
+          "type": "registry:lib",
+          "target": "lib/link-preview.ts"
+        },
+        {
+          "path": "registry/api/link-preview/route.ts",
+          "type": "registry:file",
+          "target": "app/api/link-preview/route.ts"
+        }
+      ],
+      "docs": "Docs & live playground: https://deltacomponents.dev/docs/embed.",
+      "categories": [
+        "components"
+      ]
+    },
+    {
       "name": "mp3-player",
       "type": "registry:ui",
       "title": "MP3 Player",

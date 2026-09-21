@@ -190,6 +190,88 @@ export const TOC: Record<string, TocEntry[]> = {
       "depth": 2
     }
   ],
+  "/docs/embed": [
+    {
+      "id": "installation",
+      "text": "Installation",
+      "depth": 2
+    },
+    {
+      "id": "usage",
+      "text": "Usage",
+      "depth": 2
+    },
+    {
+      "id": "youtube",
+      "text": "YouTube",
+      "depth": 2
+    },
+    {
+      "id": "spotify",
+      "text": "Spotify",
+      "depth": 2
+    },
+    {
+      "id": "link",
+      "text": "Link",
+      "depth": 2
+    },
+    {
+      "id": "image",
+      "text": "Image",
+      "depth": 2
+    },
+    {
+      "id": "video",
+      "text": "Video",
+      "depth": 2
+    },
+    {
+      "id": "from-untrusted-text",
+      "text": "From untrusted text",
+      "depth": 2
+    },
+    {
+      "id": "the-preview-route",
+      "text": "The preview route",
+      "depth": 2
+    },
+    {
+      "id": "api-reference",
+      "text": "API Reference",
+      "depth": 2
+    },
+    {
+      "id": "embed",
+      "text": "Embed",
+      "depth": 3
+    },
+    {
+      "id": "youtubeembed",
+      "text": "YouTubeEmbed",
+      "depth": 3
+    },
+    {
+      "id": "spotifyembed",
+      "text": "SpotifyEmbed",
+      "depth": 3
+    },
+    {
+      "id": "videoembed",
+      "text": "VideoEmbed",
+      "depth": 3
+    },
+    {
+      "id": "imageembed",
+      "text": "ImageEmbed",
+      "depth": 3
+    },
+    {
+      "id": "linkpreview",
+      "text": "LinkPreview",
+      "depth": 3
+    }
+  ],
   "/docs/glyph": [
     {
       "id": "installation",

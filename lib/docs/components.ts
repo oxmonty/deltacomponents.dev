@@ -43,6 +43,7 @@ export const componentList: ComponentEntry[] = [
   { slug: "button", name: "Button", gridSize: "small" },
   { slug: "tooltip", name: "Tooltip", gridSize: "small" },
   { slug: "alert", name: "Alert", isNew: true, gridSize: "medium" },
+  { slug: "embed", name: "Embed", isNew: true, gridSize: "medium" },
   { slug: "glyph", name: "Glyph", isNew: true, gridSize: "small", draft: true },
   { slug: "mp3-player", name: "MP3Player", gridSize: "medium", draft: true },
 ];
