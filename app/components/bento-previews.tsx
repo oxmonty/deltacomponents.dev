@@ -34,7 +34,7 @@ const EDITOR_DOC = `# Field notes
 
 Click or touch here to begin editing — the syntax hides wherever the caret isn't.
 
-- Bullets, [links](https://deltacomponents.dev) and \`code\`
+- Bullets, [links](https://www.deltacomponents.dev) and \`code\`
 
 - [x] Conceal the marks away from the caret
 - [ ] Swap the typography set

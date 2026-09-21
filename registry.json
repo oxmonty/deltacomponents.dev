@@ -304,7 +304,7 @@
           }
         }
       },
-      "docs": "Docs & live playground: https://deltacomponents.dev/docs/button.",
+      "docs": "Docs & live playground: https://www.deltacomponents.dev/docs/button.",
       "categories": [
         "components"
       ]
@@ -329,7 +329,7 @@
           "type": "registry:ui"
         }
       ],
-      "docs": "Docs & live playground: https://deltacomponents.dev/docs/tooltip.",
+      "docs": "Docs & live playground: https://www.deltacomponents.dev/docs/tooltip.",
       "categories": [
         "components"
       ]
@@ -353,7 +353,7 @@
           "target": "components/ui/tabs.tsx"
         }
       ],
-      "docs": "Docs & live playground: https://deltacomponents.dev/docs/tabs.",
+      "docs": "Docs & live playground: https://www.deltacomponents.dev/docs/tabs.",
       "categories": [
         "components"
       ]
@@ -456,7 +456,7 @@
           "target": "lib/prism-languages.ts"
         }
       ],
-      "docs": "Docs & live playground: https://deltacomponents.dev/docs/code.",
+      "docs": "Docs & live playground: https://www.deltacomponents.dev/docs/code.",
       "categories": [
         "components"
       ]
@@ -477,7 +477,7 @@
           "target": "components/ui/product-card.tsx"
         }
       ],
-      "docs": "Docs & live playground: https://deltacomponents.dev/docs/product-card.",
+      "docs": "Docs & live playground: https://www.deltacomponents.dev/docs/product-card.",
       "categories": [
         "components"
       ]
@@ -497,7 +497,7 @@
           "target": "components/ui/glyph.tsx"
         }
       ],
-      "docs": "Docs & live playground: https://deltacomponents.dev/docs/glyph.",
+      "docs": "Docs & live playground: https://www.deltacomponents.dev/docs/glyph.",
       "categories": [
         "components"
       ]
@@ -518,7 +518,7 @@
           "target": "components/ui/alert.tsx"
         }
       ],
-      "docs": "Docs & live playground: https://deltacomponents.dev/docs/alert.",
+      "docs": "Docs & live playground: https://www.deltacomponents.dev/docs/alert.",
       "categories": [
         "components"
       ]
@@ -551,7 +551,7 @@
           "target": "lib/live-markdown.ts"
         }
       ],
-      "docs": "Docs & live playground: https://deltacomponents.dev/docs/editor.",
+      "docs": "Docs & live playground: https://www.deltacomponents.dev/docs/editor.",
       "categories": [
         "components"
       ]
@@ -587,7 +587,7 @@
           "target": "app/api/link-preview/route.ts"
         }
       ],
-      "docs": "Docs & live playground: https://deltacomponents.dev/docs/embed.",
+      "docs": "Docs & live playground: https://www.deltacomponents.dev/docs/embed.",
       "categories": [
         "components"
       ]
@@ -607,7 +607,7 @@
           "target": "components/ui/image.tsx"
         }
       ],
-      "docs": "Docs & live playground: https://deltacomponents.dev/docs/image.",
+      "docs": "Docs & live playground: https://www.deltacomponents.dev/docs/image.",
       "categories": [
         "components"
       ]
@@ -634,7 +634,7 @@
           "target": "components/ui/mp3-player.tsx"
         }
       ],
-      "docs": "Docs & live playground: https://deltacomponents.dev/docs/mp3-player.",
+      "docs": "Docs & live playground: https://www.deltacomponents.dev/docs/mp3-player.",
       "categories": [
         "components"
       ]

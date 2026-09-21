@@ -33,7 +33,7 @@
       "target": "app/api/link-preview/route.ts"
     }
   ],
-  "docs": "Docs & live playground: https://deltacomponents.dev/docs/embed.",
+  "docs": "Docs & live playground: https://www.deltacomponents.dev/docs/embed.",
   "categories": [
     "components"
   ],

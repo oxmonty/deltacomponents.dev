@@ -5,7 +5,7 @@ that make the difference. Free and open source via the shadcn registry.
 
 ## Documentation
 
-Visit [deltacomponents.dev](https://deltacomponents.dev) to view the full
+Visit [deltacomponents.dev](https://www.deltacomponents.dev) to view the full
 documentation.
 
 ## Getting started
@@ -21,7 +21,7 @@ and `make check` is what CI runs.
 ## Contributing
 
 Please read the
-[contribution guidelines](https://deltacomponents.dev/docs/contributing).
+[contribution guidelines](https://www.deltacomponents.dev/docs/contributing).
 
 ## Inspiration
 

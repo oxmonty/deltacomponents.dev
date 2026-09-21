@@ -99,7 +99,7 @@
       "--code-token-class-name": "var(--code-token-class-name-d)"
     }
   },
-  "docs": "Docs & live playground: https://deltacomponents.dev/docs/code.",
+  "docs": "Docs & live playground: https://www.deltacomponents.dev/docs/code.",
   "categories": [
     "components"
   ],

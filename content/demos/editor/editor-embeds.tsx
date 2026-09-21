@@ -197,13 +197,13 @@ const NOTE = [
   "",
   "Any link whose path ends in an image extension. It fills the column and keeps its own proportions. Click it to enlarge.",
   "",
-  "https://deltacomponents.dev/images/editor-embed-sample.webp",
+  "https://www.deltacomponents.dev/images/editor-embed-sample.webp",
   "",
   "## Video",
   "",
   "An `.mp4`, `.webm` or `.mov` plays where it sits, with the browser's own controls.",
   "",
-  "https://deltacomponents.dev/videos/swainsons-hawk.mp4",
+  "https://www.deltacomponents.dev/videos/swainsons-hawk.mp4",
 ].join("\n");
 
 export default function EditorEmbeds() {
