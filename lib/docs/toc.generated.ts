@@ -326,6 +326,11 @@ export const TOC: Record<string, TocEntry[]> = {
       "depth": 2
     },
     {
+      "id": "caption",
+      "text": "Caption",
+      "depth": 2
+    },
+    {
       "id": "close-control",
       "text": "Close control",
       "depth": 2
@@ -348,6 +353,11 @@ export const TOC: Record<string, TocEntry[]> = {
     {
       "id": "image",
       "text": "Image",
+      "depth": 3
+    },
+    {
+      "id": "imagecaption",
+      "text": "ImageCaption",
       "depth": 3
     },
     {

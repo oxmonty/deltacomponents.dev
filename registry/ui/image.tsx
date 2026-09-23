@@ -18,8 +18,10 @@ interface ImageProps
   width?: number
   height?: number
   onZoomChange?: (open: boolean) => void
-  /** Rendered inside the enlarged view only, over the picture: an
-   *  `ImageClose`, say. Ignored when `zoomable` is false. */
+  /** Rendered inside the enlarged view, over the picture: an `ImageClose`,
+   *  say. An `ImageCaption` child is the one exception — it goes under the
+   *  picture, like the `caption` prop. The rest is ignored when `zoomable`
+   *  is false. */
   children?: React.ReactNode
   /** Classes for the <figure>; `className` goes on the <img>. */
   figureClassName?: string
@@ -45,6 +47,15 @@ function Image({
 }: ImageProps) {
   const thumbRef = React.useRef<HTMLImageElement>(null)
   const dialogRef = React.useRef<HTMLDialogElement>(null)
+  // A caption written as a child belongs to the figure, not the dialog, so
+  // the two are told apart here rather than by asking callers to nest twice.
+  const captionChildren: React.ReactNode[] = []
+  const overlayChildren: React.ReactNode[] = []
+  for (const child of React.Children.toArray(children)) {
+    const isCaption = React.isValidElement(child) && child.type === ImageCaption
+    if (isCaption) captionChildren.push(child)
+    else overlayChildren.push(child)
+  }
   const [mounted, setMounted] = React.useState(false)
   const [measuredRatio, setMeasuredRatio] = React.useState<number | null>(null)
   const [loaded, setLoaded] = React.useState(false)
@@ -157,11 +168,8 @@ function Image({
         thumbnail
       )}
 
-      {caption && (
-        <figcaption className="text-muted-foreground mt-2 text-center text-sm">
-          {caption}
-        </figcaption>
-      )}
+      {caption && <ImageCaption>{caption}</ImageCaption>}
+      {captionChildren}
 
       {zoomable &&
         mounted &&
@@ -235,11 +243,25 @@ function Image({
                 "md:h-auto md:max-h-[100lvh] md:max-w-[100vw] md:w-[min(100vw,calc(100lvh*var(--zoom-ratio,1)))]"
               )}
             />
-            {children}
+            {overlayChildren}
           </dialog>,
           document.body
         )}
     </figure>
+  )
+}
+
+type ImageCaptionProps = React.ComponentProps<"figcaption">
+
+/** The line under the picture. `Image` renders its `caption` prop through
+ *  this; pass it as a child instead to change its classes or markup. */
+function ImageCaption({ className, ...props }: ImageCaptionProps) {
+  return (
+    <figcaption
+      data-slot="image-caption"
+      className={cn("text-muted-foreground mt-2 text-center text-sm", className)}
+      {...props}
+    />
   )
 }
 
@@ -266,5 +288,5 @@ function ImageClose({ className, ...props }: ImageCloseProps) {
   )
 }
 
-export { Image, ImageClose }
-export type { ImageProps, ImageCloseProps }
+export { Image, ImageCaption, ImageClose }
+export type { ImageProps, ImageCaptionProps, ImageCloseProps }

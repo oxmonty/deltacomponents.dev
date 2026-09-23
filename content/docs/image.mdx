@@ -2,7 +2,7 @@
 description: "A figure with a caption and a zoom sized from the picture's own proportions"
 ---
 
-import { imageProps, imageCloseProps } from "./image.props";
+import { imageProps, imageCaptionProps, imageCloseProps } from "./image.props";
 
 <ComponentPreview name="image-demo" />
 
@@ -39,6 +39,15 @@ for a portrait one — on a wider screen.
 <ComponentPreview name="image-zoom" align="top" />
 
 Pass `zoomable={false}` for a plain figure with no button and no dialog.
+
+## Caption
+
+`caption` puts a muted, centred line under the picture. For anything more —
+a left-aligned credit, a link, your own classes — write it as an
+`ImageCaption` child instead. It is the same element either way, and it goes
+under the picture, not into the enlarged view like the other children.
+
+<ComponentPreview name="image-caption" align="top" />
 
 ## Close control
 
@@ -113,6 +122,12 @@ edge of the screen.
 Any other `<img>` attribute passes through to the thumbnail.
 
 <PropsTable props={imageProps} />
+
+### ImageCaption
+
+Any other `<figcaption>` attribute passes through.
+
+<PropsTable props={imageCaptionProps} />
 
 ### ImageClose
 

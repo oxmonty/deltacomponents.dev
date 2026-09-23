@@ -56,7 +56,20 @@ export const imageProps: PropDef[] = [
   {
     name: "children",
     type: "ReactNode",
-    description: "Rendered inside the enlarged view only, over the picture. `ImageClose` is the one that ships. Ignored when `zoomable` is false.",
+    description: "Rendered inside the enlarged view, over the picture — `ImageClose` is the one that ships — except an `ImageCaption`, which goes under the picture. Ignored when `zoomable` is false.",
+  },
+];
+
+export const imageCaptionProps: PropDef[] = [
+  {
+    name: "children",
+    type: "ReactNode",
+    description: "The caption text.",
+  },
+  {
+    name: "className",
+    type: "string",
+    description: "Merged onto the <figcaption>: muted, centred, small by default.",
   },
 ];
 

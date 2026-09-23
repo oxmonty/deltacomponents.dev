@@ -32,6 +32,7 @@ import DemoGlyphGlyphBasic from "@/content/demos/glyph/glyph-basic";
 import DemoGlyphGlyphLabel from "@/content/demos/glyph/glyph-label";
 import DemoGlyphGlyphSizes from "@/content/demos/glyph/glyph-sizes";
 import DemoGlyphGlyphVariants from "@/content/demos/glyph/glyph-variants";
+import DemoImageImageCaption from "@/content/demos/image/image-caption";
 import DemoImageImageCloseControl from "@/content/demos/image/image-close-control";
 import DemoImageImageDemo from "@/content/demos/image/image-demo";
 import DemoImageImageZoom from "@/content/demos/image/image-zoom";
@@ -182,6 +183,10 @@ export const demos: Record<string, DemoEntry> = {
   "glyph-variants": {
     Component: DemoGlyphGlyphVariants,
     source: "import { Check, Flame, Zap } from \"lucide-react\";\nimport { Glyph } from \"@/components/ui/glyph\";\n\nfunction Specimen({\n  children,\n  caption,\n}: {\n  children: React.ReactNode;\n  caption: string;\n}) {\n  return (\n    <div className=\"flex flex-col items-center gap-2\">\n      {children}\n      <span className=\"text-caption text-muted-foreground\">{caption}</span>\n    </div>\n  );\n}\n\n// Icons come from lucide here, which is the point: Glyph only owns the\n// shape, the consumer brings whatever icon library they already use.\nexport default function GlyphVariants() {\n  return (\n    <div className=\"flex items-center gap-8\">\n      <Specimen caption=\"Verified\">\n        <Glyph mask=\"rosette\" className=\"size-8 text-[#1d9bf0]\">\n          <Check />\n        </Glyph>\n      </Specimen>\n      <Specimen caption=\"Streak\">\n        <Glyph mask=\"circle\" className=\"size-8 text-orange-500\">\n          <Flame />\n        </Glyph>\n      </Specimen>\n      <Specimen caption=\"Premium\">\n        <Glyph mask=\"squircle\" className=\"size-8 text-violet-500\">\n          <Zap />\n        </Glyph>\n      </Specimen>\n    </div>\n  );\n}",
+  },
+  "image-caption": {
+    Component: DemoImageImageCaption,
+    source: "import { Image, ImageCaption } from \"@/components/ui/image\";\n\nexport default function ImageCaptionDemo() {\n  return (\n    <div className=\"w-full max-w-[560px]\">\n      <Image\n        src=\"/images/editor-embed-sample.webp\"\n        alt=\"A painted battle scene of knights on horseback in red, green and yellow\"\n        width={1200}\n        height={672}\n      >\n        <ImageCaption className=\"text-left\">\n          The Battle of Crécy, from a fifteenth-century manuscript.{\" \"}\n          <a href=\"https://en.wikipedia.org/wiki/Battle_of_Cr%C3%A9cy\" className=\"underline underline-offset-2\">\n            Wikipedia\n          </a>\n        </ImageCaption>\n      </Image>\n    </div>\n  );\n}",
   },
   "image-close-control": {
     Component: DemoImageImageCloseControl,
