@@ -49,34 +49,34 @@ Click or touch here to begin editing — markdown syntax appears only where you'
 // ponytail: the Code placeholder is a fixed height; measure again if the
 // snippet or its typography changes.
 //
-// The Code block fades in as its chunk lands — the motion guidelines' own
-// idiom (`starting:` + the moderate tier), on a wrapper that mounts WITH
-// the chunk so the starting style fires then, not at page load. The Editor
-// deliberately doesn't: its placeholder is the same text the component
-// shows, so a fade would blink identical text off and on.
-function FadeIn({ children }: { children: React.ReactNode }) {
+// Each chunk resolves into focus as it lands — from faint and soft to sharp
+// and solid, the motion guidelines' own idiom (`starting:` + a tier; slow,
+// as these are the two largest surfaces on the page), on a wrapper that
+// mounts WITH the chunk so the starting style fires then, not at page load.
+// The Editor's placeholder is the same text, but the swap still shows: the
+// `#` and `- [x]` marks conceal and the heading takes its size, and eased
+// that reads as the editor arriving rather than the text blinking.
+function Reveal({ children }: { children: React.ReactNode }) {
   return (
-    <div className="starting:opacity-0 transition-opacity duration-(--motion-moderate) ease-spring">
+    <div className="starting:opacity-0 starting:blur-[6px] transition-[opacity,filter] duration-(--motion-slow) ease-spring">
       {children}
     </div>
   );
 }
-const Code = dynamic(
-  () =>
-    import("@/registry/ui/code").then((m) => {
-      const Faded = (props: React.ComponentProps<typeof m.Code>) => (
-        <FadeIn>
-          <m.Code {...props} />
-        </FadeIn>
-      );
-      return Faded;
-    }),
-  {
-    ssr: false,
-    loading: () => <div aria-hidden className="h-[302px] w-full max-md:h-full" />,
-  }
-);
-const Editor = dynamic(() => import("@/registry/ui/editor").then((m) => m.Editor), {
+function revealed<P extends object>(Component: React.ComponentType<P>) {
+  return function Revealed(props: P) {
+    return (
+      <Reveal>
+        <Component {...props} />
+      </Reveal>
+    );
+  };
+}
+const Code = dynamic(() => import("@/registry/ui/code").then((m) => revealed(m.Code)), {
+  ssr: false,
+  loading: () => <div aria-hidden className="h-[302px] w-full max-md:h-full" />,
+});
+const Editor = dynamic(() => import("@/registry/ui/editor").then((m) => revealed(m.Editor)), {
   ssr: false,
   loading: () => (
     <div aria-hidden className="text-base leading-7 whitespace-pre-wrap">
