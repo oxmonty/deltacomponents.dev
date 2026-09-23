@@ -22,7 +22,7 @@ import {
   markdownLanguage,
   pasteURLAsLink,
 } from "@codemirror/lang-markdown";
-import { syntaxTree } from "@codemirror/language";
+import { indentUnit, syntaxTree } from "@codemirror/language";
 import {
   Decoration,
   EditorView,
@@ -37,6 +37,8 @@ import {
 } from "@codemirror/view";
 import {
   EditorSelection,
+  StateEffect,
+  StateField,
   type EditorState,
   type Extension,
   type Range,
@@ -144,6 +146,17 @@ const chromelessTheme = EditorView.theme({
   // List rows read as a block. Structural, and applied regardless of caret
   // position — layout must never toggle as the caret moves.
   ".cm-line.cm-md-li": { paddingLeft: "0.5rem" },
+  // Hanging indent: a wrapped line continues under its own text, not back
+  // at the left edge. `--hang` is the measured width of what precedes the
+  // text — leading spaces, and a bullet or checkbox plus its space — set per
+  // line by the preview (see hangMetrics). Padding pushes every row of the
+  // line in by that much and the negative text-indent pulls only the first
+  // row back out, so the marker still sits flush.
+  ".cm-line.cm-md-hang": {
+    paddingLeft: "var(--hang)",
+    textIndent: "calc(var(--hang) * -1)",
+  },
+  ".cm-line.cm-md-li.cm-md-hang": { paddingLeft: "calc(0.5rem + var(--hang))" },
   // The checkbox wrapper. Sizing the box is the element map's job; this only
   // sits it on the text baseline, and `display: block` on the input keeps the
   // wrapper's baseline at its bottom edge rather than on a line box that
@@ -349,6 +362,111 @@ const blurKeymap: readonly KeyBinding[] = [
 ];
 
 /* ------------------------------------------------------------------
+ * Hanging-indent metrics
+ * ------------------------------------------------------------------
+ * The editor sits in a proportional prose font, so the width of the indent
+ * cannot be written in `ch` — a space, a bullet glyph and the checkbox are
+ * each measured once, inside `.cm-content` so they inherit its type, and
+ * again when the geometry changes (a web font landing, a resize). Ordinary
+ * lines never touch the DOM for this.
+ */
+
+interface HangMetrics {
+  space: number;
+  bullet: number;
+  subBullet: number;
+  checkbox: number;
+}
+
+const setHangMetrics = StateEffect.define<HangMetrics>();
+
+const hangMetrics = StateField.define<HangMetrics | null>({
+  create: () => null,
+  update(value, tr) {
+    for (const effect of tr.effects) if (effect.is(setHangMetrics)) return effect.value;
+    return value;
+  },
+});
+
+function measureHangMetrics(view: EditorView, marks: Marks): HangMetrics {
+  const probe = document.createElement("span");
+  probe.style.cssText = "position:absolute;visibility:hidden;white-space:pre";
+  view.contentDOM.appendChild(probe);
+  const width = (child: Node, className = "") => {
+    probe.className = className;
+    probe.replaceChildren(child);
+    return probe.getBoundingClientRect().width;
+  };
+  const text = (value: string, className?: string) =>
+    width(document.createTextNode(value), className);
+  const metrics = {
+    space: text(" "),
+    bullet: text("•", `cm-md-bullet ${marks.bullet}`),
+    subBullet: text("◦", `cm-md-bullet ${marks.bullet}`),
+    // The real widget, margins and all: on touch it carries a padding the
+    // negative margin gives straight back, so only the wrapper's width is
+    // the advance the text sees.
+    checkbox: width(new CheckboxWidget(false, marks.checkbox).toDOM(view)),
+  };
+  probe.remove();
+  return metrics;
+}
+
+// Measured off the DOM, so it goes through requestMeasure — a plugin's own
+// update() may not read layout — and lands in state through an effect, so
+// the decorations rebuild from state alone. The measure phase runs inside
+// an update, where a dispatch throws, so the effect goes out a microtask
+// later, once the cycle has closed.
+function hangMeasurer(marks: Marks) {
+  return ViewPlugin.fromClass(
+    class {
+      destroyed = false;
+      constructor(readonly view: EditorView) {
+        this.schedule();
+      }
+      update(update: ViewUpdate) {
+        if (update.geometryChanged) this.schedule();
+      }
+      destroy() {
+        this.destroyed = true;
+      }
+      schedule() {
+        this.view.requestMeasure({
+          read: () => measureHangMetrics(this.view, marks),
+          write: (next, view) => {
+            const current = view.state.field(hangMetrics, false);
+            if (
+              current &&
+              current.space === next.space &&
+              current.bullet === next.bullet &&
+              current.subBullet === next.subBullet &&
+              current.checkbox === next.checkbox
+            )
+              return;
+            queueMicrotask(() => {
+              if (!this.destroyed) view.dispatch({ effects: setHangMetrics.of(next) });
+            });
+          },
+        });
+      }
+    },
+  );
+}
+
+// One line decoration per distinct width, so unchanged lines compare equal
+// across rebuilds instead of being redrawn.
+const hangDecorations = new Map<number, Decoration>();
+function hangLine(width: number): Decoration {
+  const px = Math.round(width * 100) / 100;
+  let deco = hangDecorations.get(px);
+  if (!deco) {
+    deco = Decoration.line({ class: "cm-md-hang", attributes: { style: `--hang:${px}px` } });
+    hangDecorations.set(px, deco);
+  }
+  return deco;
+}
+
+/* ------------------------------------------------------------------
  * Live-preview decorations
  * ------------------------------------------------------------------
  * Conceal markdown syntax marks except where the selection touches the
@@ -501,6 +619,12 @@ export function computeLiveDecorations(
   // before there is a heading. Until the space it is the text that was typed.
   const committed = (markerEnd: number) => /[ \t]/.test(state.doc.sliceString(markerEnd, markerEnd + 1));
   const tree = syntaxTree(state);
+  const metrics = state.field(hangMetrics, false) ?? null;
+  // What stands before the text on a bullet or task row, in px, keyed by the
+  // row's line start — filled from the tree walk, read in the line loop.
+  // ponytail: ordered lists are left out; their "1." is text of a width
+  // that would need its own probe, so they still wrap to the edge.
+  const markerWidth = new Map<number, number>();
 
   for (const { from: rangeFrom, to: rangeTo } of visible) {
     // Inline constructs the parser DID match, per line — used to scan only
@@ -571,6 +695,9 @@ export function computeLiveDecorations(
               // Task rows: the checkbox carries the affordance — hide "- ".
               const end = state.doc.sliceString(node.to, node.to + 1) === " " ? node.to + 1 : node.to;
               ranges.push(marks.hide.range(node.from, end));
+              if (metrics) {
+                markerWidth.set(state.doc.lineAt(node.from).from, metrics.checkbox + metrics.space);
+              }
             } else {
               // Nesting depth picks the glyph (• then ◦).
               let depth = 0;
@@ -582,6 +709,12 @@ export function computeLiveDecorations(
                   widget: new BulletWidget(depth === 0 ? "•" : "◦", marks.bullet),
                 }).range(node.from, node.to),
               );
+              if (metrics) {
+                markerWidth.set(
+                  state.doc.lineAt(node.from).from,
+                  (depth === 0 ? metrics.bullet : metrics.subBullet) + metrics.space,
+                );
+              }
             }
             break;
           }
@@ -632,6 +765,14 @@ export function computeLiveDecorations(
     for (let lineNo = firstLine; lineNo <= lastLine; lineNo++) {
       const line = state.doc.line(lineNo);
       if (line.length === 0) continue;
+      if (metrics) {
+        // Leading whitespace plus the row's marker, if any. A tab counts as
+        // one space's width — the indent unit writes spaces, so a tab here
+        // was pasted in and is rare enough to be off by a little.
+        const indent = /^[ \t]*/.exec(line.text)![0].length * metrics.space;
+        const hang = indent + (markerWidth.get(line.from) ?? 0);
+        if (hang > 0) ranges.push(hangLine(hang).range(line.from));
+      }
       while (first < covered.length && covered[first][1] <= line.from) first++;
       const segments: [number, number][] = [];
       let cursor = line.from;
@@ -681,7 +822,9 @@ const linkClickHandler = EditorView.domEventHandlers({
  *  through a `Compartment` without rebuilding the editor's history. */
 export function livePreview(elements?: EditorElements): Extension {
   const marks = createMarks(elements);
-  return ViewPlugin.fromClass(
+  return [
+    hangMeasurer(marks),
+    ViewPlugin.fromClass(
     class {
       decorations: DecorationSet;
       constructor(view: EditorView) {
@@ -707,7 +850,8 @@ export function livePreview(elements?: EditorElements): Extension {
           update.selectionSet ||
           update.focusChanged ||
           update.viewportChanged ||
-          syntaxTree(update.startState) !== syntaxTree(update.state)
+          syntaxTree(update.startState) !== syntaxTree(update.state) ||
+          update.startState.field(hangMetrics, false) !== update.state.field(hangMetrics, false)
         ) {
           this.decorations = computeLiveDecorations(
             update.state,
@@ -719,7 +863,8 @@ export function livePreview(elements?: EditorElements): Extension {
       }
     },
     { decorations: (v) => v.decorations },
-  );
+    ),
+  ];
 }
 
 /** Everything that is not typography: the markdown language, the keymaps,
@@ -742,6 +887,7 @@ export function liveMarkdownBase(placeholderText = ""): Extension[] {
       { key: "Backspace", run: deleteMarkupBackward },
     ]),
     linkClickHandler,
+    hangMetrics,
     history(),
     // drawSelection() forces `caret-color: transparent` and paints its own
     // caret and selection. On a desktop that is an improvement — the native
@@ -751,6 +897,12 @@ export function liveMarkdownBase(placeholderText = ""): Extension[] {
     ...(isTouchDevice() ? [] : [drawSelection()]),
     // Tab is trapped here for indenting every selected line (Shift+Tab
     // outdents); Escape, bound above in blurKeymap, is the keyboard way out.
+    // Four spaces a step: a nested bullet still nests, and the extra width
+    // reads as a level in prose type where two spaces barely register.
+    // ponytail: four spaces at the head of a plain paragraph is an indented
+    // code block in CommonMark — the preview doesn't style those, so it
+    // only shows up in what a renderer downstream makes of the saved text.
+    indentUnit.of("    "),
     keymap.of([...blurKeymap, ...formattingKeymap, indentWithTab, ...defaultKeymap, ...historyKeymap]),
     EditorView.lineWrapping,
     // Only with text to show: the extension writes `aria-placeholder` from

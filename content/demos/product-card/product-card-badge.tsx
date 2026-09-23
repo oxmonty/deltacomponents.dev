@@ -37,7 +37,10 @@ export default function ProductCardBadgeDemo() {
 
   return (
     <ProductCard>
-      <ProductCardImage src="/images/products/twemco-clock.png" alt="Twemco Clock">
+      <ProductCardImage
+        src="/images/products/return-of-the-king.webp"
+        alt="The Lord of the Rings: The Return of the King, Xbox cover"
+      >
         <ProductCardBadge
           icon={<BookmarkIcon filled={wishlisted} />}
           isActive={wishlisted}
@@ -49,10 +52,10 @@ export default function ProductCardBadgeDemo() {
       </ProductCardImage>
       <ProductCardContent>
         <ProductCardHeader>
-          <ProductCardTitle>Twemco Clock</ProductCardTitle>
-          <ProductCardSubtitle>Clock</ProductCardSubtitle>
+          <ProductCardTitle>The Return of the King</ProductCardTitle>
+          <ProductCardSubtitle>Xbox</ProductCardSubtitle>
         </ProductCardHeader>
-        <ProductCardMetric>$219</ProductCardMetric>
+        <ProductCardMetric>$24</ProductCardMetric>
       </ProductCardContent>
     </ProductCard>
   );

@@ -187,8 +187,8 @@ describe("computeLiveDecorations", () => {
     let state = EditorState.create({ doc, extensions: [liveMarkdownBase()] });
     state = state.update({ selection: { anchor: 0, head: doc.length } }).state;
     indentMore({ state, dispatch: (tr) => (state = tr.state) });
-    expect(state.doc.line(1).text).toBe("  - one");
-    expect(state.doc.line(2).text).toBe("  - two");
+    expect(state.doc.line(1).text).toBe("    - one");
+    expect(state.doc.line(2).text).toBe("    - two");
   });
 });
 
