@@ -97,7 +97,7 @@ export const defaultElements: Required<Record<keyof EditorElements, { tag?: stri
   a: { tag: "a", className: "underline underline-offset-2 decoration-muted-foreground" },
   li: { className: "" },
   bullet: { className: "text-muted-foreground" },
-  checkbox: { className: "size-3.5 pointer-coarse:size-4 accent-[var(--primary)] cursor-pointer" },
+  checkbox: { className: "size-3.5 pointer-coarse:size-[18px] accent-[var(--primary)] cursor-pointer" },
   taskDone: { className: "text-muted-foreground line-through" },
 };
 
