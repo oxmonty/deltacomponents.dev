@@ -38,8 +38,8 @@ export default function ProductCardBadgeDemo() {
   return (
     <ProductCard>
       <ProductCardImage
-        src="/images/products/return-of-the-king.webp"
-        alt="The Lord of the Rings: The Return of the King, Xbox cover"
+        src="/images/products/call-of-duty-world-at-war.webp"
+        alt="Call of Duty: World at War, Xbox 360 cover"
       >
         <ProductCardBadge
           icon={<BookmarkIcon filled={wishlisted} />}
@@ -52,8 +52,8 @@ export default function ProductCardBadgeDemo() {
       </ProductCardImage>
       <ProductCardContent>
         <ProductCardHeader>
-          <ProductCardTitle>The Return of the King</ProductCardTitle>
-          <ProductCardSubtitle>Xbox</ProductCardSubtitle>
+          <ProductCardTitle>Call of Duty: World at War</ProductCardTitle>
+          <ProductCardSubtitle>Xbox 360</ProductCardSubtitle>
         </ProductCardHeader>
         <ProductCardMetric>$24</ProductCardMetric>
       </ProductCardContent>
