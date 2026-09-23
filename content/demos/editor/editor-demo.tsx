@@ -4,7 +4,7 @@ import { Editor } from "@/registry/ui/editor";
 
 const NOTE = `# Weekly note
 
-Click or touch here to begin editing. The editor is **always on** — there is no *edit mode* to enter, and markdown syntax appears only where you're typing.
+Click or touch here to start editing. The editor is **always on** — there is no *edit mode* to enter, and Markdown syntax appears only where you're typing.
 
 - [x] Port the live preview off \`@codemirror/lang-markdown\`
 - [ ] Read the [typography map](https://www.deltacomponents.dev/docs/editor)

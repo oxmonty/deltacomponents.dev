@@ -133,7 +133,7 @@ export const demos: Record<string, DemoEntry> = {
   },
   "editor-demo": {
     Component: DemoEditorEditorDemo,
-    source: "import { Editor } from \"@/components/ui/editor\";\n\nconst NOTE = `# Weekly note\n\nClick or touch here to begin editing. The editor is **always on** — there is no *edit mode* to enter, and markdown syntax appears only where you're typing.\n\n- [x] Port the live preview off \\`@codemirror/lang-markdown\\`\n- [ ] Read the [typography map](https://www.deltacomponents.dev/docs/editor)\n- [ ] Wire autosave to the database\n\nTry \\`Cmd+B\\`, \\`Cmd+I\\` and \\`Cmd+L\\` on a selection.\n`;\n\nexport default function EditorDemo() {\n  return <Editor defaultValue={NOTE} className=\"w-full max-w-[560px]\" />;\n}",
+    source: "import { Editor } from \"@/components/ui/editor\";\n\nconst NOTE = `# Weekly note\n\nClick or touch here to start editing. The editor is **always on** — there is no *edit mode* to enter, and Markdown syntax appears only where you're typing.\n\n- [x] Port the live preview off \\`@codemirror/lang-markdown\\`\n- [ ] Read the [typography map](https://www.deltacomponents.dev/docs/editor)\n- [ ] Wire autosave to the database\n\nTry \\`Cmd+B\\`, \\`Cmd+I\\` and \\`Cmd+L\\` on a selection.\n`;\n\nexport default function EditorDemo() {\n  return <Editor defaultValue={NOTE} className=\"w-full max-w-[560px]\" />;\n}",
   },
   "editor-embeds": {
     Component: DemoEditorEditorEmbeds,
