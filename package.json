@@ -24,6 +24,7 @@
     "@hugeicons/core-free-icons": "^4.1.1",
     "@hugeicons/react": "^1.1.6",
     "@lezer/common": "^1.5.2",
+    "@lezer/markdown": "^1.7.2",
     "@mdx-js/loader": "^3.1.1",
     "@mdx-js/react": "^3.1.1",
     "@next/mdx": "15.5.25",

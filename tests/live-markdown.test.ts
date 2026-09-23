@@ -182,6 +182,17 @@ describe("computeLiveDecorations", () => {
     expect(liveMarkdownBase().flat(5)).toContain(pasteURLAsLink);
   });
 
+  it("keeps an indented paragraph a paragraph, not code", () => {
+    const state = EditorState.create({
+      doc: "    Click here. The editor is **always on** today.",
+      extensions: [liveMarkdownBase()],
+    });
+    const names: string[] = [];
+    ensureSyntaxTree(state, state.doc.length, 5000)!.iterate({ enter: (n) => void names.push(n.name) });
+    expect(names).toContain("StrongEmphasis");
+    expect(names).not.toContain("CodeBlock");
+  });
+
   it("indents every selected line with Tab", () => {
     const doc = "- one\n- two";
     let state = EditorState.create({ doc, extensions: [liveMarkdownBase()] });

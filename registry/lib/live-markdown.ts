@@ -22,7 +22,7 @@ import {
   markdownLanguage,
   pasteURLAsLink,
 } from "@codemirror/lang-markdown";
-import { indentUnit, syntaxTree } from "@codemirror/language";
+import { Language, indentUnit, syntaxTree } from "@codemirror/language";
 import {
   Decoration,
   EditorView,
@@ -45,6 +45,7 @@ import {
   type StateCommand,
 } from "@codemirror/state";
 import type { SyntaxNode } from "@lezer/common";
+import type { MarkdownParser } from "@lezer/markdown";
 
 /** What one construct renders as: a class string, or an element and its
  *  classes. `{ tag: "strong", className: "font-semibold" }` emits
@@ -867,6 +868,20 @@ export function livePreview(elements?: EditorElements): Extension {
   ];
 }
 
+// The same language, minus CommonMark's indented code blocks: four leading
+// spaces are what Tab writes here, and a paragraph someone indented to set it
+// apart must keep its **bold** and its links rather than turn into verbatim
+// code (which also let the eager unclosed-`**` styling run away with the
+// rest of the line). Fenced ``` blocks are untouched. Built the way
+// lang-markdown builds its own, so no other behaviour changes.
+const proseMarkdown = new Language(
+  markdownLanguage.data,
+  // Typed as the generic Parser; it is lezer-markdown's, which configures.
+  (markdownLanguage.parser as MarkdownParser).configure({ remove: ["IndentedCode"] }),
+  [],
+  "markdown",
+);
+
 /** Everything that is not typography: the markdown language, the keymaps,
  *  history, the placeholder and the chromeless theme. Pair with
  *  `livePreview()`. */
@@ -880,7 +895,7 @@ export function liveMarkdownBase(placeholderText = ""): Extension[] {
     // The bare language, not markdown(): that wrapper drags the HTML, CSS
     // and JS language packages (plus autocomplete) into a prose editor.
     // pasteURLAsLink is the one piece of it this editor uses.
-    markdownLanguage,
+    proseMarkdown,
     pasteURLAsLink,
     keymap.of([
       { key: "Enter", run: insertNewlineContinueMarkupCommand({ nonTightLists: false }) },
@@ -898,10 +913,8 @@ export function liveMarkdownBase(placeholderText = ""): Extension[] {
     // Tab is trapped here for indenting every selected line (Shift+Tab
     // outdents); Escape, bound above in blurKeymap, is the keyboard way out.
     // Four spaces a step: a nested bullet still nests, and the extra width
-    // reads as a level in prose type where two spaces barely register.
-    // ponytail: four spaces at the head of a plain paragraph is an indented
-    // code block in CommonMark — the preview doesn't style those, so it
-    // only shows up in what a renderer downstream makes of the saved text.
+    // reads as a level in prose type where two spaces barely register. See
+    // proseMarkdown for why that doesn't turn a paragraph into code.
     indentUnit.of("    "),
     keymap.of([...blurKeymap, ...formattingKeymap, indentWithTab, ...defaultKeymap, ...historyKeymap]),
     EditorView.lineWrapping,

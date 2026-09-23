@@ -534,7 +534,8 @@
         "@codemirror/language",
         "@codemirror/state",
         "@codemirror/view",
-        "@lezer/common"
+        "@lezer/common",
+        "@lezer/markdown"
       ],
       "registryDependencies": [
         "utils"
