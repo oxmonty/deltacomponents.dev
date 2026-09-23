@@ -455,6 +455,8 @@ function HighlightedCode({
   )
 }
 
+const COLLAPSED_ROW_CAP = 40
+
 export function Code({
   npm,
   yarn,
@@ -686,9 +688,21 @@ export function Code({
 
   if (!actualCode) return null
 
+  // A collapsed block shows a handful of rows under `collapsedHeight`, and
+  // tokenising and mounting the other hundreds — several hundred milliseconds
+  // for a long source file — is what froze a tab switch that revealed one.
+  // Until it is expanded only the rows that can be seen are rendered; the
+  // copy button still carries the whole thing.
+  // ponytail: 40 rows covers a collapsedHeight of ~4× the default; derive
+  // the count from the height if a caller ever collapses taller than that.
+  const collapsed = expandable && !isExpanded
+  const visibleCode = collapsed
+    ? actualCode.split("\n").slice(0, COLLAPSED_ROW_CAP).join("\n")
+    : actualCode
+
   const highlighted = (
     <HighlightedCode
-      code={actualCode}
+      code={visibleCode}
       language={actualLanguage}
       theme={selectedTheme}
       showLineNumbers={showLineNumbers}
