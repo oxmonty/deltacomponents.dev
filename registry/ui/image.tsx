@@ -204,7 +204,10 @@ function Image({
               // browser would ring it, boxing the one thing the reader opened
               // it to look at. The backdrop already says where focus is, and
               // Escape or a click anywhere closes it, so the ring adds nothing.
-              "outline-none overscroll-contain cursor-zoom-out",
+              // `rounded-none` for the same reason: a phone treats that focus
+              // as focus-visible, and the base-layer radius that comes with it
+              // clipped the corners off a full-width picture.
+              "rounded-none outline-none overscroll-contain cursor-zoom-out",
               // It fades and grows in, in CSS alone. There is no matching
               // exit: `close()` drops a dialog from the top layer at once.
               // ponytail: `overlay` and `display` are listed for the day a
