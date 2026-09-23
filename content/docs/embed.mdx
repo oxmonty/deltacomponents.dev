@@ -21,13 +21,13 @@ import { Embed } from "@/components/ui/embed";
 ## YouTube
 
 A **watch**, **share** or **shorts** link becomes a thumbnail and a button. The
-player itself is close to a megabyte of third-party script, so it only loads
-once someone presses play, from `youtube-nocookie.com`.
+player itself is close to a megabyte of third-party script, so on Android and
+desktop it only loads once someone presses play, from `youtube-nocookie.com`;
+on iOS the player is mounted eagerly once the block nears the viewport, since
+a tap on a cross-origin iframe there won't otherwise land inside it and start
+the video with sound.
 
-On a touch device it starts muted. A phone won't play sound unless the tap
-landed inside the player, and this one lands on the thumbnail; asked for sound
-anyway, YouTube shows a play button of its own and the viewer taps twice.
-Muted, it plays on the first tap, and the sound is one tap away in the player.
+The corners are square by default; pass `className="rounded-lg"` for a radius.
 
 <ComponentPreview name="embed-youtube" align="top" />
 
@@ -69,6 +69,9 @@ controls, held back the same way the Spotify player is.
 Pass a `poster` when you have one: it shows at once and costs nothing until
 someone presses play. Without it the opening frame stands in, which Safari
 only paints when asked for a moment just past zero, so the component asks.
+
+The corners are square by default here too; pass `className="rounded-lg"` for a
+radius.
 
 <ComponentPreview name="embed-video" align="top" />
 

@@ -5,7 +5,17 @@ import * as React from "react"
 import { cn } from "@/registry/lib/utils"
 import { classifyUrl, type EmbedSource } from "@/registry/lib/embed"
 import { Image, type ImageProps } from "@/registry/ui/image"
+import { Skeleton } from "@/registry/ui/skeleton"
 import type { LinkPreviewData } from "@/registry/lib/link-preview"
+
+// iPadOS reports itself as a Mac, distinguishable only by the touch points a
+// real Mac doesn't have.
+function isIOS(nav: Pick<Navigator, "userAgent" | "platform" | "maxTouchPoints">): boolean {
+  return (
+    /iP(hone|ad|od)/.test(nav.userAgent) ||
+    (nav.platform === "MacIntel" && nav.maxTouchPoints > 1)
+  )
+}
 
 // loading="lazy" does defer the request, but the browser starts it thousands
 // of pixels before the viewport, so a player far down a page still loads with
@@ -85,11 +95,31 @@ interface YouTubeEmbedProps {
 // a page shouldn't pay for it until someone actually presses play. Until
 // then this is a thumbnail and a button.
 function YouTubeEmbed({ videoId, title = "YouTube video", className }: YouTubeEmbedProps) {
-  // A phone will not start a video with sound unless the tap landed inside
-  // the player, and this one lands on the thumbnail. Asked to autoplay with
-  // sound, YouTube falls back to its own play button and the viewer taps
-  // twice. Muted autoplay is allowed, so a touch device starts that way.
-  const [playing, setPlaying] = React.useState<false | "sound" | "muted">(false)
+  // A cross-origin iframe doesn't inherit the tap that landed on our facade,
+  // so on iOS `autoplay=1` with sound just shows YouTube's own play button —
+  // muted autoplay used to be the workaround. Android Chrome and desktop DO
+  // honour that tap through `allow="autoplay"`, so they play with sound on
+  // one tap. On iOS the player is mounted up front instead, once the block
+  // nears the viewport, so the one tap lands inside YouTube's player and
+  // plays with sound; the cost is the player script loading for every video
+  // on iOS, which is the trade the site chose.
+  const [playing, setPlaying] = React.useState(false)
+  const [eager, setEager] = React.useState(false)
+  React.useEffect(() => setEager(isIOS(navigator)), [])
+  const ref = React.useRef<HTMLDivElement>(null)
+  const near = useNearViewport(ref)
+  const showIframe = playing || (eager && near)
+
+  const [thumbnailLoaded, setThumbnailLoaded] = React.useState(false)
+  const [playerLoaded, setPlayerLoaded] = React.useState(false)
+  const thumbRef = React.useRef<HTMLImageElement>(null)
+  // A cached thumbnail can finish loading before hydration, which means
+  // React's onLoad below never fires for it.
+  React.useEffect(() => {
+    const image = thumbRef.current
+    if (image?.complete && image.naturalWidth > 0) setThumbnailLoaded(true)
+  }, [])
+
   // 1280x720 is the largest thumbnail YouTube publishes, and it only exists
   // for some videos. A missing one is not an error: YouTube answers 404 with
   // a valid 120x90 grey placeholder, which loads fine. It is 4:3 where the
@@ -103,58 +133,67 @@ function YouTubeEmbed({ videoId, title = "YouTube video", className }: YouTubeEm
 
   return (
     <div
+      ref={ref}
       data-slot="youtube-embed"
-      className={cn(
-        "relative aspect-video w-full overflow-hidden bg-muted",
-        "rounded-[var(--radius-bg,var(--radius,0.5rem))]",
-        className
-      )}
+      // No radius by default — a consumer rounds it with `className`.
+      className={cn("relative aspect-video w-full overflow-hidden bg-muted", className)}
     >
-      {playing ? (
+      {!thumbnailLoaded && !playerLoaded && (
+        <Skeleton aria-hidden className="absolute inset-0 rounded-none" />
+      )}
+      {/* Stays mounted under the button, and under the iframe once it
+          replaces the button, so the picture never drops out to a blank
+          Skeleton while the player loads on top of it. */}
+      {!playerLoaded && (
+        /* hqdefault is 4:3 with black bars top and bottom; cover crops them
+           out instead of letterboxing the thumbnail. */
+        /* eslint-disable-next-line @next/next/no-img-element -- a registry
+           component installs into any React project, so it must not depend
+           on next/image; the consumer swaps this for their framework's
+           loader. */
+        <img
+          ref={thumbRef}
+          src={thumbnailSrc}
+          onLoad={(event) => {
+            const image = event.currentTarget
+            const isPlaceholder =
+              image.currentSrc.includes("maxresdefault") &&
+              image.naturalWidth / image.naturalHeight < 1.5
+            if (isPlaceholder) setWithoutLargeThumbnail(videoId)
+            setThumbnailLoaded(true)
+          }}
+          onError={() => setWithoutLargeThumbnail(videoId)}
+          alt=""
+          loading="lazy"
+          decoding="async"
+          referrerPolicy="no-referrer"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+      )}
+      {showIframe ? (
         <iframe
-          src={`https://www.youtube-nocookie.com/embed/${encodeURIComponent(videoId)}?autoplay=1${
-            playing === "muted" ? "&mute=1&playsinline=1" : ""
+          src={`https://www.youtube-nocookie.com/embed/${encodeURIComponent(videoId)}?playsinline=1${
+            playing ? "&autoplay=1" : ""
           }`}
           title={title}
           className="absolute inset-0 h-full w-full border-0"
           allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
           allowFullScreen
           referrerPolicy="strict-origin-when-cross-origin"
+          onLoad={() => setPlayerLoaded(true)}
         />
       ) : (
         <button
           type="button"
-          onClick={() =>
-            setPlaying(window.matchMedia("(pointer: coarse)").matches ? "muted" : "sound")
-          }
+          onClick={() => setPlaying(true)}
           aria-label={`Play: ${title}`}
           className={cn(
             "group absolute inset-0 h-full w-full cursor-pointer",
-            "outline-none focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-[color:var(--focus-ring,#6B97FF)]"
+            // `rounded-none` beats the base-layer `:focus-visible` radius,
+            // which would round the ring's corners off the square container.
+            "rounded-none outline-none focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-[color:var(--focus-ring,#6B97FF)]"
           )}
         >
-          {/* hqdefault is 4:3 with black bars top and bottom; cover crops
-              them out instead of letterboxing the thumbnail. */}
-          {/* eslint-disable-next-line @next/next/no-img-element -- a registry
-              component installs into any React project, so it must not depend
-              on next/image; the consumer swaps this for their framework's
-              loader. */}
-          <img
-            src={thumbnailSrc}
-            onLoad={(event) => {
-              const image = event.currentTarget
-              const isPlaceholder =
-                image.currentSrc.includes("maxresdefault") &&
-                image.naturalWidth / image.naturalHeight < 1.5
-              if (isPlaceholder) setWithoutLargeThumbnail(videoId)
-            }}
-            onError={() => setWithoutLargeThumbnail(videoId)}
-            alt=""
-            loading="lazy"
-            decoding="async"
-            referrerPolicy="no-referrer"
-            className="h-full w-full object-cover"
-          />
           <span
             aria-hidden="true"
             className="pointer-events-none absolute inset-0 flex items-center justify-center"
@@ -191,15 +230,21 @@ interface SpotifyEmbedProps {
 function SpotifyEmbed({ type, id, className }: SpotifyEmbedProps) {
   const ref = React.useRef<HTMLDivElement>(null)
   const near = useNearViewport(ref)
+  const [loaded, setLoaded] = React.useState(false)
   const height = type === "track" || type === "episode" ? 152 : 352
 
   return (
     <div
       ref={ref}
       data-slot="spotify-embed"
-      className={cn("w-full", className)}
+      className={cn("relative w-full", className)}
       style={{ height }}
     >
+      {/* The iframe is transparent until Spotify paints, so the skeleton
+          behind it reads through until then. */}
+      {(!near || !loaded) && (
+        <Skeleton aria-hidden className="absolute inset-0 rounded-[12px]" />
+      )}
       {near && (
         <iframe
           src={`https://open.spotify.com/embed/${type}/${encodeURIComponent(id)}`}
@@ -212,6 +257,7 @@ function SpotifyEmbed({ type, id, className }: SpotifyEmbedProps) {
           // Literal 12px on purpose — the site's radius tokens are
           // user-adjustable and would fight Spotify's fixed corners.
           style={{ borderRadius: 12, colorScheme: "normal" }}
+          onLoad={() => setLoaded(true)}
         />
       )}
     </div>
@@ -240,10 +286,7 @@ function VideoEmbed({ src, className, ...videoProps }: VideoEmbedProps) {
       playsInline
       preload="metadata"
       src={near ? framed : undefined}
-      className={cn(
-        "aspect-video w-full rounded-[var(--radius-bg,var(--radius,0.5rem))]",
-        className
-      )}
+      className={cn("aspect-video w-full", className)}
       {...videoProps}
     />
   )
@@ -382,7 +425,7 @@ function isHttpUrl(value: string): boolean {
   }
 }
 
-export { Embed, YouTubeEmbed, SpotifyEmbed, VideoEmbed, ImageEmbed, LinkPreview }
+export { Embed, YouTubeEmbed, SpotifyEmbed, VideoEmbed, ImageEmbed, LinkPreview, isIOS }
 export type {
   EmbedProps,
   YouTubeEmbedProps,

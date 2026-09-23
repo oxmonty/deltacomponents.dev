@@ -25,7 +25,10 @@ system is `app/globals.css`, the single source of truth for every token.
   the CLI files things: `registry/ui/` → the consumer's `components/ui/`,
   `registry/lib/` → their `lib/`. Everything in it is either a documented
   component or a module one of them installs — nothing else belongs there.
-  Base UI is the default and needs no separate tier.
+  Base UI is the default and needs no separate tier. The one exception is
+  `registry/ui/skeleton.tsx`, shadcn's Skeleton vendored so the import
+  resolves here, listed in `UPSTREAM_UI` in `scripts/registry-paths.ts`,
+  never published.
 - **A new component** goes in `registry/ui/`, gets an entry in `registry.json`,
   a slug in `lib/docs/components.ts`, a preview in
   `app/components/bento-previews.tsx`, and a page under `content/docs/`. See

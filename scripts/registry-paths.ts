@@ -1,6 +1,11 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
+// Registry names we depend on but do not publish — shadcn's own. A bare name
+// in `registryDependencies` resolves against shadcn's registry, which is
+// exactly what we want for these.
+export const UPSTREAM_UI = ["skeleton"] as const;
+
 /**
  * `@/registry/...` → the path `shadcn add` writes the file to in a consumer's
  * project, built from registry.json's own `target` fields.
@@ -27,7 +32,7 @@ export function registryPathMap(root = process.cwd()): [string, string][] {
 
   const drop = (value: string) => value.replace(/\.(tsx?|jsx?)$/, "");
 
-  return registry.items
+  const pairs = registry.items
     .flatMap((item) => (item.files ?? []).map((file) => ({ ...file, type: file.type ?? item.type })))
     .map((file) => {
       // An explicit target wins. Without one the CLI files it under the alias
@@ -44,9 +49,14 @@ export function registryPathMap(root = process.cwd()): [string, string][] {
         ? ([`@/${drop(file.path)}`, to] as [string, string])
         : undefined;
     })
-    .filter((pair): pair is [string, string] => pair !== undefined)
-    // Longest first, so a path that prefixes another cannot be partly rewritten.
-    .sort(([a], [b]) => b.length - a.length);
+    .filter((pair): pair is [string, string] => pair !== undefined);
+
+  // These have no registry.json entry to derive a pair from — they are never
+  // published, only imported — so they are added by hand instead.
+  for (const name of UPSTREAM_UI) pairs.push([`@/registry/ui/${name}`, `${aliases.ui}/${name}`]);
+
+  // Longest first, so a path that prefixes another cannot be partly rewritten.
+  return pairs.sort(([a], [b]) => b.length - a.length);
 }
 
 /** Rewrite every internal registry import in `source` to its consumer path. */

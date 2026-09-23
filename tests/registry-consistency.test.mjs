@@ -7,6 +7,7 @@
 import { describe, it, expect } from "vitest";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+import { UPSTREAM_UI } from "../scripts/registry-paths.ts";
 
 const ROOT = new URL("..", import.meta.url).pathname;
 const registry = JSON.parse(readFileSync(join(ROOT, "registry.json"), "utf-8"));
@@ -25,6 +26,9 @@ describe("registry.json", () => {
     for (const item of registry.items) {
       for (const dep of item.registryDependencies ?? []) {
         if (dep.startsWith("http")) continue;
+        // Deliberately bare and missing from our own items — these resolve
+        // against shadcn's registry on purpose (see UPSTREAM_UI).
+        if (UPSTREAM_UI.includes(dep)) continue;
         expect(names.has(dep), `${item.name} depends on missing "${dep}"`).toBe(true);
       }
     }

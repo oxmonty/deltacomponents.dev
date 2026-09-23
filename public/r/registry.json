@@ -563,7 +563,8 @@
       "description": "Turns a URL into what it points to: a YouTube facade, a lazy Spotify player, an image, a video, or a plain link card, decided from the URL alone.",
       "registryDependencies": [
         "utils",
-        "image"
+        "image",
+        "skeleton"
       ],
       "files": [
         {

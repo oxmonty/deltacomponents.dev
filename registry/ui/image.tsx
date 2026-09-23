@@ -47,6 +47,7 @@ function Image({
   const dialogRef = React.useRef<HTMLDialogElement>(null)
   const [mounted, setMounted] = React.useState(false)
   const [measuredRatio, setMeasuredRatio] = React.useState<number | null>(null)
+  const [loaded, setLoaded] = React.useState(false)
 
   React.useEffect(() => setMounted(true), [])
 
@@ -55,21 +56,21 @@ function Image({
   React.useEffect(() => () => stopWatchingScroll.current?.(), [])
 
   // Known from the props when given; otherwise read off the thumbnail once
-  // its pixels are in. `width`/`height` land during SSR, so most callers pay
-  // no measuring effect at all.
+  // its pixels are in. `width`/`height` land during SSR, so most callers only
+  // pay the effect for the loaded flag that ends the pulse.
   const knownRatio = width && height ? width / height : undefined
   const ratio = knownRatio ?? measuredRatio ?? undefined
   // Unknown ratio reads as not landscape, so bleed never fires on a guess.
   const landscape = ratio !== undefined && ratio > 1
 
   React.useEffect(() => {
-    if (knownRatio) return
+    setLoaded(false)
     const node = thumbRef.current
     if (!node) return
     const measure = () => {
-      if (node.naturalWidth && node.naturalHeight) {
-        setMeasuredRatio(node.naturalWidth / node.naturalHeight)
-      }
+      setLoaded(true)
+      if (knownRatio || !node.naturalWidth || !node.naturalHeight) return
+      setMeasuredRatio(node.naturalWidth / node.naturalHeight)
     }
     // Now for anything already decoded from cache, and again on arrival.
     if (node.complete) measure()
@@ -124,6 +125,10 @@ function Image({
       decoding="async"
       className={cn(
         "block h-auto w-full",
+        // Pulses the image's own box (sized by width/height, or the
+        // aspect-ratio the browser maps from them) — no wrapper element, so
+        // nothing fights the bleed margins below.
+        !loaded && "bg-muted animate-pulse",
         !zoomable && bleedBoxClass,
         className
       )}
@@ -141,7 +146,9 @@ function Image({
           className={cn(
             "block w-full cursor-zoom-in",
             bleedBoxClass,
-            "outline-none focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-[color:var(--focus-ring,#6B97FF)]"
+            // `rounded-none` beats the base-layer `:focus-visible` radius, which
+            // would round the ring's corners off a square picture.
+            "rounded-none outline-none focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-[color:var(--focus-ring,#6B97FF)]"
           )}
         >
           {thumbnail}

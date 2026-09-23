@@ -32,7 +32,7 @@ import { BUTTON_ITEMS, TOOLTIP_COPY, TABS_ITEMS } from "@/app/components/demo-da
 // against syntax that ISN'T there.
 const EDITOR_DOC = `# Field notes
 
-Click or touch here to begin editing — the syntax hides wherever the caret isn't.
+Click or touch here to begin editing — markdown syntax appears only where you're typing.
 
 - Bullets, [links](https://www.deltacomponents.dev) and \`code\`
 
@@ -159,10 +159,13 @@ function ProductCardPreview() {
 function TabsPreview() {
   return (
     // Same shape as the demos on the docs page: a `w-fit` block whose strip and
-    // copy share a left edge, centred as one unit by the card's stage. Needs
-    // the two-column card — in one column the stage is 213px against the
-    // strip's 232, and a `w-fit` block that cannot shrink pins left instead.
-    <Tabs defaultValue="account" size="lg" className="w-fit max-w-full">
+    // copy share a left edge, centred as one unit by the card's stage. The
+    // default step, like the Button and Tooltip tiles beside it: the strip is
+    // meant to stand exactly as tall as a button, and the home grid is where
+    // a reader first sees that. Needs the two-column card — in one column the
+    // stage is narrower than the strip, and a `w-fit` block that cannot
+    // shrink pins left instead.
+    <Tabs defaultValue="account" className="w-fit max-w-full">
       <TabsList>
         {TABS_ITEMS.map((tab) => (
           <TabsTrigger key={tab.value} value={tab.value}>

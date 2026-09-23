@@ -15,7 +15,7 @@
 // The theme below holds only what must not vary — padding, caret, selection,
 // list indent, and the box model of those tags (see the reset in it).
 
-import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
+import { defaultKeymap, history, historyKeymap, indentWithTab } from "@codemirror/commands";
 import {
   deleteMarkupBackward,
   insertNewlineContinueMarkupCommand,
@@ -94,7 +94,7 @@ export const defaultElements: Required<Record<keyof EditorElements, { tag?: stri
   a: { tag: "a", className: "underline underline-offset-2 decoration-muted-foreground" },
   li: { className: "" },
   bullet: { className: "text-muted-foreground" },
-  checkbox: { className: "size-3.5 accent-[var(--primary)] cursor-pointer" },
+  checkbox: { className: "size-3.5 pointer-coarse:size-4 accent-[var(--primary)] cursor-pointer" },
   taskDone: { className: "text-muted-foreground line-through" },
 };
 
@@ -749,7 +749,9 @@ export function liveMarkdownBase(placeholderText = ""): Extension[] {
     // away the things a finger actually uses: the caret you drag, the
     // selection handles, the magnifier. The platform keeps its own there.
     ...(isTouchDevice() ? [] : [drawSelection()]),
-    keymap.of([...blurKeymap, ...formattingKeymap, ...defaultKeymap, ...historyKeymap]),
+    // Tab is trapped here for indenting every selected line (Shift+Tab
+    // outdents); Escape, bound above in blurKeymap, is the keyboard way out.
+    keymap.of([...blurKeymap, ...formattingKeymap, indentWithTab, ...defaultKeymap, ...historyKeymap]),
     EditorView.lineWrapping,
     // Only with text to show: the extension writes `aria-placeholder` from
     // whatever it is given, and an empty one is an attribute that says nothing.

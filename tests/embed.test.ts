@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { classifyUrl } from "@/registry/lib/embed";
+import { isIOS } from "@/registry/ui/embed";
 
 describe("classifyUrl", () => {
   it("returns null for anything that isn't an absolute http(s) URL", () => {
@@ -135,5 +136,47 @@ describe("classifyUrl", () => {
       kind: "link",
       url: "https://example.com/about",
     });
+  });
+});
+
+describe("isIOS", () => {
+  it("recognizes an iPhone", () => {
+    expect(
+      isIOS({
+        userAgent: "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)",
+        platform: "iPhone",
+        maxTouchPoints: 5,
+      })
+    ).toBe(true);
+  });
+
+  it("recognizes iPadOS, which reports itself as a Mac", () => {
+    expect(
+      isIOS({
+        userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_6)",
+        platform: "MacIntel",
+        maxTouchPoints: 5,
+      })
+    ).toBe(true);
+  });
+
+  it("rejects a real desktop Mac", () => {
+    expect(
+      isIOS({
+        userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_6)",
+        platform: "MacIntel",
+        maxTouchPoints: 0,
+      })
+    ).toBe(false);
+  });
+
+  it("rejects Android", () => {
+    expect(
+      isIOS({
+        userAgent: "Mozilla/5.0 (Linux; Android 14; Pixel 8)",
+        platform: "Linux armv81",
+        maxTouchPoints: 5,
+      })
+    ).toBe(false);
   });
 });

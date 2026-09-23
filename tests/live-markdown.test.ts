@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import { indentMore } from "@codemirror/commands";
 import { ensureSyntaxTree } from "@codemirror/language";
 import { EditorState } from "@codemirror/state";
 import { EditorView, type DecorationSet } from "@codemirror/view";
@@ -179,6 +180,15 @@ describe("computeLiveDecorations", () => {
   // ours to keep.
   it("keeps paste-URL-as-link installed", () => {
     expect(liveMarkdownBase().flat(5)).toContain(pasteURLAsLink);
+  });
+
+  it("indents every selected line with Tab", () => {
+    const doc = "- one\n- two";
+    let state = EditorState.create({ doc, extensions: [liveMarkdownBase()] });
+    state = state.update({ selection: { anchor: 0, head: doc.length } }).state;
+    indentMore({ state, dispatch: (tr) => (state = tr.state) });
+    expect(state.doc.line(1).text).toBe("  - one");
+    expect(state.doc.line(2).text).toBe("  - two");
   });
 });
 

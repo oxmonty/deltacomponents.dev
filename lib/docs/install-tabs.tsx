@@ -61,9 +61,20 @@ function fetchRegistryItem(slug: string): Promise<RegistryItem> {
  * moment it opens. `holdHeight` covers the case where it doesn't — a touch, or
  * a slow network — by parking the loading state at the height the panel it
  * replaced had, so nothing below it moves until the real content arrives.
+ *
+ * Switching tabs also has to keep the tab indicator's own slide smooth:
+ * mounting `Steps` — thousands of syntax-highlighted spans from `Code`, well
+ * over 100ms of main-thread work — in the same commit that starts the slide
+ * freezes it. `shownTab` trails `tab` by the slide's own duration, so the
+ * indicator lands first and the heavy panel mounts into the parked spacer
+ * after it. (`useDeferredValue` was tried: it only waits for the first paint,
+ * and the block then lands halfway through the 160ms slide.)
  */
 export function InstallTabs({ slug, note }: { slug: string; note?: string }) {
   const [tab, setTab] = useState("cli");
+  const [shownTab, setShownTab] = useState("cli");
+  const showTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => clearTimeout(showTimer.current ?? undefined), []);
   const [item, setItem] = useState<RegistryItem | null>(null);
   const [failed, setFailed] = useState(false);
   const blockRef = useRef<HTMLDivElement>(null);
@@ -105,20 +116,32 @@ export function InstallTabs({ slug, note }: { slug: string; note?: string }) {
     return () => observer.disconnect();
   }, [item, failed, load]);
 
-  // Freeze the outgoing panel's height into the incoming one, but only while
-  // there is nothing to show — once the source is in, the panel sizes to it.
+  // Freeze the outgoing panel's height into the incoming one while there is
+  // nothing to show yet — once `Steps` is in, the panel sizes to it.
   const openManual = () => {
-    if (!item && !failed) {
-      // The CLI panel is the only one mounted at this point, so it is the
-      // height to keep. Read off the DOM rather than through a ref on
-      // TabsContent — the primitive takes no ref, and widening a published
-      // component for one docs page is the wrong trade.
-      const outgoing = blockRef.current?.querySelector('[role="tabpanel"]');
-      const height = outgoing?.getBoundingClientRect().height;
-      if (height) setHoldHeight(height);
-      load();
-    }
+    // The panel that's still mounted at click time — CLI, since that's the
+    // only other tab — is the height to keep, every time: the gate on `shownTab`
+    // below means Manual re-parks on each entry, not just the first. Read
+    // off the DOM rather than through a ref on TabsContent — the primitive
+    // takes no ref, and widening a published component for one docs page is
+    // the wrong trade.
+    const outgoing = blockRef.current?.querySelector('[role="tabpanel"]');
+    const height = outgoing?.getBoundingClientRect().height;
+    if (height) setHoldHeight(height);
+    if (!item && !failed) load();
     setTab("manual");
+    // The tabs slide on the moderate tier; a frame past it is when the panel
+    // may cost the main thread. Reduced motion makes the slide instant, and
+    // 160ms of held spacer is not a wait anyone notices.
+    const slide =
+      parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--motion-moderate")) || 160;
+    if (showTimer.current) clearTimeout(showTimer.current);
+    showTimer.current = setTimeout(() => setShownTab("manual"), slide + 16);
+  };
+  const openCli = () => {
+    if (showTimer.current) clearTimeout(showTimer.current);
+    setShownTab("cli");
+    setTab("cli");
   };
 
   const deps = item?.dependencies ?? [];
@@ -128,7 +151,7 @@ export function InstallTabs({ slug, note }: { slug: string; note?: string }) {
     <div ref={blockRef}>
     <Tabs
       value={tab}
-      onValueChange={(next) => (next === "manual" ? openManual() : setTab(next))}
+      onValueChange={(next) => (next === "manual" ? openManual() : openCli())}
       variant="underline"
       size="lg"
       className="w-full"
@@ -182,17 +205,22 @@ export function InstallTabs({ slug, note }: { slug: string; note?: string }) {
         )}
 
         {/* Parked at the height of the panel it replaced, so the page below
-            does not jump up and then back down when the source lands. */}
-        {!failed && !item && (
+            does not jump up and then back down when the source lands. Covers
+            two waits: the fetch itself ("Loading source…"), and — once the
+            source is in but `shownTab` hasn't caught up to `tab` yet — the
+            held-back mount of `Steps`, where the placeholder is a silent
+            spacer so already-loaded content doesn't flash a loading label. */}
+        {!failed && (!item || shownTab !== "manual") && (
           <p
             className="text-caption text-muted-foreground"
             style={holdHeight ? { minHeight: holdHeight } : undefined}
+            aria-hidden={item ? true : undefined}
           >
-            Loading source…
+            {item ? "" : "Loading source…"}
           </p>
         )}
 
-        {item && (
+        {item && shownTab === "manual" && (
           // The numbers come from CSS counters, so a component with no
           // dependencies simply starts at "Copy and paste" as step one.
           <Steps>
