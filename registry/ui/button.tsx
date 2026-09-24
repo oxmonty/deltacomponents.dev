@@ -346,7 +346,18 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
               </span>
             </>
           ) : isIconOnly ? (
-            <span className="[&_svg]:stroke-[1.5] [&_svg]:transition-[stroke-width] [&_svg]:duration-80 group-enabled:group-hover:[&_svg]:stroke-[2]">
+            <span
+              className={cn(
+                "[&_svg]:stroke-[1.5] group-enabled:group-hover:[&_svg]:stroke-[2]",
+                // The root's 0.96 is under a pixel on a 20px glyph, so on an
+                // icon square the press would go unseen. The glyph dips
+                // further, on the same tiers, and reads as pressing into the
+                // button.
+                "[&_svg]:transition-[stroke-width,scale] [&_svg]:ease-spring",
+                "[&_svg]:[transition-duration:80ms,var(--motion-moderate-exit)]",
+                "group-active:[&_svg]:scale-90 group-active:[&_svg]:[transition-duration:80ms,var(--motion-moderate)]"
+              )}
+            >
               {label}
             </span>
           ) : (
