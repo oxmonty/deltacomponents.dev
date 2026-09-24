@@ -36,6 +36,12 @@ const buttonVariants = cva(
     // a control this small reads as flinching.
     "transition-[color,scale] [transition-duration:80ms,var(--motion-moderate-exit)] ease-spring",
     "active:scale-[0.96] active:[transition-duration:80ms,var(--motion-moderate)]",
+    // Without its own layer the label is re-rasterised on the main thread at
+    // every intermediate scale and snapped to the pixel grid each frame, so
+    // the text judders through the dip. A compositor layer scales the cached
+    // raster instead and re-rasters once it settles. Only `transform` — the
+    // one thing the press animates.
+    "will-change-transform",
     // A real cursor, not `pointer-events-none`: an element with no pointer
     // events can't show one. The hover effects below guard on `enabled`
     // themselves, which is the work pointer-events used to do.
