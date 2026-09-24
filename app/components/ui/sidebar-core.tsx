@@ -1470,7 +1470,7 @@ const SidebarGroupLabel = forwardRef<HTMLDivElement, SidebarGroupLabelProps>(
               ? ({ "--group-actions-pad": `${group.actionsCount * 28 + 6}px` } as CSSProperties)
               : undefined,
           className: cn(
-            "flex h-8 w-full shrink-0 cursor-pointer select-none items-center gap-2 px-2 text-left text-muted-foreground outline-none",
+            "flex h-8 w-full shrink-0 cursor-pointer select-none items-center gap-2 pl-3 pr-2 text-left text-muted-foreground outline-none",
             "transition-colors duration-80 hover:text-muted-foreground",
             group.actionsCount > 0 && "pr-[var(--group-actions-pad)]",
             "focus-visible:ring-1 focus-visible:ring-[color:var(--focus-ring,#6B97FF)]",
@@ -1526,7 +1526,7 @@ const SidebarGroupLabel = forwardRef<HTMLDivElement, SidebarGroupLabelProps>(
         className: cn(
           // Full strength, not /70: at 12px the faded label was 2.7:1 against
           // the rail and failed the contrast audit.
-          "flex h-8 shrink-0 items-center gap-2 px-2 text-muted-foreground outline-none",
+          "flex h-8 shrink-0 items-center gap-2 pl-3 pr-2 text-muted-foreground outline-none",
           sizeVariant === "compact" ? "text-[11px]" : "text-[12px]",
           className
         ),

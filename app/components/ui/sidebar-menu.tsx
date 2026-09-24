@@ -942,7 +942,7 @@ export const sidebarMenuButtonVariants = cva(
   // rowGutter): --row-gutter at rest, --row-gutter-hover once hover-revealed
   // actions are showing. One rule per state instead of a class per
   // count/badge/reveal combination.
-  "peer/menu-button relative z-10 flex w-full cursor-pointer select-none items-center gap-2 pl-2 text-left outline-none transition-[padding] duration-80 pr-[var(--row-gutter)] group-hover/menu-item:pr-[var(--row-gutter-hover)] group-focus-within/menu-item:pr-[var(--row-gutter-hover)] group-hover/menu-sub-item:pr-[var(--row-gutter-hover)] group-focus-within/menu-sub-item:pr-[var(--row-gutter-hover)] group-has-[[data-sidebar=menu-action]:is([data-state=open],[data-popup-open],[aria-expanded=true])]/menu-item:pr-[var(--row-gutter-hover)] group-has-[[data-sidebar=menu-action]:is([data-state=open],[data-popup-open],[aria-expanded=true])]/menu-sub-item:pr-[var(--row-gutter-hover)]",
+  "peer/menu-button relative z-10 flex w-full cursor-pointer select-none items-center gap-2 pl-3 text-left outline-none transition-[padding] duration-80 pr-[var(--row-gutter)] group-hover/menu-item:pr-[var(--row-gutter-hover)] group-focus-within/menu-item:pr-[var(--row-gutter-hover)] group-hover/menu-sub-item:pr-[var(--row-gutter-hover)] group-focus-within/menu-sub-item:pr-[var(--row-gutter-hover)] group-has-[[data-sidebar=menu-action]:is([data-state=open],[data-popup-open],[aria-expanded=true])]/menu-item:pr-[var(--row-gutter-hover)] group-has-[[data-sidebar=menu-action]:is([data-state=open],[data-popup-open],[aria-expanded=true])]/menu-sub-item:pr-[var(--row-gutter-hover)]",
   {
     variants: {
       variant: {
@@ -1412,11 +1412,12 @@ const SidebarMenuSub = forwardRef<HTMLUListElement, SidebarMenuSubProps>(
           data-state={open ? "open" : "closed"}
           aria-hidden={open ? undefined : true}
           className={cn(
-            // ml-[15px] (a margin, not a translate, so the rows' measured
-            // rects include it) + 1px border + pl-2 lands the sub-row label
-            // (+ the row's own pl-2 = 32px) exactly on the parent label's x
-            // (px-2 + 16px icon + gap-2 = 32px).
-            "relative ml-[15px] flex min-w-0 flex-col gap-0.5 border-l border-border pl-2 select-none",
+            // ml-[19px] (a margin, not a translate, so the rows' measured
+            // rects include it) puts the 1px rule under the parent icon's
+            // centre (pl-3 + half a 16px icon = 20px), and + pl-2 lands the
+            // sub-row label (+ the row's own pl-2 = 36px) exactly on the
+            // parent label's x (pl-3 + 16px icon + gap-2 = 36px).
+            "relative ml-[19px] flex min-w-0 flex-col gap-0.5 border-l border-border pl-2 select-none",
             className
           )}
           {...props}
