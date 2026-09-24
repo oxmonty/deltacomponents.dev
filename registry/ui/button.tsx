@@ -188,7 +188,11 @@ const washVariants: Record<string, string> = {
   secondary:
     "[--btn-wash:color-mix(in_oklab,var(--accent)_80%,var(--background))] group-active:[--btn-wash:var(--accent)]",
   tertiary: "[--btn-wash:var(--hover)] group-active:[--btn-wash:var(--active)]",
-  ghost: "[--btn-wash:var(--hover)] group-active:[--btn-wash:var(--active)]",
+  // Ghost has no resting ground, so the wash IS the button while hovered and
+  // a quicker exit reads as it blinking out. It leaves on the tier it arrived
+  // on instead; `cn` drops the quicker exit duration the layer sets by default.
+  ghost:
+    "[--btn-wash:var(--hover)] group-active:[--btn-wash:var(--active)] duration-(--motion-moderate)",
 };
 
 /* Forced-active (`active` prop): pressed colors at full size; the
