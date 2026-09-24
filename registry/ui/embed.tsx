@@ -91,6 +91,12 @@ interface YouTubeEmbedProps {
   className?: string
 }
 
+// YouTube answers a missing maxresdefault with a 4:3 grey 120x90, where the
+// real one is 16:9.
+function isPlaceholderThumbnail(image: HTMLImageElement): boolean {
+  return image.currentSrc.includes("maxresdefault") && image.naturalWidth / image.naturalHeight < 1.5
+}
+
 // A facade: the real player is close to a megabyte of third-party script, and
 // a page shouldn't pay for it until someone actually presses play. Until
 // then this is a thumbnail and a button.
@@ -117,14 +123,16 @@ function YouTubeEmbed({ videoId, title = "YouTube video", className }: YouTubeEm
   // React's onLoad below never fires for it.
   React.useEffect(() => {
     const image = thumbRef.current
-    if (image?.complete && image.naturalWidth > 0) setThumbnailLoaded(true)
-  }, [])
+    if (!image?.complete || !image.naturalWidth) return
+    if (isPlaceholderThumbnail(image)) setWithoutLargeThumbnail(videoId)
+    else setThumbnailLoaded(true)
+  }, [videoId])
 
   // 1280x720 is the largest thumbnail YouTube publishes, and it only exists
   // for some videos. A missing one is not an error: YouTube answers 404 with
-  // a valid 120x90 grey placeholder, which loads fine. It is 4:3 where the
-  // real one is 16:9, which is how onLoad below tells them apart. Keyed on
-  // the id so a new video gets a fresh try.
+  // a valid grey placeholder, which loads fine — `isPlaceholderThumbnail`
+  // above is how both the mount check and `onLoad` tell it apart from the
+  // real thing. Keyed on the id so a new video gets a fresh try.
   const [withoutLargeThumbnail, setWithoutLargeThumbnail] = React.useState<string | null>(null)
   const thumbnailSrc =
     withoutLargeThumbnail === videoId
@@ -136,41 +144,9 @@ function YouTubeEmbed({ videoId, title = "YouTube video", className }: YouTubeEm
       ref={ref}
       data-slot="youtube-embed"
       // No radius by default — a consumer rounds it with `className`.
-      className={cn("relative aspect-video w-full overflow-hidden bg-muted", className)}
+      className={cn("group relative aspect-video w-full overflow-hidden bg-muted", className)}
     >
-      {!thumbnailLoaded && !playerLoaded && (
-        <Skeleton aria-hidden className="absolute inset-0 rounded-none" />
-      )}
-      {/* Stays mounted under the button, and under the iframe once it
-          replaces the button, so the picture never drops out to a blank
-          Skeleton while the player loads on top of it. */}
-      {!playerLoaded && (
-        /* hqdefault is 4:3 with black bars top and bottom; cover crops them
-           out instead of letterboxing the thumbnail. */
-        /* eslint-disable-next-line @next/next/no-img-element -- a registry
-           component installs into any React project, so it must not depend
-           on next/image; the consumer swaps this for their framework's
-           loader. */
-        <img
-          ref={thumbRef}
-          src={thumbnailSrc}
-          onLoad={(event) => {
-            const image = event.currentTarget
-            const isPlaceholder =
-              image.currentSrc.includes("maxresdefault") &&
-              image.naturalWidth / image.naturalHeight < 1.5
-            if (isPlaceholder) setWithoutLargeThumbnail(videoId)
-            setThumbnailLoaded(true)
-          }}
-          onError={() => setWithoutLargeThumbnail(videoId)}
-          alt=""
-          loading="lazy"
-          decoding="async"
-          referrerPolicy="no-referrer"
-          className="absolute inset-0 h-full w-full object-cover"
-        />
-      )}
-      {showIframe ? (
+      {showIframe && (
         <iframe
           src={`https://www.youtube-nocookie.com/embed/${encodeURIComponent(videoId)}?playsinline=1${
             playing ? "&autoplay=1" : ""
@@ -182,22 +158,44 @@ function YouTubeEmbed({ videoId, title = "YouTube video", className }: YouTubeEm
           referrerPolicy="strict-origin-when-cross-origin"
           onLoad={() => setPlayerLoaded(true)}
         />
-      ) : (
-        <button
-          type="button"
-          onClick={() => setPlaying(true)}
-          aria-label={`Play: ${title}`}
-          className={cn(
-            "group absolute inset-0 h-full w-full cursor-pointer",
-            // `rounded-none` beats the base-layer `:focus-visible` radius,
-            // which would round the ring's corners off the square container.
-            "rounded-none outline-none focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-[color:var(--focus-ring,#6B97FF)]"
-          )}
-        >
-          <span
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-0 flex items-center justify-center"
-          >
+      )}
+      {/* The facade sits over the player until the player has painted, then
+          fades: the iframe is transparent while YouTube loads, then black
+          before its poster, and on iOS its chrome replaces ours. It never
+          takes a tap, so on iOS the one tap lands inside the player. */}
+      <div
+        aria-hidden="true"
+        className={cn(
+          "pointer-events-none absolute inset-0 transition-opacity duration-(--motion-slow) ease-spring",
+          playerLoaded && "opacity-0"
+        )}
+      >
+        {!thumbnailLoaded && <Skeleton className="absolute inset-0 rounded-none" />}
+        {/* hqdefault is 4:3 with black bars top and bottom; cover crops them
+            out instead of letterboxing the thumbnail. */}
+        {/* eslint-disable-next-line @next/next/no-img-element -- a registry
+            component installs into any React project, so it must not depend
+            on next/image; the consumer swaps this for their framework's
+            loader. */}
+        <img
+          ref={thumbRef}
+          src={thumbnailSrc}
+          onLoad={(event) => {
+            const image = event.currentTarget
+            if (isPlaceholderThumbnail(image)) setWithoutLargeThumbnail(videoId)
+            else setThumbnailLoaded(true)
+          }}
+          onError={() => setWithoutLargeThumbnail(videoId)}
+          alt=""
+          loading="lazy"
+          decoding="async"
+          referrerPolicy="no-referrer"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+        {/* The glyph goes the moment the reader presses play — where
+            autoplay is honoured the video is about to start under it. */}
+        {!playing && (
+          <span className="absolute inset-0 flex items-center justify-center">
             {/* Our own drawing, not YouTube's mark: a plain rounded rectangle
                 in their red, which is how their player shows its button. The
                 red is a literal because it is a brand colour, not one of the
@@ -215,7 +213,20 @@ function YouTubeEmbed({ videoId, title = "YouTube video", className }: YouTubeEm
               <path d="M27 14v20l18-10z" className="fill-white" />
             </svg>
           </span>
-        </button>
+        )}
+      </div>
+      {!showIframe && (
+        <button
+          type="button"
+          onClick={() => setPlaying(true)}
+          aria-label={`Play: ${title}`}
+          className={cn(
+            "absolute inset-0 h-full w-full cursor-pointer",
+            // `rounded-none` beats the base-layer `:focus-visible` radius,
+            // which would round the ring's corners off the square container.
+            "rounded-none outline-none focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-[color:var(--focus-ring,#6B97FF)]"
+          )}
+        />
       )}
     </div>
   )
