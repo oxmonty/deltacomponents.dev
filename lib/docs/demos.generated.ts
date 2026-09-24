@@ -8,6 +8,7 @@ import DemoAlertAlertDemo from "@/content/demos/alert/alert-demo";
 import DemoAlertAlertTypes from "@/content/demos/alert/alert-types";
 import DemoButtonButtonBasic from "@/content/demos/button/button-basic";
 import DemoButtonButtonDemo from "@/content/demos/button/button-demo";
+import DemoButtonButtonIcon from "@/content/demos/button/button-icon";
 import DemoButtonButtonLoading from "@/content/demos/button/button-loading";
 import DemoButtonButtonVariants from "@/content/demos/button/button-variants";
 import DemoCodeCodeAdaptiveTheme from "@/content/demos/code/code-adaptive-theme";
@@ -87,6 +88,10 @@ export const demos: Record<string, DemoEntry> = {
   "button-demo": {
     Component: DemoButtonButtonDemo,
     source: "import { useIcon } from \"@/lib/icon-context\";\nimport { Button } from \"@/components/ui/button\";\n\nexport default function ButtonDemo() {\n  const Plus = useIcon(\"plus\");\n  const ArrowRight = useIcon(\"arrow-right\");\n  const Search = useIcon(\"search\");\n\n  return (\n    <div className=\"flex flex-wrap items-center gap-2\">\n      <Button leadingIcon={Plus}>Create</Button>\n      <Button variant=\"secondary\" trailingIcon={ArrowRight}>Next</Button>\n      <Button variant=\"tertiary\" leadingIcon={Search} trailingIcon={ArrowRight}>\n        Search\n      </Button>\n    </div>\n  );\n}",
+  },
+  "button-icon": {
+    Component: DemoButtonButtonIcon,
+    source: "import { useState } from \"react\";\nimport { useIcon } from \"@/lib/icon-context\";\nimport { Button } from \"@/components/ui/button\";\n\ntype IconSize = \"icon-sm\" | \"icon\" | \"icon-lg\" | \"icon-xl\";\n\nexport default function ButtonIcon() {\n  const Play = useIcon(\"play\");\n  const Pause = useIcon(\"pause\");\n  const [playing, setPlaying] = useState(false);\n  const [size, setSize] = useState<IconSize>(\"icon-xl\");\n\n  return (\n    <div className=\"flex w-fit flex-col items-center gap-5\">\n      {/* No visible text, so the label is the accessible name, and it names\n          the action the press will take, not the state the button shows. */}\n      <Button\n        size={size}\n        aria-label={playing ? \"Pause\" : \"Play\"}\n        aria-pressed={playing}\n        onClick={() => setPlaying((value) => !value)}\n      >\n        {/* A transport control is a filled shape: the glyph is the thing\n            itself, not an outline of it. */}\n        {playing ? <Pause className=\"fill-current\" /> : <Play className=\"fill-current\" />}\n      </Button>\n\n      <label className=\"text-caption text-muted-foreground flex items-center gap-2 self-start\">\n        Size\n        <select\n          value={size}\n          onChange={(e) => setSize(e.target.value as IconSize)}\n          className=\"border-border bg-background text-foreground text-caption rounded-md border px-2 py-1 outline-none focus-visible:ring-1 focus-visible:ring-[color:var(--focus-ring,#6B97FF)]\"\n        >\n          <option value=\"icon-sm\">icon-sm</option>\n          <option value=\"icon\">icon</option>\n          <option value=\"icon-lg\">icon-lg</option>\n          <option value=\"icon-xl\">icon-xl</option>\n        </select>\n      </label>\n    </div>\n  );\n}",
   },
   "button-loading": {
     Component: DemoButtonButtonLoading,
