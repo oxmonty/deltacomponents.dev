@@ -30,8 +30,9 @@ import { Image } from "@/components/ui/image";
 
 Clicking or tapping the image opens it in a native `<dialog>`. Escape or a
 click anywhere inside closes it and returns focus to the image. So does
-scrolling the page: a dialog blocks clicks on what is behind it, not scrolling,
-and a reader who scrolls has moved on. The enlarged
+reaching for the scroll wheel or swiping: a reader who scrolls has moved on,
+and the page under the view stays where it was rather than moving while the
+view goes. The enlarged
 view is sized from the picture's own proportions: full width on a phone,
 whichever edge binds first — top and bottom for a landscape photo, the sides
 for a portrait one — on a wider screen.
@@ -41,8 +42,7 @@ for a portrait one — on a wider screen.
 On a phone, two fingers zoom the enlarged picture about the point between
 them and one finger moves it around once zoomed; a tap on the zoomed picture
 doesn't close the view, the backdrop or a close control does. Before it is
-zoomed, one finger swiped across the picture closes the view, the same as
-scrolling the page from around it.
+zoomed, one finger swiped anywhere closes the view.
 
 Pass `zoomable={false}` for a plain figure with no button and no dialog.
 
