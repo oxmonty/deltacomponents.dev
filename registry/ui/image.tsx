@@ -55,7 +55,10 @@ function Image({
   const gesture = React.useRef<{
     pinchStart: PinchStart | null
     pan: { panX: number; panY: number } | null
-  }>({ pinchStart: null, pan: null })
+    // Where one finger landed on the unzoomed picture; a swipe from there
+    // closes the view, as scrolling the page does.
+    swipe: { x: number; y: number } | null
+  }>({ pinchStart: null, pan: null, swipe: null })
   // A caption written as a child belongs to the figure, not the dialog, so
   // the two are told apart here rather than by asking callers to nest twice.
   const captionChildren: React.ReactNode[] = []
@@ -144,16 +147,19 @@ function Image({
         centerY: rect.top + rect.height / 2 - pinch.current.y,
       }
       gesture.current.pan = null
+      gesture.current.swipe = null
       writePinch(pinch.current, false)
     } else if (touches.length === 1 && pinch.current.scale > 1) {
       const t = touches[0]
       gesture.current.pan = { panX: t.clientX - pinch.current.x, panY: t.clientY - pinch.current.y }
       writePinch(pinch.current, false)
+    } else if (touches.length === 1) {
+      gesture.current.swipe = { x: touches[0].clientX, y: touches[0].clientY }
     }
   }
 
   const onZoomTouchMove = (event: React.TouchEvent<HTMLImageElement>) => {
-    const { pinchStart, pan } = gesture.current
+    const { pinchStart, pan, swipe } = gesture.current
     const touches = event.touches
     if (touches.length >= 2 && pinchStart) {
       const a = touches[0]
@@ -169,6 +175,14 @@ function Image({
     } else if (touches.length === 1 && pan) {
       const t = touches[0]
       writePinch({ ...pinch.current, x: t.clientX - pan.panX, y: t.clientY - pan.panY }, false)
+    } else if (touches.length === 1 && swipe) {
+      // `touch-none` keeps the page under the picture from scrolling, so the
+      // swipe has to close the view itself. Same threshold as the scroll.
+      const t = touches[0]
+      if (Math.hypot(t.clientX - swipe.x, t.clientY - swipe.y) > 48) {
+        gesture.current.swipe = null
+        dialogRef.current?.close()
+      }
     }
   }
 
@@ -183,6 +197,7 @@ function Image({
     }
     if (touches.length > 0) return
     gesture.current.pan = null
+    gesture.current.swipe = null
     const img = zoomImgRef.current
     if (!img) return
     const rect = img.getBoundingClientRect()
@@ -248,10 +263,17 @@ function Image({
             "block w-full cursor-zoom-in",
             bleedBoxClass,
             // A press dips the picture, so it reads as something that opens
-            // rather than a picture that happens to be there. Moderate, not
-            // fast: a scale across a whole picture is travel, and 80ms of it
-            // reads as a snap. The release is one tier quicker, as usual.
-            "transition-[scale] duration-(--motion-moderate-exit) ease-spring active:scale-[0.96] active:duration-(--motion-moderate) [-webkit-tap-highlight-color:transparent]",
+            // rather than a picture that happens to be there. 0.98, not the
+            // 0.96 a button takes: 2% of a picture is already a few pixels.
+            // Moderate, not fast: a scale across a whole picture is travel,
+            // and 80ms of it reads as a snap. The release is one tier quicker.
+            "transition-[scale] duration-(--motion-moderate-exit) ease-spring active:scale-[0.98] active:duration-(--motion-moderate) [-webkit-tap-highlight-color:transparent]",
+            // A tap holds :active for less than the press-in, so on touch the
+            // picture was still going down when the finger lifted and the
+            // transition flipped mid-flight, which reads as no easing at all.
+            // The press lands at once there and only the release eases — the
+            // same shape as Button's wash on a phone.
+            "pointer-coarse:active:duration-0",
             // `rounded-none` beats the base-layer `:focus-visible` radius, which
             // would round the ring's corners off a square picture.
             "rounded-none outline-none focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-[color:var(--focus-ring,#6B97FF)]"
@@ -351,10 +373,10 @@ function Image({
                 "translate-x-[var(--pinch-x,0px)] translate-y-[var(--pinch-y,0px)]",
                 // The gesture drives the picture directly; the transition only
                 // carries the settle after the fingers lift. `touch-none`
-                // means a finger dragged on the picture no longer scrolls the
-                // page, so scroll-to-close on touch comes from the backdrop.
-                // Pinch/pan is touch-only by design — a trackpad pinch here
-                // stays the browser's own page zoom.
+                // so a pinch can never race the page scroll; the one-finger
+                // swipe that would have scrolled closes the view instead (see
+                // onZoomTouchMove). Pinch/pan is touch-only by design — a
+                // trackpad pinch here stays the browser's own page zoom.
                 "touch-none data-[pinching]:transition-none [-webkit-touch-callout:none]",
                 // From md the box is sized, not just capped, by the viewport:
                 // `min()` picks whichever edge binds first, a landscape image
