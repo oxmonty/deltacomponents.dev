@@ -55,8 +55,8 @@ function Image({
   const gesture = React.useRef<{
     pinchStart: PinchStart | null
     pan: { panX: number; panY: number } | null
-    // Where one finger landed on the unzoomed picture; a swipe from there
-    // closes the view, as scrolling the page does.
+    // Where one finger landed on the unzoomed view; a swipe from there
+    // closes it, as scrolling the page does.
     swipe: { x: number; y: number } | null
   }>({ pinchStart: null, pan: null, swipe: null })
   // A caption written as a child belongs to the figure, not the dialog, so
@@ -147,19 +147,16 @@ function Image({
         centerY: rect.top + rect.height / 2 - pinch.current.y,
       }
       gesture.current.pan = null
-      gesture.current.swipe = null
       writePinch(pinch.current, false)
     } else if (touches.length === 1 && pinch.current.scale > 1) {
       const t = touches[0]
       gesture.current.pan = { panX: t.clientX - pinch.current.x, panY: t.clientY - pinch.current.y }
       writePinch(pinch.current, false)
-    } else if (touches.length === 1) {
-      gesture.current.swipe = { x: touches[0].clientX, y: touches[0].clientY }
     }
   }
 
   const onZoomTouchMove = (event: React.TouchEvent<HTMLImageElement>) => {
-    const { pinchStart, pan, swipe } = gesture.current
+    const { pinchStart, pan } = gesture.current
     const touches = event.touches
     if (touches.length >= 2 && pinchStart) {
       const a = touches[0]
@@ -175,14 +172,26 @@ function Image({
     } else if (touches.length === 1 && pan) {
       const t = touches[0]
       writePinch({ ...pinch.current, x: t.clientX - pan.panX, y: t.clientY - pan.panY }, false)
-    } else if (touches.length === 1 && swipe) {
-      // `touch-none` keeps the page under the picture from scrolling, so the
-      // swipe has to close the view itself. Same threshold as the scroll.
-      const t = touches[0]
-      if (Math.hypot(t.clientX - swipe.x, t.clientY - swipe.y) > 48) {
-        gesture.current.swipe = null
-        dialogRef.current?.close()
-      }
+    }
+  }
+
+  // On a phone the page under the view stays put (the view is `touch-none`,
+  // backdrop included), so a scroll can't close it the way it does on a
+  // desktop. One finger swiped anywhere — picture or backdrop — closes it
+  // instead. These see the picture's touches too, as they bubble, so a pinch
+  // or a pan in progress is left alone.
+  const onViewTouchStart = (event: React.TouchEvent<HTMLDialogElement>) => {
+    const t = event.touches[0]
+    gesture.current.swipe =
+      event.touches.length === 1 && pinch.current.scale === 1 ? { x: t.clientX, y: t.clientY } : null
+  }
+  const onViewTouchMove = (event: React.TouchEvent<HTMLDialogElement>) => {
+    const { swipe, pinchStart, pan } = gesture.current
+    if (!swipe || pinchStart || pan || event.touches.length !== 1) return
+    const t = event.touches[0]
+    if (Math.hypot(t.clientX - swipe.x, t.clientY - swipe.y) > 48) {
+      gesture.current.swipe = null
+      dialogRef.current?.close()
     }
   }
 
@@ -197,7 +206,6 @@ function Image({
     }
     if (touches.length > 0) return
     gesture.current.pan = null
-    gesture.current.swipe = null
     const img = zoomImgRef.current
     if (!img) return
     const rect = img.getBoundingClientRect()
@@ -215,7 +223,8 @@ function Image({
     dialog.focus()
     // A modal dialog blocks clicks on the page behind it, not scrolling. A
     // reader who scrolls has moved on, so the view closes rather than trapping
-    // them. The threshold lets a finger drift during a tap without closing it.
+    // them. Desktop only in practice: on touch the view is `touch-none`, so
+    // the page never moves and the swipe handlers below close it instead.
     const startY = window.scrollY
     const closeOnceScrolled = () => {
       if (Math.abs(window.scrollY - startY) > 48) dialog.close()
@@ -300,6 +309,8 @@ function Image({
             ref={dialogRef}
             tabIndex={-1}
             onClick={() => dialogRef.current?.close()}
+            onTouchStart={onViewTouchStart}
+            onTouchMove={onViewTouchMove}
             onClose={() => {
               stopWatchingScroll.current?.()
               stopWatchingScroll.current = null
@@ -328,7 +339,10 @@ function Image({
               // The UA gives a modal dialog `overflow: auto`, which would clip
               // a pinch-zoomed picture into a scrollable box instead of
               // letting it grow over the backdrop.
-              "rounded-none outline-none overflow-visible cursor-zoom-out",
+              // `touch-none` covers the backdrop too — a touch on it is
+              // hit-tested to the dialog — so a phone never scrolls the page
+              // under the view; a swipe closes it (see onViewTouchMove).
+              "rounded-none outline-none overflow-visible cursor-zoom-out touch-none",
               // It fades and grows in, in CSS alone. There is no matching
               // exit: `close()` drops a dialog from the top layer at once.
               // ponytail: `overlay` and `display` are listed for the day a
@@ -372,11 +386,9 @@ function Image({
                 "group-open:scale-[var(--pinch-scale,1)] starting:group-open:scale-95",
                 "translate-x-[var(--pinch-x,0px)] translate-y-[var(--pinch-y,0px)]",
                 // The gesture drives the picture directly; the transition only
-                // carries the settle after the fingers lift. `touch-none`
-                // so a pinch can never race the page scroll; the one-finger
-                // swipe that would have scrolled closes the view instead (see
-                // onZoomTouchMove). Pinch/pan is touch-only by design — a
-                // trackpad pinch here stays the browser's own page zoom.
+                // carries the settle after the fingers lift. Pinch/pan is
+                // touch-only by design — a trackpad pinch here stays the
+                // browser's own page zoom.
                 "touch-none data-[pinching]:transition-none [-webkit-touch-callout:none]",
                 // From md the box is sized, not just capped, by the viewport:
                 // `min()` picks whichever edge binds first, a landscape image
