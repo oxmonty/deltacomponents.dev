@@ -170,7 +170,7 @@ things that no longer exist is how this one went stale.
 
 | fast (80ms) | moderate (160ms) | slow (240ms) |
 |---|---|---|
-| Hover and focus rings, Toast press, Copy button | Tabs indicator, Tooltip, Button hover bloom, Mobile nav panel, Sidebar collapse, Image press dip and enlarged view | Right properties panel, YouTube facade fade |
+| Hover and focus rings, Toast press, Copy button | Tabs indicator, Tooltip, Button hover bloom and press, Mobile nav panel, Sidebar collapse, Image press dip and enlarged view | Right properties panel, YouTube facade fade |
 
 Most components also use `fast` for their hover and focus states on top of their
 headline tier — the table lists each component once, by its headline motion.

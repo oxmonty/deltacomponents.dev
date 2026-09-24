@@ -21,17 +21,25 @@ import { cn } from "@/registry/lib/utils";
 // (see `resolvedSize` below), so a button resolves the right size whether it's
 // driven by an explicit prop or by whatever scope it's rendered in — with no
 // context import required. `compact` is sm inside that scope: still 28px.
-const controlSize = (h: string, px: string) =>
-  `${h} ${px} text-[length:var(--control-text,13px)] gap-[var(--control-gap,6px)]`;
-const iconOnlySize = (box: string) =>
-  `${box} p-0 [&_svg]:size-[var(--control-icon-glyph,16px)]`;
+const controlSize = (h: string, px: string, text = "text-[length:var(--control-text,13px)]") =>
+  `${h} ${px} ${text} gap-[var(--control-gap,6px)]`;
+const iconOnlySize = (box: string, glyph = "[&_svg]:size-[var(--control-icon-glyph,16px)]") =>
+  `${box} p-0 ${glyph}`;
 
 const buttonVariants = cva(
   [
     "group relative isolate inline-flex items-center justify-center outline-none cursor-pointer font-medium",
     "rounded-[var(--radius-button,var(--radius,0.5rem))]",
-    "transition-colors duration-80",
-    "disabled:opacity-50 disabled:pointer-events-none",
+    // The colour still lands in 80ms; the press dips the whole button — label,
+    // icon and ground together — on the moderate tier and releases a tier
+    // quicker, the same shape as Image's press. 0.96, never less: below that
+    // a control this small reads as flinching.
+    "transition-[color,scale] [transition-duration:80ms,var(--motion-moderate-exit)] ease-spring",
+    "active:scale-[0.96] active:[transition-duration:80ms,var(--motion-moderate)]",
+    // A real cursor, not `pointer-events-none`: an element with no pointer
+    // events can't show one. The hover effects below guard on `enabled`
+    // themselves, which is the work pointer-events used to do.
+    "disabled:opacity-50 disabled:cursor-not-allowed",
     "focus-visible:ring-1 focus-visible:ring-[color:var(--focus-ring,#6B97FF)]",
   ],
   {
@@ -40,15 +48,26 @@ const buttonVariants = cva(
         primary: "text-background",
         secondary: "text-foreground",
         tertiary: "text-foreground",
-        ghost: "text-muted-foreground hover:text-foreground",
+        ghost: "text-muted-foreground enabled:hover:text-foreground",
       },
       size: {
         sm: controlSize("h-[var(--control-h-sm,32px)]", "px-[var(--control-px-sm,12px)]"),
         default: controlSize("h-[var(--control-h,36px)]", "px-[var(--control-px,16px)]"),
         lg: controlSize("h-[var(--control-h-lg,40px)]", "px-[var(--control-px-lg,24px)]"),
+        // The one step past shadcn's ladder. Its label leaves the shared 13px
+        // control step, as Tabs' lg does, and its glyph grows with the box.
+        xl: controlSize(
+          "h-[var(--control-h-xl,48px)]",
+          "px-[var(--control-px-xl,32px)]",
+          "text-[length:var(--fs-subtitle,15px)]"
+        ),
         "icon-sm": iconOnlySize("size-[var(--control-icon-box-sm,32px)]"),
         icon: iconOnlySize("size-[var(--control-icon-box,36px)]"),
         "icon-lg": iconOnlySize("size-[var(--control-icon-box-lg,40px)]"),
+        "icon-xl": iconOnlySize(
+          "size-[var(--control-icon-box-xl,48px)]",
+          "[&_svg]:size-[var(--control-icon-glyph-xl,20px)]"
+        ),
       },
       iconLeft: { true: "" },
       iconRight: { true: "" },
@@ -68,9 +87,11 @@ type ButtonSizeCanonical =
   | "sm"
   | "default"
   | "lg"
+  | "xl"
   | "icon-sm"
   | "icon"
-  | "icon-lg";
+  | "icon-lg"
+  | "icon-xl";
 
 /** Public size values: the canonical ladder plus `compact`/`icon-compact` for
  *  the dense 28px control, and `md`, kept so existing call sites compile. */
@@ -90,15 +111,17 @@ const spinnerBox: Record<ButtonSizeCanonical, string> = {
   sm: "size-[var(--control-h-sm,32px)]",
   default: "size-[var(--control-h,36px)]",
   lg: "size-[var(--control-h-lg,40px)]",
+  xl: "size-[var(--control-h-xl,48px)]",
   "icon-sm": "size-[var(--control-icon-box-sm,32px)]",
   icon: "size-[var(--control-icon-box,36px)]",
   "icon-lg": "size-[var(--control-icon-box-lg,40px)]",
+  "icon-xl": "size-[var(--control-icon-box-xl,48px)]",
 };
 
 interface ButtonProps
   extends ButtonHTMLAttributes<HTMLButtonElement>,
     Omit<VariantProps<typeof buttonVariants>, "size"> {
-  /** sm 32px, default 36px, lg 40px, and the `icon-*` squares to match.
+  /** sm 32px, default 36px, lg 40px, xl 48px, and the `icon-*` squares to match.
    *  Omitted, the button follows the ambient `data-size` scope, where compact
    *  shifts the ladder down a step — see the `--control-*` tokens in
    *  globals.css. `compact`/`icon-compact` are the dense 28px control. */
@@ -117,8 +140,12 @@ interface ButtonProps
 /* Press effect: the surface layer sits 1px inside the button and a
    same-color box-shadow spread fills it back out to the full bounds.
    Pressing collapses the spread, shrinking the surface by exactly 1px per
-   side at any width — a scale would warp (2% of a 400px button is 8px
-   sideways but under 1px vertically). Fill colors are opaque color-mix()es
+   side at any width. The root's 0.96 press scale rides on top of this: the
+   1px collapse is the ground's own geometry and stays uniform at any width,
+   while the scale carries the label and icon along, which the collapse
+   alone never did. On a very wide button the scale reads more sideways
+   than down (2% of 400px is 8px against under 1px), which is the trade
+   the tactile press was chosen over. Fill colors are opaque color-mix()es
    rather than alpha so the fill and its spread ring never seam.
 
    This layer holds only the RESTING ground and that press geometry; every
@@ -249,7 +276,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           <span
             aria-hidden
             className={cn(
-              "pointer-events-none absolute inset-px rounded-[inherit] scale-75 opacity-0",
+              "pointer-events-none absolute inset-px rounded-[inherit] scale-75 opacity-0 group-disabled:hidden",
               "bg-[var(--btn-wash)] shadow-[0_0_0_1px_var(--btn-wash)]",
               "transition-[scale,opacity,box-shadow,background-color] ease-spring",
               // Moderate, not the fast tier hover usually takes: a scale this
@@ -313,7 +340,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
               </span>
             </>
           ) : isIconOnly ? (
-            <span className="[&_svg]:stroke-[1.5] [&_svg]:transition-[stroke-width] [&_svg]:duration-80 group-hover:[&_svg]:stroke-[2]">
+            <span className="[&_svg]:stroke-[1.5] [&_svg]:transition-[stroke-width] [&_svg]:duration-80 group-enabled:group-hover:[&_svg]:stroke-[2]">
               {label}
             </span>
           ) : (
@@ -322,7 +349,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
                 <LeadingIcon
                   size={iconSize}
                   strokeWidth={1.5}
-                  className="size-[var(--control-icon-glyph,16px)] transition-[stroke-width] duration-80 group-hover:stroke-[2]"
+                  className="size-[var(--control-icon-glyph,16px)] transition-[stroke-width] duration-80 group-enabled:group-hover:stroke-[2]"
                 />
               )}
               {/* text-box only applies to block containers, so the trim lives
@@ -334,7 +361,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
                 <TrailingIcon
                   size={iconSize}
                   strokeWidth={1.5}
-                  className="size-[var(--control-icon-glyph,16px)] transition-[stroke-width] duration-80 group-hover:stroke-[2]"
+                  className="size-[var(--control-icon-glyph,16px)] transition-[stroke-width] duration-80 group-enabled:group-hover:stroke-[2]"
                 />
               )}
             </>

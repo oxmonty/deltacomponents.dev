@@ -38,7 +38,7 @@ const shapeMap: Record<ShapeVariant, ShapeClasses> = {
     focusRing: "rounded-[22px]",
     mergedBg: "rounded-2xl",
     container: "rounded-3xl",
-    button: "rounded-[20px]",
+    button: "rounded-[24px]",
     input: "rounded-[20px]",
     bgRadius: 20,
     mergedRadius: 16,
