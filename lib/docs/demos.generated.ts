@@ -195,7 +195,7 @@ export const demos: Record<string, DemoEntry> = {
   },
   "image-close-control": {
     Component: DemoImageImageCloseControl,
-    source: "import { X } from \"lucide-react\";\nimport { Button } from \"@/components/ui/button\";\nimport { Image, ImageClose } from \"@/components/ui/image\";\n\nexport default function ImageCloseControl() {\n  return (\n    <div className=\"w-full max-w-[560px]\">\n      <Image\n        src=\"/images/editor-embed-sample.webp\"\n        alt=\"A painted battle scene of knights on horseback in red, green and yellow\"\n        width={1200}\n        height={672}\n        caption=\"Enlarge it: the close button sits in the top right corner of the screen.\"\n      >\n        <ImageClose>\n          <Button variant=\"secondary\" size=\"icon-sm\" aria-label=\"Close\">\n            <X />\n          </Button>\n        </ImageClose>\n      </Image>\n    </div>\n  );\n}",
+    source: "import { X } from \"lucide-react\";\nimport { Button } from \"@/components/ui/button\";\nimport { Image, ImageClose } from \"@/components/ui/image\";\n\nexport default function ImageCloseControl() {\n  return (\n    <div className=\"w-full max-w-[560px]\">\n      <Image\n        src=\"/images/editor-embed-sample.webp\"\n        alt=\"A painted battle scene of knights on horseback in red, green and yellow\"\n        width={1200}\n        height={672}\n        caption=\"Enlarge it: the close button sits in the top right corner of the screen.\"\n      >\n        <ImageClose>\n          <Button variant=\"secondary\" size=\"icon-xl\" aria-label=\"Close\">\n            <X />\n          </Button>\n        </ImageClose>\n      </Image>\n    </div>\n  );\n}",
   },
   "image-demo": {
     Component: DemoImageImageDemo,

@@ -15,7 +15,7 @@ export default function ImageCloseControl() {
         caption="Enlarge it: the close button sits in the top right corner of the screen."
       >
         <ImageClose>
-          <Button variant="secondary" size="icon-sm" aria-label="Close">
+          <Button variant="secondary" size="icon-xl" aria-label="Close">
             <X />
           </Button>
         </ImageClose>
