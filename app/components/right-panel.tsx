@@ -339,7 +339,7 @@ export function RightPanel({ stars = null }: { stars?: number | null }) {
           is currently visible — so the card sits at the same inset whether
           or not there's anything to scroll. */}
       <div className="flex flex-col gap-3 pr-2.5">
-        <aside className="p-4 rounded-lg bg-muted">
+        <aside className="p-4 rounded-[var(--radius-container,0.75rem)] bg-muted">
           <SurfaceProvider value={2}>
             <div className="flex items-center justify-between pt-2 pb-2">
               <h2
