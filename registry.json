@@ -529,22 +529,31 @@
       "title": "Editor",
       "description": "Always-on live-preview markdown editor: one surface that is both the rendered document and the text you type into, with debounced autosave and a per-construct typography map.",
       "dependencies": [
+        "@base-ui/react",
         "@codemirror/commands",
         "@codemirror/lang-markdown",
         "@codemirror/language",
         "@codemirror/state",
         "@codemirror/view",
         "@lezer/common",
-        "@lezer/markdown"
+        "@lezer/markdown",
+        "lucide-react"
       ],
       "registryDependencies": [
-        "utils"
+        "utils",
+        "button",
+        "tooltip"
       ],
       "files": [
         {
           "path": "registry/ui/editor.tsx",
           "type": "registry:ui",
           "target": "components/ui/editor.tsx"
+        },
+        {
+          "path": "registry/ui/editor-controls.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/editor-controls.tsx"
         },
         {
           "path": "registry/lib/live-markdown.ts",

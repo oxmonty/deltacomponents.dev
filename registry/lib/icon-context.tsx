@@ -62,6 +62,16 @@ import {
   Folder,
   SlidersHorizontal,
   Download,
+  Undo2,
+  Redo2,
+  Bold,
+  Italic,
+  Strikethrough,
+  Code,
+  TextQuote,
+  List,
+  ListOrdered,
+  ListTodo,
 } from "lucide-react";
 
 export interface IconComponentProps {
@@ -86,7 +96,9 @@ export type IconName =
   | "home" | "message-circle" | "inbox"
   | "pencil" | "scaling" | "skip-forward" | "corner-down-right" | "corner-down-left"
   | "panel-left" | "panel-right" | "chevrons-up-down" | "more-horizontal" | "more-vertical" | "calendar" | "folder"
-  | "sliders-horizontal" | "download";
+  | "sliders-horizontal" | "download"
+  | "undo" | "redo" | "bold" | "italic" | "strikethrough" | "code"
+  | "text-quote" | "list" | "list-ordered" | "list-todo";
 
 export const defaultIcons: Record<IconName, IconComponent> = {
   "chevron-right": ChevronRight,
@@ -148,6 +160,16 @@ export const defaultIcons: Record<IconName, IconComponent> = {
   "folder": Folder,
   "sliders-horizontal": SlidersHorizontal,
   "download": Download,
+  "undo": Undo2,
+  "redo": Redo2,
+  "bold": Bold,
+  "italic": Italic,
+  "strikethrough": Strikethrough,
+  "code": Code,
+  "text-quote": TextQuote,
+  "list": List,
+  "list-ordered": ListOrdered,
+  "list-todo": ListTodo,
 };
 
 const IconContext = createContext<Record<IconName, IconComponent> | null>(null);

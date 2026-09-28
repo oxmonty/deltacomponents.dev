@@ -9,17 +9,24 @@ export const editorProps: PropDef[] = [
   { name: "showSaveStatus", type: "boolean", default: "true", description: "The indicator pinned to the top-right corner while there is something to report. Turn it off to render your own from `onSaveState`." },
   { name: "onSaveState", type: '(state: "idle" | "dirty" | "saving" | "saved" | "error") => void', description: "Every change of save state, for a status line of your own elsewhere on the page." },
   { name: "elements", type: "EditorElements", description: "Which element each markdown construct renders as, and its classes — see the table below. Omitted keys fall back to `defaultElements`, and changing the map swaps the type set in place without disturbing the document or its history." },
+  { name: "children", type: "ReactNode", description: "Rendered above the text at the text's own width. This is where `<EditorControls />` goes." },
   { name: "extensions", type: "Extension", description: "Extra CodeMirror extensions, appended after the editor's own. Read once at mount like `defaultValue` — this is the seam for anything the core leaves out, such as embeds, mentions, or slash commands. See Extensions below." },
   { name: "className", type: "string", description: "Merged onto the root through `tailwind-merge`. The editor inherits its font, size, leading and `min-height` from here, so `font-serif text-lg leading-8` restyles the whole surface — including the pre-hydration fallback." },
+];
+
+export const controlsProps: PropDef[] = [
+  { name: "className", type: "string", description: "Merged onto the toolbar's root. The row is `overflow-x-auto`, so on a narrow screen it scrolls sideways rather than wrapping." },
 ];
 
 export const elementsProps: PropDef[] = [
   { name: "h1 – h6", type: "EditorElement", default: '{ tag: "h1", className: "text-2xl font-semibold" } …', description: "The heading. Its classes ride the line, so a wrapped heading's second row is the same size as its first, and they apply whatever the caret is doing — only the `#` marker's visibility toggles, never the line box." },
   { name: "strong", type: "EditorElement", default: '{ tag: "strong", className: "font-semibold" }', description: "`**bold**`, including the still-unclosed `**bold` you are halfway through typing." },
   { name: "em", type: "EditorElement", default: '{ tag: "em", className: "italic" }', description: "`*italic*`." },
+  { name: "del", type: "EditorElement", default: '{ tag: "del", className: "line-through" }', description: "`~~struck~~`." },
   { name: "code", type: "EditorElement", default: '{ tag: "code", className: "font-mono text-sm bg-muted rounded px-1" }', description: "`` `inline code` ``." },
   { name: "a", type: "EditorElement", default: '{ tag: "a", className: "underline underline-offset-2 decoration-muted-foreground" }', description: "The label of a `[link](url)`. The URL half stays concealed until the caret enters it, and the element carries no `href` — `Cmd+click` is what opens it." },
   { name: "li", type: "EditorElement", default: '{ className: "" }', description: "The whole list row. No tag: the row is CodeMirror's own line div, and the indent on it is structural, so this is for type and colour only." },
+  { name: "blockquote", type: "EditorElement", default: '{ className: "text-muted-foreground" }', description: "Every row of a `> quote`. No tag, for the same reason as `li`; the rule down the left edge is structural, so this is for type and colour." },
   { name: "bullet", type: "EditorElement", default: '{ className: "text-muted-foreground" }', description: "The • (or ◦ when nested) standing in for the `-` marker." },
   { name: "checkbox", type: "EditorElement", default: '{ className: "size-3.5 accent-[var(--primary)] cursor-pointer" }', description: "The real `<input type=\"checkbox\">` standing in for `[ ]` / `[x]`. Clicking it rewrites those characters in the document. It sits in a `<label>` whose hit area reaches past it on touch, so size the box here and leave the target alone." },
   { name: "taskDone", type: "EditorElement", default: '{ className: "text-muted-foreground line-through" }', description: "The text of a checked task row." },

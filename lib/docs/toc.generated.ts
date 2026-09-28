@@ -150,6 +150,11 @@ export const TOC: Record<string, TocEntry[]> = {
       "depth": 2
     },
     {
+      "id": "controls",
+      "text": "Controls",
+      "depth": 2
+    },
+    {
       "id": "typography",
       "text": "Typography",
       "depth": 2
@@ -182,6 +187,11 @@ export const TOC: Record<string, TocEntry[]> = {
     {
       "id": "editor",
       "text": "Editor",
+      "depth": 3
+    },
+    {
+      "id": "editorcontrols",
+      "text": "EditorControls",
       "depth": 3
     },
     {

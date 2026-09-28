@@ -20,6 +20,7 @@ import DemoCodeCodeOverrideStyling from "@/content/demos/code/code-override-styl
 import DemoCodeCodePackageManagers from "@/content/demos/code/code-package-managers";
 import DemoEditorEditorAutosave from "@/content/demos/editor/editor-autosave";
 import DemoEditorEditorBasic from "@/content/demos/editor/editor-basic";
+import DemoEditorEditorControls from "@/content/demos/editor/editor-controls";
 import DemoEditorEditorDemo from "@/content/demos/editor/editor-demo";
 import DemoEditorEditorEmbeds from "@/content/demos/editor/editor-embeds";
 import DemoEditorEditorTypography from "@/content/demos/editor/editor-typography";
@@ -136,6 +137,10 @@ export const demos: Record<string, DemoEntry> = {
   "editor-basic": {
     Component: DemoEditorEditorBasic,
     source: "import { Editor } from \"@/components/ui/editor\";\n\nexport default function EditorBasic() {\n  return (\n    <Editor\n      placeholder=\"Click or touch here to begin editing — # for a heading, - [ ] for a task\"\n      className=\"w-full max-w-[560px]\"\n    />\n  );\n}",
+  },
+  "editor-controls": {
+    Component: DemoEditorEditorControls,
+    source: "import { Editor } from \"@/components/ui/editor\";\nimport { EditorControls } from \"@/components/ui/editor-controls\";\n\nconst DOC = `## Release notes\n\nSelect a word and press **B**, or put the caret on a line and pick a style.\n\n- [x] Toolbar reads the caret\n- [ ] Undo is the editor's own history\n\n> Every button runs the same command its shortcut does.`;\n\nexport default function EditorControlsDemo() {\n  return (\n    <Editor defaultValue={DOC} className=\"w-full max-w-[560px]\">\n      <EditorControls />\n    </Editor>\n  );\n}",
   },
   "editor-demo": {
     Component: DemoEditorEditorDemo,

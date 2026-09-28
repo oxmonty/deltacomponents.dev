@@ -1,6 +1,16 @@
 "use client";
 
-import { forwardRef, useCallback, useEffect, useRef, useState } from "react";
+import {
+  createContext,
+  forwardRef,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type ReactNode,
+} from "react";
 import { Compartment, EditorState, type Extension } from "@codemirror/state";
 import { EditorView } from "@codemirror/view";
 
@@ -22,6 +32,45 @@ const SAVE_LABEL: Record<SaveState, string> = {
   saved: "Saved",
   error: "Not saved",
 };
+
+// The view, published to whatever the editor renders above its text (the
+// controls). A version counter rather than the view itself: the view is one
+// mutable object for the editor's whole life, so the way to say "something
+// changed" is a tick, and `useSyncExternalStore` turns ticks into renders of
+// the subscriber alone — a keystroke never re-renders the editor.
+interface EditorStore {
+  view: EditorView | null;
+  version: number;
+  listeners: Set<() => void>;
+}
+
+const EditorContext = createContext<EditorStore | null>(null);
+
+function notify(store: EditorStore) {
+  store.version++;
+  for (const listener of store.listeners) listener();
+}
+
+/** The live `EditorView` of the enclosing `<Editor>`, re-rendering the caller
+ *  on every transaction — document, selection or focus — so pressed states
+ *  track the caret. Null before the editor has mounted and outside one. */
+export function useEditorView(): EditorView | null {
+  const store = useContext(EditorContext);
+  if (!store) throw new Error("useEditorView must be used inside <Editor>");
+  const subscribe = useCallback(
+    (listener: () => void) => {
+      store.listeners.add(listener);
+      return () => void store.listeners.delete(listener);
+    },
+    [store],
+  );
+  useSyncExternalStore(
+    subscribe,
+    () => store.version,
+    () => 0,
+  );
+  return store.view;
+}
 
 export interface EditorProps {
   /** Seeds the document. The editor owns the text from then on — see the note
@@ -45,6 +94,9 @@ export interface EditorProps {
    *  at mount like `defaultValue` — reconfiguring would rebuild state the
    *  user is mid-edit in. */
   extensions?: Extension;
+  /** Rendered above the text, sharing its width — this is where
+   *  `<EditorControls />` goes. */
+  children?: ReactNode;
   className?: string;
 }
 
@@ -68,12 +120,14 @@ export const Editor = forwardRef<HTMLDivElement, EditorProps>(function Editor(
     onSaveState,
     elements,
     extensions,
+    children,
     className,
   },
   ref,
 ) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const viewRef = useRef<EditorView | null>(null);
+  const [store] = useState<EditorStore>(() => ({ view: null, version: 0, listeners: new Set() }));
   const [mounted, setMounted] = useState(false);
   const [saveState, setSaveState] = useState<SaveState>("idle");
   // One compartment so an `elements` change swaps only the preview plugin;
@@ -154,6 +208,7 @@ export const Editor = forwardRef<HTMLDivElement, EditorProps>(function Editor(
           elementsCompartment.of(livePreview(seed.elements)),
           seed.extensions ?? [],
           EditorView.updateListener.of((update) => {
+            notify(store);
             if (!update.docChanged) return;
             const doc = update.state.doc.toString();
             draftRef.current = doc;
@@ -171,14 +226,18 @@ export const Editor = forwardRef<HTMLDivElement, EditorProps>(function Editor(
       }),
     });
     viewRef.current = view;
+    store.view = view;
+    notify(store);
     setMounted(true);
     return () => {
       // Flush on unmount so navigating away mid-typing never drops work.
       flushRef.current();
       view.destroy();
       viewRef.current = null;
+      store.view = null;
+      notify(store);
     };
-  }, [elementsCompartment, report]);
+  }, [elementsCompartment, report, store]);
 
   // Keyed on the map's contents, not its identity: a caller passing an inline
   // object literal would otherwise reconfigure on every render.
@@ -194,56 +253,64 @@ export const Editor = forwardRef<HTMLDivElement, EditorProps>(function Editor(
   const status = showSaveStatus && onSave && saveState !== "idle" ? saveState : null;
 
   return (
-    <div
-      ref={ref}
-      className={cn("relative min-h-24 text-base leading-7", className)}
-      data-slot="editor"
-    >
-      {/* Covers the hydration window at the same typography as the editor, so
-          line positions hold and only the syntax marks change when CodeMirror
-          takes over. `min-h` on the root is what gives the mounted editor its
-          click target too — the theme inherits it. */}
-      {!mounted && (
-        <div aria-hidden className="whitespace-pre-wrap">
-          {defaultValue || <span className="text-muted-foreground">{placeholder}</span>}
+    <EditorContext.Provider value={store}>
+      <div
+        ref={ref}
+        className={cn("flex min-h-24 flex-col gap-3 text-base leading-7", className)}
+        data-slot="editor"
+      >
+        {children}
+        {/* The text and its save chip share a box of their own, so the chip pins
+            to the top of the TEXT — with controls above, the root's corner would
+            put it on top of the toolbar. */}
+        <div className="relative flex-1">
+          {/* Covers the hydration window at the same typography as the editor, so
+              line positions hold and only the syntax marks change when CodeMirror
+              takes over. `min-h` on the root is what gives the mounted editor its
+              click target too — the theme inherits it. */}
+          {!mounted && (
+            <div aria-hidden className="whitespace-pre-wrap">
+              {defaultValue || <span className="text-muted-foreground">{placeholder}</span>}
+            </div>
+          )}
+          <div ref={containerRef} />
+          {status && (
+            // Pinned to the corner rather than placed after the text: it has to
+            // be in the same spot every time you glance for it, and the document
+            // is the wrong length for that. Its own ground keeps it legible over
+            // a long first line.
+            //
+            // Visual only: the announcement is the sr-only region below, which
+            // carries the SETTLED states alone. Announcing "unsaved" and "saving"
+            // too would narrate every pause in typing — and CodeMirror already
+            // has a polite region of its own inside this editor.
+            <div
+              aria-hidden
+              className="bg-background/90 text-muted-foreground pointer-events-none absolute top-0 right-0 flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs select-none"
+            >
+              <span
+                aria-hidden
+                className={cn(
+                  "size-1.5 rounded-full",
+                  status === "saving" && "bg-muted-foreground animate-pulse",
+                  status === "dirty" && "bg-muted-foreground/50",
+                  status === "saved" && "bg-muted-foreground/70",
+                  status === "error" && "bg-destructive",
+                )}
+              />
+              <span className={cn(status === "error" && "text-destructive")}>
+                {SAVE_LABEL[status]}
+              </span>
+            </div>
+          )}
+          {onSave && (
+            <span className="sr-only" aria-live="polite">
+              {saveState === "saved" || saveState === "error" ? SAVE_LABEL[saveState] : ""}
+            </span>
+          )}
         </div>
-      )}
-      <div ref={containerRef} />
-      {status && (
-        // Pinned to the corner rather than placed after the text: it has to
-        // be in the same spot every time you glance for it, and the document
-        // is the wrong length for that. Its own ground keeps it legible over
-        // a long first line.
-        //
-        // Visual only: the announcement is the sr-only region below, which
-        // carries the SETTLED states alone. Announcing "unsaved" and "saving"
-        // too would narrate every pause in typing — and CodeMirror already
-        // has a polite region of its own inside this editor.
-        <div
-          aria-hidden
-          className="bg-background/90 text-muted-foreground pointer-events-none absolute top-0 right-0 flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs select-none"
-        >
-          <span
-            aria-hidden
-            className={cn(
-              "size-1.5 rounded-full",
-              status === "saving" && "bg-muted-foreground animate-pulse",
-              status === "dirty" && "bg-muted-foreground/50",
-              status === "saved" && "bg-muted-foreground/70",
-              status === "error" && "bg-destructive",
-            )}
-          />
-          <span className={cn(status === "error" && "text-destructive")}>
-            {SAVE_LABEL[status]}
-          </span>
-        </div>
-      )}
-      {onSave && (
-        <span className="sr-only" aria-live="polite">
-          {saveState === "saved" || saveState === "error" ? SAVE_LABEL[saveState] : ""}
-        </span>
-      )}
-    </div>
+      </div>
+    </EditorContext.Provider>
   );
 });
 Editor.displayName = "Editor";

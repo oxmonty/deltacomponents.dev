@@ -6,7 +6,7 @@
 // the four extra libraries below are docs-site dependencies only.
 
 import type { ComponentType } from "react";
-import { Play, Pause } from "lucide-react";
+import { Play, Pause, ListOrdered } from "lucide-react";
 
 import {
   defaultIcons,
@@ -76,6 +76,16 @@ import {
   IconFolder,
   IconAdjustmentsHorizontal,
   IconDownload,
+  IconArrowBackUp,
+  IconArrowForwardUp,
+  IconBold,
+  IconItalic,
+  IconStrikethrough,
+  IconCode,
+  IconBlockquote,
+  IconList,
+  IconListNumbers,
+  IconListCheck,
 } from "@tabler/icons-react";
 
 // ── Phosphor ────────────────────────────────────────────────
@@ -138,6 +148,16 @@ import {
   CalendarBlank as PhCalendarBlank,
   FolderSimple as PhFolderSimple,
   Download as PhDownload,
+  ArrowUUpLeft as PhUndo,
+  ArrowUUpRight as PhRedo,
+  TextB as PhBold,
+  TextItalic as PhItalic,
+  TextStrikethrough as PhStrikethrough,
+  Code as PhCode,
+  Quotes as PhQuote,
+  ListBullets as PhListBullets,
+  ListNumbers as PhListOrdered,
+  ListChecks as PhListTodo,
 } from "@phosphor-icons/react";
 
 // ── HugeIcons ───────────────────────────────────────────────
@@ -198,6 +218,16 @@ import HiCalendar from "@hugeicons/core-free-icons/Calendar01Icon";
 import HiFolder from "@hugeicons/core-free-icons/Folder01Icon";
 import HiSliders from "@hugeicons/core-free-icons/SlidersHorizontalIcon";
 import HiDownload from "@hugeicons/core-free-icons/Download01Icon";
+import HiUndo from "@hugeicons/core-free-icons/UndoIcon";
+import HiRedo from "@hugeicons/core-free-icons/RedoIcon";
+import HiBold from "@hugeicons/core-free-icons/TextBoldIcon";
+import HiItalic from "@hugeicons/core-free-icons/TextItalicIcon";
+import HiStrikethrough from "@hugeicons/core-free-icons/TextStrikethroughIcon";
+import HiCode from "@hugeicons/core-free-icons/SourceCodeIcon";
+import HiQuote from "@hugeicons/core-free-icons/QuoteDownIcon";
+import HiList from "@hugeicons/core-free-icons/LeftToRightListBulletIcon";
+import HiListOrdered from "@hugeicons/core-free-icons/LeftToRightListNumberIcon";
+import HiListTodo from "@hugeicons/core-free-icons/CheckListIcon";
 
 // ── Untitled UI ─────────────────────────────────────────────
 // Aliased with a Uui prefix to avoid collisions with the Lucide imports above.
@@ -258,6 +288,15 @@ import {
   Calendar as UuiCalendar,
   Folder as UuiFolder,
   Download01 as UuiDownload,
+  ReverseLeft as UuiUndo,
+  ReverseRight as UuiRedo,
+  Bold01 as UuiBold,
+  Italic01 as UuiItalic,
+  Strikethrough01 as UuiStrikethrough,
+  Code02 as UuiCode,
+  LeftIndent01 as UuiQuote,
+  Dotpoints01 as UuiList,
+  CheckDone01 as UuiListTodo,
 } from "@untitledui/icons";
 
 
@@ -385,6 +424,16 @@ const tablerMap: Record<IconName, IconComponent> = {
   "folder": tabler(IconFolder),
   "sliders-horizontal": tabler(IconAdjustmentsHorizontal),
   "download": tabler(IconDownload),
+  "undo": tabler(IconArrowBackUp),
+  "redo": tabler(IconArrowForwardUp),
+  "bold": tabler(IconBold),
+  "italic": tabler(IconItalic),
+  "strikethrough": tabler(IconStrikethrough),
+  "code": tabler(IconCode),
+  "text-quote": tabler(IconBlockquote),
+  "list": tabler(IconList),
+  "list-ordered": tabler(IconListNumbers),
+  "list-todo": tabler(IconListCheck),
 };
 
 const phosphorMap: Record<IconName, IconComponent> = {
@@ -447,6 +496,16 @@ const phosphorMap: Record<IconName, IconComponent> = {
   "folder": phosphor(PhFolderSimple),
   "sliders-horizontal": phosphor(PhSlidersHorizontal),
   "download": phosphor(PhDownload),
+  "undo": phosphor(PhUndo),
+  "redo": phosphor(PhRedo),
+  "bold": phosphor(PhBold),
+  "italic": phosphor(PhItalic),
+  "strikethrough": phosphor(PhStrikethrough),
+  "code": phosphor(PhCode),
+  "text-quote": phosphor(PhQuote),
+  "list": phosphor(PhListBullets),
+  "list-ordered": phosphor(PhListOrdered),
+  "list-todo": phosphor(PhListTodo),
 };
 
 const hugeiconsMap: Record<IconName, IconComponent> = {
@@ -509,6 +568,16 @@ const hugeiconsMap: Record<IconName, IconComponent> = {
   "folder": hugeicons(HiFolder),
   "sliders-horizontal": hugeicons(HiSliders),
   "download": hugeicons(HiDownload),
+  "undo": hugeicons(HiUndo),
+  "redo": hugeicons(HiRedo),
+  "bold": hugeicons(HiBold),
+  "italic": hugeicons(HiItalic),
+  "strikethrough": hugeicons(HiStrikethrough),
+  "code": hugeicons(HiCode),
+  "text-quote": hugeicons(HiQuote),
+  "list": hugeicons(HiList),
+  "list-ordered": hugeicons(HiListOrdered),
+  "list-todo": hugeicons(HiListTodo),
 };
 
 const untitleduiMap: Record<IconName, IconComponent> = {
@@ -575,6 +644,17 @@ const untitleduiMap: Record<IconName, IconComponent> = {
   "folder": untitledui(UuiFolder),
   "sliders-horizontal": untitledui(UuiSliders),
   "download": untitledui(UuiDownload),
+  "undo": untitledui(UuiUndo),
+  "redo": untitledui(UuiRedo),
+  "bold": untitledui(UuiBold),
+  "italic": untitledui(UuiItalic),
+  "strikethrough": untitledui(UuiStrikethrough),
+  "code": untitledui(UuiCode),
+  "text-quote": untitledui(UuiQuote),
+  "list": untitledui(UuiList),
+  // Untitled UI has no numbered list (its `List` is the bullet glyph again).
+  "list-ordered": ListOrdered,
+  "list-todo": untitledui(UuiListTodo),
 };
 
 // ── Unified Map ─────────────────────────────────────────────

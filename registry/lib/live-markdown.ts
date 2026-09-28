@@ -15,7 +15,14 @@
 // The theme below holds only what must not vary — padding, caret, selection,
 // list indent, and the box model of those tags (see the reset in it).
 
-import { defaultKeymap, history, historyKeymap, indentWithTab } from "@codemirror/commands";
+import {
+  defaultKeymap,
+  history,
+  historyKeymap,
+  indentWithTab,
+  redoDepth,
+  undoDepth,
+} from "@codemirror/commands";
 import {
   deleteMarkupBackward,
   insertNewlineContinueMarkupCommand,
@@ -64,10 +71,13 @@ export interface EditorElements {
   h6?: EditorElement;
   strong?: EditorElement;
   em?: EditorElement;
+  del?: EditorElement;
   code?: EditorElement;
   a?: EditorElement;
   /** The whole list row. The indent itself is structural and always applied. */
   li?: EditorElement;
+  /** The whole quoted row. The rule down its left edge is structural. */
+  blockquote?: EditorElement;
   /** The • / ◦ glyph standing in for a `-` marker. */
   bullet?: EditorElement;
   /** The real `<input type="checkbox">` standing in for `[ ]` / `[x]`. */
@@ -93,9 +103,11 @@ export const defaultElements: Required<Record<keyof EditorElements, { tag?: stri
   h6: { tag: "h6", className: "font-semibold" },
   strong: { tag: "strong", className: "font-semibold" },
   em: { tag: "em", className: "italic" },
+  del: { tag: "del", className: "line-through" },
   code: { tag: "code", className: "font-mono text-sm bg-muted rounded px-1" },
   a: { tag: "a", className: "underline underline-offset-2 decoration-muted-foreground" },
   li: { className: "" },
+  blockquote: { className: "text-muted-foreground" },
   bullet: { className: "text-muted-foreground" },
   checkbox: { className: "size-3.5 pointer-coarse:size-[18px] accent-[var(--primary)] cursor-pointer" },
   taskDone: { className: "text-muted-foreground line-through" },
@@ -147,6 +159,12 @@ const chromelessTheme = EditorView.theme({
   // List rows read as a block. Structural, and applied regardless of caret
   // position — layout must never toggle as the caret moves.
   ".cm-line.cm-md-li": { paddingLeft: "0.5rem" },
+  // A quoted row reads as a block the same way: the rule is structural and
+  // stays put as the caret moves; what the element map adds is colour.
+  ".cm-line.cm-md-quote": {
+    paddingLeft: "0.75rem",
+    boxShadow: "inset 2px 0 0 var(--border)",
+  },
   // Hanging indent: a wrapped line continues under its own text, not back
   // at the left edge. `--hang` is the measured width of what precedes the
   // text — leading spaces, and a bullet or checkbox plus its space — set per
@@ -248,10 +266,10 @@ const keyboardAware: Extension = [
  * Formatting shortcuts
  * ------------------------------------------------------------------ */
 
-/** Toggle an inline marker pair (** / * / `) around each selection range.
+/** Toggle an inline marker pair (** / * / ~~ / `) around each selection range.
  *  Empty selections get an empty pair with the caret inside; a second
  *  invocation right away (or on an already-wrapped selection) unwraps. */
-function toggleWrap(marker: string): StateCommand {
+export function toggleWrap(marker: string): StateCommand {
   return ({ state, dispatch }) => {
     const len = marker.length;
     const changes = state.changeByRange((range) => {
@@ -293,39 +311,49 @@ function toggleWrap(marker: string): StateCommand {
   };
 }
 
-/** Toggle task-list prefixes on every selected line: plain → "- [ ] ",
- *  bullet → task, task → plain. */
-const toggleTaskList: StateCommand = ({ state, dispatch }) => {
-  const changes: { from: number; to?: number; insert?: string }[] = [];
+/** The block constructs a line can open with. Exactly one applies per line:
+ *  the outermost marker, so a `> - item` row is a quote here. */
+export type LinePrefix = "quote" | "task" | "bullet" | "ordered";
+
+// Indent, then the marker with its space. The task pattern comes before the
+// bullet it extends. The heading marker is deliberately absent: a heading and
+// a list marker never share a row, and `setHeading` handles it on its own.
+const LINE_PREFIX = /^(\s*)(?:(> )|(- \[[ xX]\] )|([-*+] )|(\d+[.)] ))?/;
+
+/** What a line opens with, and how far it reaches into the text. */
+export function linePrefixOf(text: string): { indent: number; kind: LinePrefix | null; end: number } {
+  const m = LINE_PREFIX.exec(text)!;
+  const kind = m[2] ? "quote" : m[3] ? "task" : m[4] ? "bullet" : m[5] ? "ordered" : null;
+  return { indent: m[1].length, kind, end: m[0].length };
+}
+
+/** Every line the selection touches, once, in document order. */
+function selectedLines(state: EditorState) {
   const seen = new Set<number>();
+  const lines = [];
   for (const range of state.selection.ranges) {
     const last = state.doc.lineAt(range.to).number;
     for (let n = state.doc.lineAt(range.from).number; n <= last; n++) {
       if (seen.has(n)) continue;
       seen.add(n);
-      const line = state.doc.line(n);
-      const task = /^(\s*)- \[[ xX]\] /.exec(line.text);
-      if (task) {
-        changes.push({ from: line.from + task[1].length, to: line.from + task[0].length });
-        continue;
-      }
-      const bullet = /^(\s*)[-*+] /.exec(line.text);
-      if (bullet) {
-        changes.push({
-          from: line.from + bullet[1].length,
-          to: line.from + bullet[0].length,
-          insert: "- [ ] ",
-        });
-        continue;
-      }
-      const indent = /^\s*/.exec(line.text)![0];
-      changes.push({ from: line.from + indent.length, insert: "- [ ] " });
+      lines.push(state.doc.line(n));
     }
   }
+  return lines;
+}
+
+/** Apply a per-line prefix rewrite, keeping the caret after whatever was
+ *  inserted in front of it. Without `assoc: 1` the default mapping leaves it
+ *  before a fresh "- [ ] ", visually hidden behind the checkbox. */
+function rewriteLines(
+  { state, dispatch }: Parameters<StateCommand>[0],
+  rewrite: (line: { from: number; text: string }, index: number) => { from: number; to?: number; insert?: string } | null,
+): boolean {
+  const changes = selectedLines(state)
+    .map((line, i) => rewrite(line, i))
+    .filter((c) => c !== null);
   if (changes.length === 0) return false;
   const changeSet = state.changes(changes);
-  // assoc 1 keeps the caret AFTER an inserted "- [ ] " — the default mapping
-  // left it before the prefix, visually hidden behind the checkbox.
   dispatch(
     state.update({
       changes: changeSet,
@@ -334,13 +362,125 @@ const toggleTaskList: StateCommand = ({ state, dispatch }) => {
     }),
   );
   return true;
+}
+
+/** Toggle a block prefix on every selected line: a line already carrying
+ *  `kind` loses it, one carrying another marker swaps, a plain line gains it.
+ *  So Cmd+L on a bullet turns it into a task and again into plain text. */
+export function toggleLinePrefix(kind: LinePrefix): StateCommand {
+  return (target) =>
+    rewriteLines(target, (line, i) => {
+      const { indent, kind: current, end } = linePrefixOf(line.text);
+      const from = line.from + indent;
+      if (current === kind) return { from, to: line.from + end };
+      const marker =
+        kind === "quote" ? "> " : kind === "task" ? "- [ ] " : kind === "bullet" ? "- " : `${i + 1}. `;
+      return { from, to: line.from + end, insert: marker };
+    });
+}
+
+const HEADING = /^(#{1,6}) /;
+
+/** Set the heading level of every selected line — 0 is a paragraph. A line
+ *  already at that level is left alone rather than toggled, so a menu that
+ *  re-selects "Heading 2" is a no-op, not a demotion. */
+export function setHeading(level: 0 | 1 | 2 | 3 | 4 | 5 | 6): StateCommand {
+  return (target) =>
+    rewriteLines(target, (line) => {
+      const current = HEADING.exec(line.text);
+      const currentLevel = current ? current[1].length : 0;
+      if (currentLevel === level) return null;
+      const insert = level ? "#".repeat(level) + " " : "";
+      return { from: line.from, to: line.from + (current?.[0].length ?? 0), insert };
+    });
+}
+
+/** Wrap each range as `[text](url)` — or `![text](url)` for an image — and
+ *  leave the placeholder URL selected, so typing replaces it. An empty range
+ *  gets a placeholder label too. The image form is written raw: rendering an
+ *  image is the `extensions` seam's job, not the text surface's. */
+export function insertLink(image = false): StateCommand {
+  return ({ state, dispatch }) => {
+    const open = image ? "![" : "[";
+    const changes = state.changeByRange((range) => {
+      const label = state.sliceDoc(range.from, range.to) || (image ? "alt" : "link");
+      const insert = `${open}${label}](url)`;
+      const urlFrom = range.from + open.length + label.length + 2;
+      return {
+        changes: { from: range.from, to: range.to, insert },
+        range: EditorSelection.range(urlFrom, urlFrom + 3),
+      };
+    });
+    dispatch(state.update(changes, { scrollIntoView: true, userEvent: "input" }));
+    return true;
+  };
+}
+
+/** What is in force at the caret, for a toolbar's pressed states. Inline
+ *  constructs come from the syntax tree (so only closed ones count, which is
+ *  also what the eager styling of an unclosed `**` would mislead about); the
+ *  block state is read off the line the same way the commands write it. */
+export interface Formatting {
+  heading: 0 | 1 | 2 | 3 | 4 | 5 | 6;
+  line: LinePrefix | null;
+  strong: boolean;
+  em: boolean;
+  del: boolean;
+  code: boolean;
+  link: boolean;
+  canUndo: boolean;
+  canRedo: boolean;
+}
+
+const INLINE_NODES: Record<string, "strong" | "em" | "del" | "code" | "link"> = {
+  StrongEmphasis: "strong",
+  Emphasis: "em",
+  Strikethrough: "del",
+  InlineCode: "code",
+  Link: "link",
+  Image: "link",
+};
+
+export function formattingAt(state: EditorState): Formatting {
+  const head = state.selection.main.head;
+  const line = state.doc.lineAt(head);
+  const formatting: Formatting = {
+    heading: (HEADING.exec(line.text)?.[1].length ?? 0) as Formatting["heading"],
+    line: linePrefixOf(line.text).kind,
+    strong: false,
+    em: false,
+    del: false,
+    code: false,
+    link: false,
+    canUndo: undoDepth(state) > 0,
+    canRedo: redoDepth(state) > 0,
+  };
+  // Side -1 so a caret sitting just past `**bold**|` still reads as bold,
+  // which is where it lands the moment the closing marks are typed.
+  for (let node: SyntaxNode | null = syntaxTree(state).resolveInner(head, -1); node; node = node.parent) {
+    const key = INLINE_NODES[node.name];
+    if (key) formatting[key] = true;
+  }
+  return formatting;
+}
+
+/** Enter on a row that is only a quote marker leaves the quote, the way a
+ *  second Enter leaves a list. CodeMirror's own continuation would carry the
+ *  `> ` on forever, and there is no other way out but Backspace. */
+const exitEmptyQuote: StateCommand = ({ state, dispatch }) => {
+  const { main } = state.selection;
+  const line = state.doc.lineAt(main.head);
+  if (!main.empty || !/^\s*(> ?)+$/.test(line.text)) return false;
+  dispatch(state.update({ changes: { from: line.from, to: line.to }, userEvent: "delete" }));
+  return true;
 };
 
 const formattingKeymap: readonly KeyBinding[] = [
   { key: "Mod-b", run: toggleWrap("**"), preventDefault: true },
   { key: "Mod-i", run: toggleWrap("*"), preventDefault: true },
   { key: "Mod-e", run: toggleWrap("`"), preventDefault: true },
-  { key: "Mod-l", run: toggleTaskList, preventDefault: true },
+  { key: "Mod-Shift-x", run: toggleWrap("~~"), preventDefault: true },
+  { key: "Mod-l", run: toggleLinePrefix("task"), preventDefault: true },
 ];
 
 // Escape and Cmd+Enter blur. Saving is the component's debounced autosave, so
@@ -540,10 +680,12 @@ interface Marks {
   hide: Decoration;
   strong: Decoration;
   em: Decoration;
+  del: Decoration;
   code: Decoration;
   link: Decoration;
   taskDone: Decoration;
   listLine: Decoration;
+  quoteLine: Decoration;
   headingLines: Decoration[];
   /** Null where the heading key carries no tag — then the line class is the
    *  whole treatment. */
@@ -566,16 +708,19 @@ export function createMarks(elements?: EditorElements): Marks {
   };
   const strong = marked("strong");
   const em = marked("em");
+  const del = marked("del");
   const code = marked("code");
   const headings = (["h1", "h2", "h3", "h4", "h5", "h6"] as const).map(at);
   return {
     hide: Decoration.replace({}),
     strong,
     em,
+    del,
     code,
     link: marked("a"),
     taskDone: marked("taskDone"),
     listLine: Decoration.line({ class: `cm-md-li ${at("li").className}` }),
+    quoteLine: Decoration.line({ class: `cm-md-quote ${at("blockquote").className}` }),
     // The SIZE rides the line, not the tag: it has to apply to the whole line
     // box or a wrapped heading's second row would come out at body size.
     headingLines: headings.map((h) => Decoration.line({ class: h.className })),
@@ -590,6 +735,7 @@ export function createMarks(elements?: EditorElements): Marks {
     unclosed: [
       { re: /\*\*(?=\S)/, len: 2, deco: strong },
       { re: /(?<!\*)\*(?=[^\s*])/, len: 1, deco: em },
+      { re: /~~(?=\S)/, len: 2, deco: del },
       { re: /`(?=\S)/, len: 1, deco: code },
     ],
   };
@@ -656,15 +802,36 @@ export function computeLiveDecorations(
         }
         switch (node.name) {
           case "StrongEmphasis":
-          case "Emphasis": {
+          case "Emphasis":
+          case "Strikethrough": {
             covered.push([node.from, node.to]);
-            ranges.push(
-              (node.name === "StrongEmphasis" ? marks.strong : marks.em).range(node.from, node.to),
-            );
+            const mark =
+              node.name === "StrongEmphasis" ? marks.strong : node.name === "Emphasis" ? marks.em : marks.del;
+            ranges.push(mark.range(node.from, node.to));
             if (!touches(node.from, node.to)) {
-              for (const mark of node.node.getChildren("EmphasisMark")) {
-                ranges.push(marks.hide.range(mark.from, mark.to));
+              const markName = node.name === "Strikethrough" ? "StrikethroughMark" : "EmphasisMark";
+              for (const child of node.node.getChildren(markName)) {
+                ranges.push(marks.hide.range(child.from, child.to));
               }
+            }
+            break;
+          }
+          case "Blockquote": {
+            // Every row of the quote carries the rule, lazy continuation lines
+            // included; the `> ` conceals per row, so editing one line of a
+            // quote reveals only that line's marker.
+            const opener = node.node.getChild("QuoteMark");
+            if (!opener || !committed(opener.to)) break;
+            const last = state.doc.lineAt(node.to).number;
+            for (let n = state.doc.lineAt(node.from).number; n <= last; n++) {
+              ranges.push(marks.quoteLine.range(state.doc.line(n).from));
+            }
+            // Concealed even with the caret on the row, as a bullet is: the
+            // rule already says "quote", and a `>` surfacing on the line you
+            // are typing is noise. Backspace at the head still removes it.
+            for (const quoteMark of node.node.getChildren("QuoteMark")) {
+              if (!committed(quoteMark.to)) continue;
+              ranges.push(marks.hide.range(quoteMark.from, quoteMark.to + 1));
             }
             break;
           }
@@ -898,6 +1065,7 @@ export function liveMarkdownBase(placeholderText = ""): Extension[] {
     proseMarkdown,
     pasteURLAsLink,
     keymap.of([
+      { key: "Enter", run: exitEmptyQuote },
       { key: "Enter", run: insertNewlineContinueMarkupCommand({ nonTightLists: false }) },
       { key: "Backspace", run: deleteMarkupBackward },
     ]),

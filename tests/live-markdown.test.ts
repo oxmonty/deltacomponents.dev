@@ -1,13 +1,18 @@
 import { describe, it, expect } from "vitest";
 import { indentMore } from "@codemirror/commands";
 import { ensureSyntaxTree } from "@codemirror/language";
-import { EditorState } from "@codemirror/state";
-import { EditorView, type DecorationSet } from "@codemirror/view";
+import { EditorState, type Transaction } from "@codemirror/state";
+import { EditorView, keymap, type DecorationSet } from "@codemirror/view";
 import { pasteURLAsLink } from "@codemirror/lang-markdown";
 import {
   computeLiveDecorations,
   createMarks,
+  formattingAt,
+  insertLink,
   liveMarkdownBase,
+  setHeading,
+  toggleLinePrefix,
+  toggleWrap,
 } from "@/registry/lib/live-markdown";
 
 function parsedState(doc: string, anchor = 0) {
@@ -233,5 +238,85 @@ describe("block markers wait for their space", () => {
     const decorations = decorate("*it");
     expect(decorations.length).toBeGreaterThan(0);
     expect(decorations.join(" ")).not.toContain("cm-md-li");
+  });
+});
+
+describe("toolbar commands", () => {
+  // given: a document with the whole of it selected, run one command over it
+  const apply = (doc: string, command: (t: { state: EditorState; dispatch: (tr: Transaction) => void }) => boolean, from = 0, to = doc.length) => {
+    let state = EditorState.create({ doc, extensions: [liveMarkdownBase()] });
+    state = state.update({ selection: { anchor: from, head: to } }).state;
+    command({ state, dispatch: (tr) => (state = tr.state) });
+    return state;
+  };
+
+  it("toggles a line prefix: adds to plain, swaps another marker, removes its own", () => {
+    expect(apply("plain", toggleLinePrefix("bullet")).doc.toString()).toBe("- plain");
+    expect(apply("- plain", toggleLinePrefix("task")).doc.toString()).toBe("- [ ] plain");
+    expect(apply("- [ ] plain", toggleLinePrefix("task")).doc.toString()).toBe("plain");
+    expect(apply("> plain", toggleLinePrefix("quote")).doc.toString()).toBe("plain");
+  });
+
+  it("numbers an ordered list through the selection and keeps the indent", () => {
+    const doc = "  a\n- b\nc";
+    expect(apply(doc, toggleLinePrefix("ordered")).doc.toString()).toBe("  1. a\n2. b\n3. c");
+  });
+
+  it("keeps the caret after a prefix it inserted", () => {
+    const state = apply("plain", toggleLinePrefix("task"), 0, 0);
+    expect(state.selection.main.head).toBe("- [ ] ".length);
+  });
+
+  it("sets and clears a heading level without toggling a re-selected one", () => {
+    expect(apply("title", setHeading(2)).doc.toString()).toBe("## title");
+    expect(apply("# title", setHeading(3)).doc.toString()).toBe("### title");
+    expect(apply("## title", setHeading(0)).doc.toString()).toBe("title");
+    expect(setHeading(2)({ state: apply("## title", setHeading(2)), dispatch: () => {} })).toBe(false);
+  });
+
+  it("links the selection and leaves the placeholder url selected", () => {
+    const state = apply("word", insertLink());
+    expect(state.doc.toString()).toBe("[word](url)");
+    expect(state.sliceDoc(state.selection.main.from, state.selection.main.to)).toBe("url");
+    expect(apply("", insertLink(true)).doc.toString()).toBe("![alt](url)");
+  });
+
+  it("strikes through and unwraps again", () => {
+    const once = apply("word", toggleWrap("~~"));
+    expect(once.doc.toString()).toBe("~~word~~");
+    expect(toggleWrap("~~")({ state: once, dispatch: () => {} })).toBe(true);
+  });
+
+  it("reads the formatting in force at the caret", () => {
+    const state = parsedState("## A **bold** and ~~gone~~ line\n- [ ] task", "## A **bo".length);
+    const at = formattingAt(state);
+    expect(at).toMatchObject({ heading: 2, strong: true, em: false, del: false, line: null, canUndo: false });
+    // then: a caret just past the closing marks still counts as inside them
+    expect(formattingAt(state.update({ selection: { anchor: "## A **bold**".length } }).state).strong).toBe(true);
+    expect(formattingAt(state.update({ selection: { anchor: state.doc.length } }).state).line).toBe("task");
+  });
+
+  it("decorates a quote row and conceals its marker, caret on the row or not", () => {
+    for (const focused of [false, true]) {
+      const state = parsedState("> quoted\nplain", 3);
+      const decorations = serialize(computeLiveDecorations(state, focused, createMarks(), fullRange(state))).join(" ");
+      expect(decorations).toContain("cm-md-quote");
+      expect(decorations).toContain("0-2 {}");
+    }
+  });
+
+  it("leaves a quote on the second Enter, like a list", () => {
+    const enter = (state: EditorState) => {
+      const bindings = state.facet(keymap).flat().filter((b) => b.key === "Enter");
+      let next = state;
+      for (const b of bindings) if (b.run!({ state: next, dispatch: (tr: Transaction) => (next = tr.state) } as never)) break;
+      return next;
+    };
+    let state = EditorState.create({ doc: "> quoted", extensions: [liveMarkdownBase()], selection: { anchor: 8 } });
+    state = enter(state);
+    expect(state.doc.toString()).toBe("> quoted\n> ");
+    state = enter(state);
+    expect(state.doc.toString()).toBe("> quoted\n");
+    expect(state.selection.main.head).toBe(state.doc.length);
   });
 });
