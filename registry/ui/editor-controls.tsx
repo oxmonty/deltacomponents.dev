@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type ComponentProps } from "react";
-import { redo, undo } from "@codemirror/commands";
+import { indentLess, indentMore, redo, undo } from "@codemirror/commands";
 import type { EditorView } from "@codemirror/view";
 import { Menu } from "@base-ui/react/menu";
 import { Toolbar } from "@base-ui/react/toolbar";
@@ -9,6 +9,7 @@ import { Toolbar } from "@base-ui/react/toolbar";
 import { useIcons, type IconComponent } from "@/registry/lib/icon-context";
 import {
   formattingAt,
+  insertHorizontalRule,
   insertLink,
   setHeading,
   toggleLinePrefix,
@@ -41,7 +42,7 @@ const STYLES: { level: 0 | 1 | 2 | 3; label: string }[] = [
  * and reads its pressed state from the caret, so it is a second way in, never
  * a second source of truth.
  */
-export function EditorControls({ className, ...props }: ComponentProps<"div">) {
+export function EditorControls({ className, style, ...props }: ComponentProps<"div">) {
   const view = useEditorView();
   const icons = useIcons();
   const formatting = view ? formattingAt(view.state) : null;
@@ -58,11 +59,10 @@ export function EditorControls({ className, ...props }: ComponentProps<"div">) {
         // One row that scrolls rather than wraps: on a phone a toolbar folded
         // into three rows eats the screen the text needed, and a sideways
         // strip is what the platform's own editors do. The scrollbar is
-        // hidden because the strip is a control, not a document.
-        className={cn(
-          "flex items-center overflow-x-auto py-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
-          className,
-        )}
+        // hidden because the strip is a control, not a document — inline,
+        // so a host stylesheet's own `scrollbar-width` on `*` cannot win.
+        className={cn("flex items-center overflow-x-auto py-0.5 [&::-webkit-scrollbar]:hidden", className)}
+        style={{ scrollbarWidth: "none", ...style }}
         {...props}
       >
         <Group>
@@ -82,8 +82,9 @@ export function EditorControls({ className, ...props }: ComponentProps<"div">) {
         </Group>
         <Separator />
         <Group>
-          <Control icon={icons.link} label="Link" pressed={formatting?.link} onRun={() => run(insertLink())} />
+          <Control icon={icons.link} label="Link" keys="K" pressed={formatting?.link} onRun={() => run(insertLink())} />
           <Control icon={icons.image} label="Image" onRun={() => run(insertLink(true))} />
+          <Control icon={icons.minus} label="Horizontal rule" onRun={() => run(insertHorizontalRule)} />
         </Group>
         <Separator />
         {/* The four that rewrite the head of the line, together: each swaps
@@ -93,6 +94,13 @@ export function EditorControls({ className, ...props }: ComponentProps<"div">) {
           <Control icon={icons["list-ordered"]} label="Numbered list" pressed={formatting?.line === "ordered"} onRun={() => run(toggleLinePrefix("ordered"))} />
           <Control icon={icons["list-todo"]} label="Task list" keys="L" pressed={formatting?.line === "task"} onRun={() => run(toggleLinePrefix("task"))} />
           <Control icon={icons["text-quote"]} label="Quote" pressed={formatting?.line === "quote"} onRun={() => run(toggleLinePrefix("quote"))} />
+        </Group>
+        <Separator />
+        {/* Tab and Shift+Tab on a keyboard; on a phone these two are the only
+            way to nest a bullet. */}
+        <Group>
+          <Control icon={icons["indent-increase"]} label="Indent" keys="]" onRun={() => run(indentMore)} />
+          <Control icon={icons["indent-decrease"]} label="Outdent" keys="[" onRun={() => run(indentLess)} />
         </Group>
       </Toolbar.Root>
     </TooltipProvider>
@@ -128,7 +136,7 @@ function Control({ icon: Icon, label, keys, pressed = false, disabled = false, o
         onMouseDown={(event) => event.preventDefault()}
         onClick={onRun}
         render={
-          <Button variant="ghost" size="icon-sm" active={pressed} aria-label={label} aria-pressed={pressed}>
+          <Button variant="ghost" size="icon-compact" active={pressed} aria-label={label} aria-pressed={pressed}>
             <Icon />
           </Button>
         }
@@ -154,7 +162,7 @@ function StyleMenu({
         render={
           <Menu.Trigger
             render={
-              <Button variant="ghost" size="sm" trailingIcon={icons["chevron-down"]} active={open}>
+              <Button variant="ghost" size="compact" trailingIcon={icons["chevron-down"]} active={open}>
                 Style
               </Button>
             }

@@ -8,6 +8,7 @@ import {
   computeLiveDecorations,
   createMarks,
   formattingAt,
+  insertHorizontalRule,
   insertLink,
   liveMarkdownBase,
   setHeading,
@@ -303,6 +304,23 @@ describe("toolbar commands", () => {
       expect(decorations).toContain("cm-md-quote");
       expect(decorations).toContain("0-2 {}");
     }
+  });
+
+  it("puts a rule on its own line, never directly under text", () => {
+    // then: a blank line separates text from the rule, or markdown reads a setext heading
+    expect(apply("text", insertHorizontalRule, 4, 4).doc.toString()).toBe("text\n\n---\n");
+    expect(apply("text\n", insertHorizontalRule, 5, 5).doc.toString()).toBe("text\n\n---\n");
+    expect(apply("", insertHorizontalRule).doc.toString()).toBe("---\n");
+    const state = apply("text", insertHorizontalRule, 4, 4);
+    expect(state.selection.main.head).toBe(state.doc.length);
+  });
+
+  it("replaces a rule with a widget off the caret and shows the dashes on it", () => {
+    const off = parsedState("a\n\n---\n\nb", 0);
+    const on = parsedState("a\n\n---\n\nb", 4);
+    const marks = createMarks();
+    expect(serialize(computeLiveDecorations(off, true, marks, fullRange(off))).join(" ")).toContain("widget");
+    expect(serialize(computeLiveDecorations(on, true, marks, fullRange(on))).join(" ")).not.toContain("widget");
   });
 
   it("leaves a quote on the second Enter, like a list", () => {

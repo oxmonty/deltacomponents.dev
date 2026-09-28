@@ -72,6 +72,9 @@ import {
   List,
   ListOrdered,
   ListTodo,
+  IndentIncrease,
+  IndentDecrease,
+  Minus,
 } from "lucide-react";
 
 export interface IconComponentProps {
@@ -98,7 +101,8 @@ export type IconName =
   | "panel-left" | "panel-right" | "chevrons-up-down" | "more-horizontal" | "more-vertical" | "calendar" | "folder"
   | "sliders-horizontal" | "download"
   | "undo" | "redo" | "bold" | "italic" | "strikethrough" | "code"
-  | "text-quote" | "list" | "list-ordered" | "list-todo";
+  | "text-quote" | "list" | "list-ordered" | "list-todo"
+  | "indent-increase" | "indent-decrease" | "minus";
 
 export const defaultIcons: Record<IconName, IconComponent> = {
   "chevron-right": ChevronRight,
@@ -170,6 +174,9 @@ export const defaultIcons: Record<IconName, IconComponent> = {
   "list": List,
   "list-ordered": ListOrdered,
   "list-todo": ListTodo,
+  "indent-increase": IndentIncrease,
+  "indent-decrease": IndentDecrease,
+  "minus": Minus,
 };
 
 const IconContext = createContext<Record<IconName, IconComponent> | null>(null);

@@ -78,6 +78,8 @@ export interface EditorElements {
   li?: EditorElement;
   /** The whole quoted row. The rule down its left edge is structural. */
   blockquote?: EditorElement;
+  /** The `<hr>` standing in for `---` once the caret has left its line. */
+  hr?: EditorElement;
   /** The • / ◦ glyph standing in for a `-` marker. */
   bullet?: EditorElement;
   /** The real `<input type="checkbox">` standing in for `[ ]` / `[x]`. */
@@ -108,6 +110,7 @@ export const defaultElements: Required<Record<keyof EditorElements, { tag?: stri
   a: { tag: "a", className: "underline underline-offset-2 decoration-muted-foreground" },
   li: { className: "" },
   blockquote: { className: "text-muted-foreground" },
+  hr: { className: "border-border" },
   bullet: { className: "text-muted-foreground" },
   checkbox: { className: "size-3.5 pointer-coarse:size-[18px] accent-[var(--primary)] cursor-pointer" },
   taskDone: { className: "text-muted-foreground line-through" },
@@ -181,6 +184,16 @@ const chromelessTheme = EditorView.theme({
   // wrapper's baseline at its bottom edge rather than on a line box that
   // shifts with the box's size.
   ".cm-md-check": { display: "inline-block", verticalAlign: "-0.09375rem" },
+  // The rule fills its line and sits on the text's midline, so the row keeps
+  // the height of the `---` it replaces and the caret lands beside it.
+  ".cm-md-hr": {
+    display: "inline-block",
+    width: "100%",
+    margin: "0",
+    verticalAlign: "middle",
+    borderWidth: "1px 0 0",
+    borderStyle: "solid",
+  },
   ".cm-md-check > input": { display: "block" },
   ".cm-cursor": { borderLeftColor: "var(--foreground)" },
   // drawSelection() replaces the native selection and caret (the native caret
@@ -416,6 +429,25 @@ export function insertLink(image = false): StateCommand {
   };
 }
 
+/** Put a `---` on a line of its own after the caret's line, and the caret on
+ *  a fresh line under it. The blank line before it is not optional: markdown
+ *  reads `text` directly over `---` as a setext heading, not a rule. */
+export const insertHorizontalRule: StateCommand = ({ state, dispatch }) => {
+  const line = state.doc.lineAt(state.selection.main.head);
+  const previousHasText = line.number > 1 && state.doc.line(line.number - 1).length > 0;
+  const lead = line.length > 0 ? "\n\n" : previousHasText ? "\n" : "";
+  const insert = `${lead}---\n`;
+  dispatch(
+    state.update({
+      changes: { from: line.to, insert },
+      selection: { anchor: line.to + insert.length },
+      scrollIntoView: true,
+      userEvent: "input",
+    }),
+  );
+  return true;
+};
+
 /** What is in force at the caret, for a toolbar's pressed states. Inline
  *  constructs come from the syntax tree (so only closed ones count, which is
  *  also what the eager styling of an unclosed `**` would mislead about); the
@@ -480,6 +512,7 @@ const formattingKeymap: readonly KeyBinding[] = [
   { key: "Mod-i", run: toggleWrap("*"), preventDefault: true },
   { key: "Mod-e", run: toggleWrap("`"), preventDefault: true },
   { key: "Mod-Shift-x", run: toggleWrap("~~"), preventDefault: true },
+  { key: "Mod-k", run: insertLink(), preventDefault: true },
   { key: "Mod-l", run: toggleLinePrefix("task"), preventDefault: true },
 ];
 
@@ -635,6 +668,20 @@ class BulletWidget extends WidgetType {
   }
 }
 
+class HrWidget extends WidgetType {
+  constructor(readonly className: string) {
+    super();
+  }
+  eq(other: HrWidget) {
+    return other.className === this.className;
+  }
+  toDOM() {
+    const hr = document.createElement("hr");
+    hr.className = `cm-md-hr ${this.className}`;
+    return hr;
+  }
+}
+
 class CheckboxWidget extends WidgetType {
   constructor(
     readonly checked: boolean,
@@ -686,6 +733,7 @@ interface Marks {
   taskDone: Decoration;
   listLine: Decoration;
   quoteLine: Decoration;
+  hr: string;
   headingLines: Decoration[];
   /** Null where the heading key carries no tag — then the line class is the
    *  whole treatment. */
@@ -721,6 +769,7 @@ export function createMarks(elements?: EditorElements): Marks {
     taskDone: marked("taskDone"),
     listLine: Decoration.line({ class: `cm-md-li ${at("li").className}` }),
     quoteLine: Decoration.line({ class: `cm-md-quote ${at("blockquote").className}` }),
+    hr: at("hr").className,
     // The SIZE rides the line, not the tag: it has to apply to the whole line
     // box or a wrapped heading's second row would come out at body size.
     headingLines: headings.map((h) => Decoration.line({ class: h.className })),
@@ -814,6 +863,13 @@ export function computeLiveDecorations(
                 ranges.push(marks.hide.range(child.from, child.to));
               }
             }
+            break;
+          }
+          case "HorizontalRule": {
+            // The three dashes come back while the caret is on the line, the
+            // way a heading's `#` does — that is how the rule is edited.
+            if (touches(node.from, node.to)) break;
+            ranges.push(Decoration.replace({ widget: new HrWidget(marks.hr) }).range(node.from, node.to));
             break;
           }
           case "Blockquote": {

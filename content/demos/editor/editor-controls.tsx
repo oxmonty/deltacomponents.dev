@@ -10,6 +10,8 @@ Select a word and press **B**, or put the caret on a line and pick a style.
 - [x] Toolbar reads the caret
 - [ ] Undo is the editor's own history
 
+---
+
 > Every button runs the same command its shortcut does.`;
 
 export default function EditorControlsDemo() {

@@ -6,7 +6,7 @@
 // the four extra libraries below are docs-site dependencies only.
 
 import type { ComponentType } from "react";
-import { Play, Pause, ListOrdered } from "lucide-react";
+import { Play, Pause, ListOrdered, TextQuote } from "lucide-react";
 
 import {
   defaultIcons,
@@ -86,6 +86,9 @@ import {
   IconList,
   IconListNumbers,
   IconListCheck,
+  IconIndentIncrease,
+  IconIndentDecrease,
+  IconMinus,
 } from "@tabler/icons-react";
 
 // ── Phosphor ────────────────────────────────────────────────
@@ -158,6 +161,9 @@ import {
   ListBullets as PhListBullets,
   ListNumbers as PhListOrdered,
   ListChecks as PhListTodo,
+  TextIndent as PhIndentIncrease,
+  TextOutdent as PhIndentDecrease,
+  Minus as PhMinus,
 } from "@phosphor-icons/react";
 
 // ── HugeIcons ───────────────────────────────────────────────
@@ -224,10 +230,13 @@ import HiBold from "@hugeicons/core-free-icons/TextBoldIcon";
 import HiItalic from "@hugeicons/core-free-icons/TextItalicIcon";
 import HiStrikethrough from "@hugeicons/core-free-icons/TextStrikethroughIcon";
 import HiCode from "@hugeicons/core-free-icons/SourceCodeIcon";
-import HiQuote from "@hugeicons/core-free-icons/QuoteDownIcon";
+import HiQuote from "@hugeicons/core-free-icons/LeftToRightBlockQuoteIcon";
 import HiList from "@hugeicons/core-free-icons/LeftToRightListBulletIcon";
 import HiListOrdered from "@hugeicons/core-free-icons/LeftToRightListNumberIcon";
 import HiListTodo from "@hugeicons/core-free-icons/CheckListIcon";
+import HiIndentIncrease from "@hugeicons/core-free-icons/TextIndentMoreIcon";
+import HiIndentDecrease from "@hugeicons/core-free-icons/TextIndentLessIcon";
+import HiMinus from "@hugeicons/core-free-icons/MinusSignIcon";
 
 // ── Untitled UI ─────────────────────────────────────────────
 // Aliased with a Uui prefix to avoid collisions with the Lucide imports above.
@@ -294,7 +303,10 @@ import {
   Italic01 as UuiItalic,
   Strikethrough01 as UuiStrikethrough,
   Code02 as UuiCode,
-  LeftIndent01 as UuiQuote,
+  // Named for the margin they move, so the pictures are the reverse of Lucide's.
+  LeftIndent01 as UuiIndentIncrease,
+  RightIndent01 as UuiIndentDecrease,
+  Minus as UuiMinus,
   Dotpoints01 as UuiList,
   CheckDone01 as UuiListTodo,
 } from "@untitledui/icons";
@@ -434,6 +446,9 @@ const tablerMap: Record<IconName, IconComponent> = {
   "list": tabler(IconList),
   "list-ordered": tabler(IconListNumbers),
   "list-todo": tabler(IconListCheck),
+  "indent-increase": tabler(IconIndentIncrease),
+  "indent-decrease": tabler(IconIndentDecrease),
+  "minus": tabler(IconMinus),
 };
 
 const phosphorMap: Record<IconName, IconComponent> = {
@@ -506,6 +521,9 @@ const phosphorMap: Record<IconName, IconComponent> = {
   "list": phosphor(PhListBullets),
   "list-ordered": phosphor(PhListOrdered),
   "list-todo": phosphor(PhListTodo),
+  "indent-increase": phosphor(PhIndentIncrease),
+  "indent-decrease": phosphor(PhIndentDecrease),
+  "minus": phosphor(PhMinus),
 };
 
 const hugeiconsMap: Record<IconName, IconComponent> = {
@@ -578,6 +596,9 @@ const hugeiconsMap: Record<IconName, IconComponent> = {
   "list": hugeicons(HiList),
   "list-ordered": hugeicons(HiListOrdered),
   "list-todo": hugeicons(HiListTodo),
+  "indent-increase": hugeicons(HiIndentIncrease),
+  "indent-decrease": hugeicons(HiIndentDecrease),
+  "minus": hugeicons(HiMinus),
 };
 
 const untitleduiMap: Record<IconName, IconComponent> = {
@@ -650,11 +671,15 @@ const untitleduiMap: Record<IconName, IconComponent> = {
   "italic": untitledui(UuiItalic),
   "strikethrough": untitledui(UuiStrikethrough),
   "code": untitledui(UuiCode),
-  "text-quote": untitledui(UuiQuote),
+  // Untitled UI has no block-quote glyph either.
+  "text-quote": TextQuote,
   "list": untitledui(UuiList),
   // Untitled UI has no numbered list (its `List` is the bullet glyph again).
   "list-ordered": ListOrdered,
   "list-todo": untitledui(UuiListTodo),
+  "indent-increase": untitledui(UuiIndentIncrease),
+  "indent-decrease": untitledui(UuiIndentDecrease),
+  "minus": untitledui(UuiMinus),
 };
 
 // ── Unified Map ─────────────────────────────────────────────
