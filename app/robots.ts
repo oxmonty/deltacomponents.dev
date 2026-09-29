@@ -4,15 +4,13 @@ import { site } from "@/lib/config";
 
 const SITE_URL = site.url;
 
-// Aggressive AI/scraper crawlers that ignore crawl-rate norms.
-// Well-behaved bots honor this; abusive ones won't — Vercel Firewall is the real enforcement.
+// Scrapers that ignore crawl-rate norms and give nothing back. The OpenAI
+// and Anthropic agents (GPTBot, OAI-SearchBot, ChatGPT-User, ClaudeBot,
+// Claude-User, Claude-SearchBot) are deliberately NOT here: a component
+// registry wants to be findable from an assistant, and /llms.txt and the
+// `.md` pages exist for exactly that reader. Well-behaved bots honor this;
+// abusive ones won't — Vercel Firewall is the real enforcement.
 const BLOCKED_BOTS = [
-  "GPTBot",
-  "OAI-SearchBot",
-  "ChatGPT-User",
-  "ClaudeBot",
-  "Claude-Web",
-  "anthropic-ai",
   "CCBot",
   "Google-Extended",
   "PerplexityBot",
