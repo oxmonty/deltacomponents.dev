@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ComponentProps } from "react";
+import { useEffect, useRef, useState, type ComponentProps } from "react";
 import { indentLess, indentMore, redo, undo } from "@codemirror/commands";
 import type { EditorView } from "@codemirror/view";
 import { Menu } from "@base-ui/react/menu";
@@ -51,17 +51,25 @@ export function EditorControls({ className, style, ...props }: ComponentProps<"d
     command(view);
     view.focus();
   };
+  const rootRef = useScrollCue();
 
   return (
     <TooltipProvider>
       <Toolbar.Root
+        ref={rootRef}
         aria-label="Formatting"
         // One row that scrolls rather than wraps: on a phone a toolbar folded
         // into three rows eats the screen the text needed, and a sideways
         // strip is what the platform's own editors do. The scrollbar is
         // hidden because the strip is a control, not a document — inline,
         // so a host stylesheet's own `scrollbar-width` on `*` cannot win.
-        className={cn("flex items-center overflow-x-auto py-0.5 [&::-webkit-scrollbar]:hidden", className)}
+        // With the scrollbar gone the only thing left to say there is more
+        // toolbar is the fade — see `useScrollCue` for when it is on.
+        className={cn(
+          "flex items-center overflow-x-auto py-0.5 [&::-webkit-scrollbar]:hidden",
+          "data-[overflow]:[mask-image:linear-gradient(to_right,black_calc(100%-24px),transparent)]",
+          className,
+        )}
         style={{ scrollbarWidth: "none", ...style }}
         {...props}
       >
@@ -71,7 +79,7 @@ export function EditorControls({ className, style, ...props }: ComponentProps<"d
         </Group>
         <Separator />
         <Group>
-          <StyleMenu heading={formatting?.heading ?? 0} view={view} onRun={run} />
+          <StyleMenu heading={formatting?.heading ?? 0} view={view} />
         </Group>
         <Separator />
         <Group>
@@ -99,12 +107,36 @@ export function EditorControls({ className, style, ...props }: ComponentProps<"d
         {/* Tab and Shift+Tab on a keyboard; on a phone these two are the only
             way to nest a bullet. */}
         <Group>
-          <Control icon={icons["indent-increase"]} label="Indent" keys="]" onRun={() => run(indentMore)} />
-          <Control icon={icons["indent-decrease"]} label="Outdent" keys="[" onRun={() => run(indentLess)} />
+          {/* Off on the first row of a list: there is no sibling above to nest
+              under, and indenting it anyway turns the marker into literal text. */}
+          <Control icon={icons["indent-increase"]} label="Indent" keys="]" disabled={!formatting?.canIndent} onRun={() => run(indentMore)} />
+          <Control icon={icons["indent-decrease"]} label="Outdent" keys="[" disabled={!formatting?.canOutdent} onRun={() => run(indentLess)} />
         </Group>
       </Toolbar.Root>
     </TooltipProvider>
   );
+}
+
+/** Marks the row `data-overflow` while there is toolbar past its right edge,
+ *  which is what the fade hangs off. Dropped at the end of the scroll, so the
+ *  cue only ever points at something there is more of. */
+function useScrollCue() {
+  const ref = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    const root = ref.current;
+    if (!root) return;
+    const update = () =>
+      root.toggleAttribute("data-overflow", root.scrollWidth - root.clientWidth - root.scrollLeft > 1);
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(root);
+    root.addEventListener("scroll", update, { passive: true });
+    return () => {
+      observer.disconnect();
+      root.removeEventListener("scroll", update);
+    };
+  }, []);
+  return ref;
 }
 
 function Group({ children }: { children: React.ReactNode }) {
@@ -136,7 +168,19 @@ function Control({ icon: Icon, label, keys, pressed = false, disabled = false, o
         onMouseDown={(event) => event.preventDefault()}
         onClick={onRun}
         render={
-          <Button variant="ghost" size="icon-compact" active={pressed} aria-label={label} aria-pressed={pressed}>
+          <Button
+            variant="ghost"
+            size="icon-compact"
+            active={pressed}
+            aria-label={label}
+            aria-pressed={pressed}
+            // `data-disabled`, not `:disabled`: a toolbar item stays focusable
+            // when it is off, so Base UI never sets the native attribute and
+            // the button's own `disabled:` classes never fire — Undo with
+            // nothing to undo was drawn exactly like Undo with something.
+            // 44px under a fingertip (WCAG 2.2), the dense 28px under a mouse.
+            className="data-[disabled]:opacity-30 data-[disabled]:hover:text-muted-foreground pointer-coarse:size-11"
+          >
             <Icon />
           </Button>
         }
@@ -145,15 +189,7 @@ function Control({ icon: Icon, label, keys, pressed = false, disabled = false, o
   );
 }
 
-function StyleMenu({
-  heading,
-  view,
-  onRun,
-}: {
-  heading: Formatting["heading"];
-  view: EditorView | null;
-  onRun: (command: Command) => void;
-}) {
+function StyleMenu({ heading, view }: { heading: Formatting["heading"]; view: EditorView | null }) {
   const [open, setOpen] = useState(false);
   const icons = useIcons();
   return (
@@ -162,7 +198,13 @@ function StyleMenu({
         render={
           <Menu.Trigger
             render={
-              <Button variant="ghost" size="compact" trailingIcon={icons["chevron-down"]} active={open}>
+              <Button
+                variant="ghost"
+                size="compact"
+                trailingIcon={icons["chevron-down"]}
+                active={open}
+                className="pointer-coarse:h-11"
+              >
                 Style
               </Button>
             }
@@ -173,7 +215,8 @@ function StyleMenu({
         <Menu.Positioner sideOffset={6} align="start" className="z-50">
           <Menu.Popup
             // Back to the text on close, not the trigger: the reader picked a
-            // style in order to keep writing.
+            // style in order to keep writing. This is the ONLY thing that may
+            // take focus here — see the note on onValueChange below.
             finalFocus={() => view?.contentDOM ?? null}
             className={cn(
               "min-w-40 rounded-[var(--radius-bg,var(--radius,0.5rem))] bg-popover p-1 text-popover-foreground",
@@ -183,7 +226,15 @@ function StyleMenu({
               "data-[starting-style]:scale-95 data-[starting-style]:opacity-0",
             )}
           >
-            <Menu.RadioGroup value={heading} onValueChange={(level) => onRun(setHeading(level))}>
+            <Menu.RadioGroup
+              value={heading}
+              // Runs the command WITHOUT focusing the editor, unlike every
+              // other control here. Focusing mid-close moves focus out of the
+              // open popup, which Base UI reads as a focus-out: it suppresses
+              // its own return-focus and re-closes, so `finalFocus` never runs
+              // and the caret is left on <body>. The popup hands focus back.
+              onValueChange={(level) => view && setHeading(level)(view)}
+            >
               {STYLES.map(({ level, label }) => (
                 <Menu.RadioItem
                   key={level}

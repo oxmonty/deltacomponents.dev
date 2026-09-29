@@ -12,6 +12,7 @@ import {
   insertLink,
   liveMarkdownBase,
   setHeading,
+  taskMarkerRanges,
   toggleLinePrefix,
   toggleWrap,
 } from "@/registry/lib/live-markdown";
@@ -334,7 +335,302 @@ describe("toolbar commands", () => {
     state = enter(state);
     expect(state.doc.toString()).toBe("> quoted\n> ");
     state = enter(state);
-    expect(state.doc.toString()).toBe("> quoted\n");
+    // then: a blank line between the quote and the caret, or the next sentence
+    // is a lazy continuation and renders back inside the quote
+    expect(state.doc.toString()).toBe("> quoted\n\n");
     expect(state.selection.main.head).toBe(state.doc.length);
+  });
+});
+
+describe("toggleWrap stacking", () => {
+  // given: thread a command through an evolving state, the same shape `apply` uses
+  const run = (state: EditorState, command: (t: { state: EditorState; dispatch: (tr: Transaction) => void }) => boolean) => {
+    let next = state;
+    command({ state, dispatch: (tr) => (next = tr.state) });
+    return next;
+  };
+  // given: simulate typing at the caret
+  const type = (state: EditorState, text: string) => {
+    const pos = state.selection.main.head;
+    return state.update({ changes: { from: pos, insert: text }, selection: { anchor: pos + text.length } }).state;
+  };
+  const selected = (state: EditorState) => state.sliceDoc(state.selection.main.from, state.selection.main.to);
+
+  it("stacks bold then italic then bold back down to plain", () => {
+    // given: "Select" selected in a plain sentence
+    let state = EditorState.create({ doc: "Select a word", extensions: [liveMarkdownBase()], selection: { anchor: 0, head: 6 } });
+    // when: bold, then italic on top of it
+    state = run(state, toggleWrap("**"));
+    expect(state.doc.toString()).toBe("**Select** a word");
+    expect(selected(state)).toBe("Select");
+    state = run(state, toggleWrap("*"));
+    expect(state.doc.toString()).toBe("***Select*** a word");
+    expect(selected(state)).toBe("Select");
+    // then: bold peels off first, italic remains, then italic peels off too
+    state = run(state, toggleWrap("**"));
+    expect(state.doc.toString()).toBe("*Select* a word");
+    expect(selected(state)).toBe("Select");
+    state = run(state, toggleWrap("*"));
+    expect(state.doc.toString()).toBe("Select a word");
+  });
+
+  it("stacks italic then bold then italic back down to bold", () => {
+    let state = EditorState.create({ doc: "Select", extensions: [liveMarkdownBase()], selection: { anchor: 0, head: 6 } });
+    state = run(state, toggleWrap("*"));
+    expect(state.doc.toString()).toBe("*Select*");
+    state = run(state, toggleWrap("**"));
+    expect(state.doc.toString()).toBe("***Select***");
+    // then: italic peels off, bold remains
+    state = run(state, toggleWrap("*"));
+    expect(state.doc.toString()).toBe("**Select**");
+    expect(selected(state)).toBe("Select");
+  });
+
+  it.each([
+    ["**", "bold"],
+    ["*", "italic"],
+    ["~~", "strikethrough"],
+    ["`", "code"],
+  ])("steps the caret past its own closer instead of stacking a new pair (%s)", (marker) => {
+    let state = EditorState.create({ doc: "", extensions: [liveMarkdownBase()] });
+    // given: toggling on nothing opens an empty pair with the caret inside
+    state = run(state, toggleWrap(marker));
+    expect(state.doc.toString()).toBe(marker + marker);
+    expect(state.selection.main.from).toBe(marker.length);
+    expect(state.selection.main.to).toBe(marker.length);
+    // when: typing content, then toggling the same marker again to close it
+    state = type(state, "typed");
+    expect(state.doc.toString()).toBe(`${marker}typed${marker}`);
+    state = run(state, toggleWrap(marker));
+    // then: the caret lands after the closer, nothing new is inserted
+    expect(state.doc.toString()).toBe(`${marker}typed${marker}`);
+    expect(state.selection.main.head).toBe(state.doc.length);
+    state = type(state, " plain");
+    expect(state.doc.toString()).toBe(`${marker}typed${marker} plain`);
+  });
+
+  it("collapses an empty pair back to nothing", () => {
+    let state = EditorState.create({ doc: "", extensions: [liveMarkdownBase()] });
+    state = run(state, toggleWrap("**"));
+    state = run(state, toggleWrap("**"));
+    expect(state.doc.toString()).toBe("");
+  });
+
+  it("still unwraps a selection that includes the markers themselves", () => {
+    const state = EditorState.create({ doc: "**Select**", extensions: [liveMarkdownBase()], selection: { anchor: 0, head: 10 } });
+    expect(run(state, toggleWrap("**")).doc.toString()).toBe("Select");
+  });
+});
+
+/** Every Enter binding in order, the way the editor runs them. */
+function pressKey(state: EditorState, key: string) {
+  const bindings = state.facet(keymap).flat().filter((b) => b.key === key);
+  let next = state;
+  for (const b of bindings)
+    if (b.run!({ state: next, dispatch: (tr: Transaction) => (next = tr.state) } as never)) break;
+  return next;
+}
+
+function caretState(doc: string, anchor: number) {
+  return EditorState.create({ doc, extensions: [liveMarkdownBase()], selection: { anchor } });
+}
+
+/** Home, through the real bindings. Only ours is a StateCommand — the stock
+ *  line-start command past it measures a live EditorView — so `handled: false`
+ *  IS the fall-through to it. */
+function pressHome(state: EditorState) {
+  const [ours] = state.facet(keymap).flat().filter((b) => b.key === "Home");
+  let next = state;
+  const handled = ours.run!({ state, dispatch: (tr: Transaction) => (next = tr.state) } as never);
+  return { state: next, handled };
+}
+
+describe("quote markers conceal on every row", () => {
+  const marks = createMarks();
+  const decorate = (doc: string, anchor: number, focused: boolean) =>
+    serialize(computeLiveDecorations(parsedState(doc, anchor), focused, marks, fullRange(parsedState(doc, anchor))));
+
+  it("hides the marker on a continued row, not just the one that opens the quote", () => {
+    // given: "> a\n> b", whose second `>` is a child of the Paragraph, not of
+    // the Blockquote — getChildren("QuoteMark") on the quote never saw it
+    for (const focused of [false, true]) {
+      // when: the caret sits on the second row
+      const decorations = decorate("> a\n> b", 6, focused);
+      // then: both markers are concealed, and both rows carry the rule
+      expect(decorations, String(focused)).toContain("0-2 {}");
+      expect(decorations, String(focused)).toContain("4-6 {}");
+      expect(decorations.filter((d) => d.includes("cm-md-quote"))).toHaveLength(2);
+    }
+  });
+
+  it("hides both markers of a nested row without overlapping them", () => {
+    // given/when: "> > x" puts two marks on one row, back to back
+    const decorations = decorate("> > x", 0, true);
+    // then: they conceal as two adjacent ranges (an overlap would have thrown)
+    expect(decorations).toContain("0-2 {}");
+    expect(decorations).toContain("2-4 {}");
+  });
+});
+
+describe("leaving a quote or a list leaves a blank line", () => {
+  const typeAtCaret = (state: EditorState, text: string) =>
+    state.update({ changes: { from: state.selection.main.head, insert: text } }).state;
+
+  const nodeNamesAt = (doc: string, pos: number) => {
+    const names: string[] = [];
+    for (
+      let node = ensureSyntaxTree(parsedState(doc), doc.length, 5000)!.resolveInner(pos, 1) as {
+        name: string;
+        parent: unknown;
+      } | null;
+      node;
+      node = node.parent as typeof node
+    )
+      names.push(node.name);
+    return names;
+  };
+
+  it("puts an empty row between the quote and the caret", () => {
+    // given: the caret at the end of a quoted row
+    let state = caretState("> a", 3);
+    // when: Enter twice, the second on a row that is only its marker
+    state = pressKey(state, "Enter");
+    expect(state.doc.toString()).toBe("> a\n> ");
+    state = pressKey(state, "Enter");
+    // then: the quote, a blank line, and the caret on its own row
+    expect(state.doc.toString()).toBe("> a\n\n");
+    expect(state.selection.main.head).toBe(5);
+  });
+
+  it("keeps what is typed after a quote out of it", () => {
+    let state = pressKey(pressKey(caretState("> a", 3), "Enter"), "Enter");
+    state = typeAtCaret(state, "x");
+    expect(state.doc.toString()).toBe("> a\n\nx");
+    // then: the new sentence is its own paragraph, not a lazy continuation
+    expect(nodeNamesAt(state.doc.toString(), 5)).not.toContain("Blockquote");
+  });
+
+  it("keeps what is typed after a list out of the item", () => {
+    let state = pressKey(pressKey(caretState("- one", 5), "Enter"), "Enter");
+    expect(state.doc.toString()).toBe("- one\n\n");
+    state = typeAtCaret(state, "x");
+    expect(nodeNamesAt(state.doc.toString(), 7)).not.toContain("ListItem");
+  });
+
+  it("still outdents a nested empty item one level before leaving the list", () => {
+    // given: an empty item nested under a top-level one
+    let state = pressKey(caretState("- one\n    - two", 15), "Enter");
+    // when: Enter on it
+    state = pressKey(state, "Enter");
+    // then: it outdents rather than exiting — the blank line is one more Enter
+    expect(state.doc.toString()).toBe("- one\n    - two\n- ");
+    expect(pressKey(state, "Enter").doc.toString()).toBe("- one\n    - two\n\n");
+  });
+});
+
+describe("Enter at the start of an item's text", () => {
+  it("opens a complete empty item above, marker and space", () => {
+    // given: the caret right after the marker, with content after it
+    // then: the new row is a committed marker, never a bare "-"
+    for (const [doc, caret, expected] of [
+      ["- one", 2, "- \n- one"],
+      ["1. one", 3, "1. \n2. one"],
+      ["    - one", 6, "    - \n    - one"],
+      ["- [ ] one", 6, "- [ ] \n- [ ] one"],
+    ] as const) {
+      const state = pressKey(caretState(doc, caret), "Enter");
+      expect(state.doc.toString(), doc).toBe(expected);
+      // then: the caret stays on its own words, after the pushed-down marker
+      expect(state.selection.main.head, doc).toBe(expected.length - "one".length);
+    }
+  });
+
+  it("draws the empty row it leaves behind as a list row", () => {
+    const state = parsedState("- \n- one");
+    expect(
+      serialize(computeLiveDecorations(state, false, createMarks(), fullRange(state))).join(" "),
+    ).toContain("cm-md-li");
+  });
+
+  it("leaves Enter elsewhere on the row to CodeMirror", () => {
+    expect(pressKey(caretState("- one", 5), "Enter").doc.toString()).toBe("- one\n- ");
+    expect(pressKey(caretState("- one", 4), "Enter").doc.toString()).toBe("- on\n- e");
+  });
+});
+
+describe("a task row's marker is one unit to the caret", () => {
+  it("draws the whole marker as a single checkbox", () => {
+    // given: "- [ ] text", which used to be a hidden "- " beside a widget
+    const state = parsedState("- [ ] text");
+    const decorations = serialize(computeLiveDecorations(state, false, createMarks(), fullRange(state)));
+    // then: one replaced range over "- [ ]", so there is no seam to sit in
+    const replaced = decorations.filter((d) => d.includes("widget"));
+    expect(replaced).toHaveLength(1);
+    expect(replaced[0]).toMatch(/^0-5 /);
+    expect(replaced[0]).toContain('"markerOffset":2');
+  });
+
+  it("makes every position inside the marker and its space atomic", () => {
+    const state = parsedState("- [ ] text");
+    const atomic = taskMarkerRanges(state, fullRange(state));
+    const spans: [number, number][] = [];
+    const cursor = atomic.iter();
+    while (cursor.value) {
+      spans.push([cursor.from, cursor.to]);
+      cursor.next();
+    }
+    // then: the row start through the text start, so a caret aimed at the line
+    // start or dropped in the middle is pushed to one edge, never left at 2
+    expect(spans).toEqual([[0, 6]]);
+  });
+
+  it("removes the whole marker with one Backspace at the text start", () => {
+    const state = pressKey(caretState("- [ ] text", 6), "Backspace");
+    expect(state.doc.toString()).toBe("text");
+    expect(state.selection.main.head).toBe(0);
+  });
+
+  it("sends the first Home to the text and the second to the row start", () => {
+    // given: the caret in the middle of a task row's words
+    const first = pressHome(caretState("- [ ] task", 8));
+    // then: it stops at the text, not in front of the checkbox
+    expect(first.handled).toBe(true);
+    expect(first.state.selection.main.head).toBe(6);
+    // when: Home again, already at the text start
+    const second = pressHome(first.state);
+    // then: ours declines, so the stock line-start command takes it to 0
+    expect(second.handled).toBe(false);
+  });
+
+  it("stops at the text on a quote row too, and leaves a plain line alone", () => {
+    expect(pressHome(caretState("> quoted", 5)).state.selection.main.head).toBe(2);
+    expect(pressHome(caretState("plain words", 6)).handled).toBe(false);
+  });
+});
+
+describe("indent affordances", () => {
+  const LIST = "para\n- a\n- b\n  - b1\n  - b2";
+  const at = (needle: string) => formattingAt(parsedState(LIST, LIST.indexOf(needle) + 2));
+
+  it("refuses to indent a row with no sibling above it to nest under", () => {
+    // given: `- a` opens the list and `  - b1` opens the nested one
+    // then: indenting either writes a marker markdown reads as plain text
+    expect(at("- a").canIndent).toBe(false);
+    expect(at("- b1").canIndent).toBe(false);
+  });
+
+  it("indents a row that follows a sibling, or a child of one", () => {
+    expect(at("- b").canIndent).toBe(true);
+    expect(at("- b2").canIndent).toBe(true);
+  });
+
+  it("leaves a plain line free to indent", () => {
+    expect(at("para").canIndent).toBe(true);
+  });
+
+  it("outdents only a line that has an indent to give back", () => {
+    expect(at("- b1").canOutdent).toBe(true);
+    expect(at("- a").canOutdent).toBe(false);
+    expect(at("para").canOutdent).toBe(false);
   });
 });

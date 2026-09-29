@@ -179,11 +179,30 @@ const chromelessTheme = EditorView.theme({
     textIndent: "calc(var(--hang) * -1)",
   },
   ".cm-line.cm-md-li.cm-md-hang": { paddingLeft: "calc(0.5rem + var(--hang))" },
+  // One marker column for every list kind. The bullet glyph, the checkbox and
+  // an ordered row's `1.` each centre in a box `--marker-w` wide — the widest
+  // of the three, measured and set per line beside `--hang` — so the markers
+  // share a centre axis and the text after them starts at the same x. The
+  // column stops at the marker: the space that follows it is document text on
+  // all three, so it lines them up too. `text-indent: 0` because the hanging
+  // indent's negative indent inherits into these boxes and would drag the
+  // marker out of the column. The `auto` fallback is what the metric probes
+  // measure against, before any `--marker-w` exists. A minimum, not a width:
+  // the number is text, and a `10.` wider than the column must spill past
+  // it rather than wrap inside its own box.
+  ".cm-md-bullet, .cm-md-check, .cm-md-num": {
+    display: "inline-block",
+    minWidth: "var(--marker-w, auto)",
+    textAlign: "center",
+    textIndent: "0",
+    whiteSpace: "nowrap",
+  },
   // The checkbox wrapper. Sizing the box is the element map's job; this only
   // sits it on the text baseline, and `display: block` on the input keeps the
   // wrapper's baseline at its bottom edge rather than on a line box that
-  // shifts with the box's size.
-  ".cm-md-check": { display: "inline-block", verticalAlign: "-0.09375rem" },
+  // shifts with the box's size. `content-box` so the coarse-pointer padding
+  // below grows OUTSIDE the column and the input stays on the column's centre.
+  ".cm-md-check": { verticalAlign: "-0.09375rem", boxSizing: "content-box" },
   // The rule fills its line and sits on the text's midline, so the row keeps
   // the height of the `---` it replaces and the caret lands beside it.
   ".cm-md-hr": {
@@ -194,7 +213,8 @@ const chromelessTheme = EditorView.theme({
     borderWidth: "1px 0 0",
     borderStyle: "solid",
   },
-  ".cm-md-check > input": { display: "block" },
+  // Centred in the column, not flush against its left edge.
+  ".cm-md-check > input": { display: "block", marginInline: "auto" },
   ".cm-cursor": { borderLeftColor: "var(--foreground)" },
   // drawSelection() replaces the native selection and caret (the native caret
   // spans the full line box and reads oversized); its layers need explicit
@@ -285,13 +305,33 @@ const keyboardAware: Extension = [
 export function toggleWrap(marker: string): StateCommand {
   return ({ state, dispatch }) => {
     const len = marker.length;
+    const char = marker[0];
+    // The full run of `char` touching a position, not just one marker's
+    // width of it — `*` and `**` share a character, so telling italic from
+    // bold needs the WHOLE run outside the range, not just its last `len`
+    // characters (which is what let toggling italic on a bold word strip
+    // one star off each side instead of adding a third).
+    const runBefore = (pos: number) => {
+      let n = 0;
+      while (pos - n > 0 && state.sliceDoc(pos - n - 1, pos - n) === char) n++;
+      return n;
+    };
+    const runAfter = (pos: number) => {
+      let n = 0;
+      while (pos + n < state.doc.length && state.sliceDoc(pos + n, pos + n + 1) === char) n++;
+      return n;
+    };
     const changes = state.changeByRange((range) => {
       const { from, to } = range;
-      // Markers just outside the range (also the caret-between-markers case).
-      if (
-        state.sliceDoc(Math.max(0, from - len), from) === marker &&
-        state.sliceDoc(to, to + len) === marker
-      ) {
+      // Markers just outside the range (also the caret-between-markers
+      // case). `*` only counts as already-applied when the run on both
+      // sides is odd — an even run is a `**` pair, not `*` plus leftover —
+      // every other marker has no such overlap, so any run at least its own
+      // length counts.
+      const before = runBefore(from);
+      const after = runAfter(to);
+      const wrapped = marker === "*" ? before % 2 === 1 && after % 2 === 1 : before >= len && after >= len;
+      if (wrapped) {
         return {
           changes: [
             { from: from - len, to: from },
@@ -310,6 +350,17 @@ export function toggleWrap(marker: string): StateCommand {
           ],
           range: EditorSelection.range(from, to - 2 * len),
         };
+      }
+      // Caret sitting right before this marker's own closer (typed content
+      // in between, so `wrapped` above missed it) — step past it instead of
+      // opening a second, empty pair right next to the first.
+      if (
+        range.empty &&
+        state.sliceDoc(to, to + len) === marker &&
+        state.sliceDoc(to + len, to + len + 1) !== char &&
+        state.sliceDoc(to - len, to) !== marker
+      ) {
+        return { range: EditorSelection.cursor(to + len) };
       }
       return {
         changes: [
@@ -462,6 +513,30 @@ export interface Formatting {
   link: boolean;
   canUndo: boolean;
   canRedo: boolean;
+  /** Whether the caret's line can take another indent step. */
+  canIndent: boolean;
+  /** Whether the caret's line has an indent to give back. */
+  canOutdent: boolean;
+}
+
+const LIST_KINDS: LinePrefix[] = ["bullet", "task", "ordered"];
+
+/** A list row nests under the row above it, so the FIRST item of a list has
+ *  nothing to nest under: indenting it writes `    - a`, which markdown reads
+ *  as a paragraph continuation of the item before, not a nested list — the
+ *  marker comes back as a literal `-`. A plain line has no such constraint. */
+function canIndentLine(state: EditorState, line: { number: number; text: string }): boolean {
+  const { indent, kind } = linePrefixOf(line.text);
+  if (!kind || !LIST_KINDS.includes(kind)) return true;
+  for (let n = line.number - 1; n >= 1; n--) {
+    const previous = state.doc.line(n);
+    if (previous.text.trim() === "") continue;
+    const above = linePrefixOf(previous.text);
+    // Same indent is the previous sibling; deeper is a child of it, and its
+    // own parent is then a sibling of ours.
+    return above.kind !== null && LIST_KINDS.includes(above.kind) && above.indent >= indent;
+  }
+  return false;
 }
 
 const INLINE_NODES: Record<string, "strong" | "em" | "del" | "code" | "link"> = {
@@ -486,6 +561,8 @@ export function formattingAt(state: EditorState): Formatting {
     link: false,
     canUndo: undoDepth(state) > 0,
     canRedo: redoDepth(state) > 0,
+    canIndent: canIndentLine(state, line),
+    canOutdent: linePrefixOf(line.text).indent > 0,
   };
   // Side -1 so a caret sitting just past `**bold**|` still reads as bold,
   // which is where it lands the moment the closing marks are typed.
@@ -496,14 +573,64 @@ export function formattingAt(state: EditorState): Formatting {
   return formatting;
 }
 
-/** Enter on a row that is only a quote marker leaves the quote, the way a
- *  second Enter leaves a list. CodeMirror's own continuation would carry the
- *  `> ` on forever, and there is no other way out but Backspace. */
-const exitEmptyQuote: StateCommand = ({ state, dispatch }) => {
+const EMPTY_QUOTE = /^\s*(> ?)+$/;
+
+/** Enter on a row that is only a marker leaves the block — and leaves a BLANK
+ *  line behind it. Clearing the marker in place is not enough: in CommonMark
+ *  the next sentence typed directly under a quote or a list item is a lazy
+ *  continuation of it, so it renders back inside the thing it just left.
+ *
+ *  Only an unindented item: on a nested one CodeMirror outdents a level
+ *  instead, which is the way out one step at a time. Quotes have no such
+ *  step — `> > ` leaves the whole nesting at once, as it always has. */
+const exitEmptyBlock: StateCommand = ({ state, dispatch }) => {
+  const { main } = state.selection;
+  if (!main.empty) return false;
+  const line = state.doc.lineAt(main.head);
+  const { indent, kind, end } = linePrefixOf(line.text);
+  const emptyItem = kind !== null && kind !== "quote" && indent === 0 && end === line.length;
+  if (!emptyItem && !EMPTY_QUOTE.test(line.text)) return false;
+  dispatch(state.update({ changes: { from: line.from, to: line.to, insert: "\n" }, userEvent: "input" }));
+  return true;
+};
+
+/** Home on a row that opens with a marker goes to the start of the TEXT. The
+ *  marker is chrome — a bullet glyph or a checkbox — and landing in front of
+ *  it is never what was meant; returning false at the text start hands the
+ *  second press to the stock command, which is the row start. */
+const cursorTextStart: StateCommand = ({ state, dispatch }) => {
   const { main } = state.selection;
   const line = state.doc.lineAt(main.head);
-  if (!main.empty || !/^\s*(> ?)+$/.test(line.text)) return false;
-  dispatch(state.update({ changes: { from: line.from, to: line.to }, userEvent: "delete" }));
+  const { indent, end } = linePrefixOf(line.text);
+  if (end === indent || main.head <= line.from + end) return false;
+  dispatch(state.update({ selection: { anchor: line.from + end }, scrollIntoView: true }));
+  return true;
+};
+
+/** Enter at the start of a list item's text opens an empty item above it and
+ *  keeps the caret on its own words. CodeMirror's continuation writes the new
+ *  marker with NO trailing space (`-\n- one`), and a space is what commits a
+ *  block marker here — so its row came out as a bare `-`. */
+const openItemAbove: StateCommand = ({ state, dispatch }) => {
+  const { main } = state.selection;
+  if (!main.empty) return false;
+  const line = state.doc.lineAt(main.head);
+  const { indent, kind, end } = linePrefixOf(line.text);
+  if (kind === null || kind === "quote") return false;
+  if (main.head !== line.from + end || line.length === end) return false;
+  const lead = line.text.slice(0, indent);
+  const marker = line.text.slice(indent, end);
+  // The row being pushed down becomes the second item, so its number moves on.
+  const next = kind === "ordered" ? marker.replace(/^\d+/, (n) => String(Number(n) + 1)) : marker;
+  const insert = `${lead}${marker}\n${lead}${next}`;
+  dispatch(
+    state.update({
+      changes: { from: line.from, to: line.from + end, insert },
+      selection: { anchor: line.from + insert.length },
+      scrollIntoView: true,
+      userEvent: "input",
+    }),
+  );
   return true;
 };
 
@@ -550,6 +677,17 @@ interface HangMetrics {
   bullet: number;
   subBullet: number;
   checkbox: number;
+  ordered: number;
+}
+
+/** The shared marker column. Every list marker — the bullet glyph, the
+ *  checkbox, an ordered row's `1.` — centres in a box this wide, so the three
+ *  sit on one axis and their text starts at the same x. The widest marker
+ *  wins. It tracks `1.`, not `10.`: a two-digit number spills into the space
+ *  that follows it rather than widening the column for every other row, which
+ *  is what most editors do. */
+function markerColumn(metrics: HangMetrics): number {
+  return Math.max(metrics.bullet, metrics.subBullet, metrics.checkbox, metrics.ordered);
 }
 
 const setHangMetrics = StateEffect.define<HangMetrics>();
@@ -581,6 +719,12 @@ function measureHangMetrics(view: EditorView, marks: Marks): HangMetrics {
     // negative margin gives straight back, so only the wrapper's width is
     // the advance the text sees.
     checkbox: width(new CheckboxWidget(false, marks.checkbox).toDOM(view)),
+    // An ordered row's marker is the document's own text, so it is measured
+    // as text — with the widest digit, because `1` is the narrowest in a
+    // proportional face and a column cut to it wrapped `2.` inside itself.
+    // The probes see `min-width: var(--marker-w, auto)` and fall through to
+    // auto — `--marker-w` is set per line, never on the probe.
+    ordered: text("0."),
   };
   probe.remove();
   return metrics;
@@ -614,7 +758,8 @@ function hangMeasurer(marks: Marks) {
               current.space === next.space &&
               current.bullet === next.bullet &&
               current.subBullet === next.subBullet &&
-              current.checkbox === next.checkbox
+              current.checkbox === next.checkbox &&
+              current.ordered === next.ordered
             )
               return;
             queueMicrotask(() => {
@@ -627,15 +772,23 @@ function hangMeasurer(marks: Marks) {
   );
 }
 
-// One line decoration per distinct width, so unchanged lines compare equal
-// across rebuilds instead of being redrawn.
-const hangDecorations = new Map<number, Decoration>();
-function hangLine(width: number): Decoration {
-  const px = Math.round(width * 100) / 100;
-  let deco = hangDecorations.get(px);
+// One line decoration per distinct pair of widths, so unchanged lines compare
+// equal across rebuilds instead of being redrawn. `--marker-w` rides the same
+// decoration as `--hang`: every row that has a marker has a hanging indent, so
+// this is already the one place a per-line width reaches the markers inside.
+const hangDecorations = new Map<string, Decoration>();
+function hangLine(width: number, column: number): Decoration {
+  const round = (value: number) => Math.round(value * 100) / 100;
+  const px = round(width);
+  const columnPx = round(column);
+  const key = `${px}|${columnPx}`;
+  let deco = hangDecorations.get(key);
   if (!deco) {
-    deco = Decoration.line({ class: "cm-md-hang", attributes: { style: `--hang:${px}px` } });
-    hangDecorations.set(px, deco);
+    deco = Decoration.line({
+      class: "cm-md-hang",
+      attributes: { style: `--hang:${px}px;--marker-w:${columnPx}px` },
+    });
+    hangDecorations.set(key, deco);
   }
   return deco;
 }
@@ -686,11 +839,19 @@ class CheckboxWidget extends WidgetType {
   constructor(
     readonly checked: boolean,
     readonly className: string,
+    /** How far past the widget's own start the `[ ]` sits: the decoration
+     *  covers the whole `- [ ]`, so its position is the ROW's, not the
+     *  marker's. */
+    readonly markerOffset = 0,
   ) {
     super();
   }
   eq(other: CheckboxWidget) {
-    return other.checked === this.checked && other.className === this.className;
+    return (
+      other.checked === this.checked &&
+      other.className === this.className &&
+      other.markerOffset === this.markerOffset
+    );
   }
   toDOM(view: EditorView) {
     // A <label>, not a bare input: on touch the hit area has to reach past
@@ -704,9 +865,9 @@ class CheckboxWidget extends WidgetType {
     input.className = `cm-md-checkbox ${this.className}`;
     input.setAttribute("aria-label", this.checked ? "Mark task not done" : "Mark task done");
     input.addEventListener("change", () => {
-      // The widget replaces the "[ ]"/"[x]" marker, so its own position IS
-      // the marker's — toggle by rewriting those three characters.
-      const pos = view.posAtDOM(label);
+      // Toggle by rewriting the three characters of the marker, which sits
+      // markerOffset past where the widget starts.
+      const pos = view.posAtDOM(label) + this.markerOffset;
       view.dispatch({
         changes: { from: pos, to: pos + 3, insert: this.checked ? "[ ]" : "[x]" },
       });
@@ -722,6 +883,11 @@ class CheckboxWidget extends WidgetType {
   // Default ignoreEvent() is true: CM leaves clicks to the checkbox, so
   // toggling doesn't move the caret.
 }
+
+// An ordered row's marker stays the document's own "1." — no widget to centre
+// it, so the column class goes on the text itself. Structural only: colour and
+// type are the surrounding line's, as before.
+const orderedMark = Decoration.mark({ class: "cm-md-num" });
 
 interface Marks {
   hide: Decoration;
@@ -790,6 +956,45 @@ export function createMarks(elements?: EditorElements): Marks {
   };
 }
 
+/** Where a task row's marker starts: at the list bullet, not at the `[`. The
+ *  whole `- [ ]` is drawn as one checkbox, so that is where the decoration and
+ *  the atomic range both begin. */
+function taskMarkerFrom(taskMarker: SyntaxNode): number {
+  return taskMarker.parent?.parent?.getChild("ListMark")?.from ?? taskMarker.from;
+}
+
+/** `- [ ] ` counts as one character to the caret. The marker and the space
+ *  after it render as a single checkbox, so every position inside them is
+ *  invisible — arrow keys and clicks land at the row start or the text start,
+ *  never in between, where Backspace used to eat the space and with it the
+ *  checkbox. */
+export function taskMarkerRanges(
+  state: EditorState,
+  visible: readonly { from: number; to: number }[],
+): DecorationSet {
+  const ranges: Range<Decoration>[] = [];
+  const tree = syntaxTree(state);
+  for (const { from, to } of visible) {
+    tree.iterate({
+      from,
+      to,
+      enter: (node) => {
+        if (node.name !== "TaskMarker") return;
+        const line = state.doc.lineAt(node.to);
+        ranges.push(atomicMarker.range(taskMarkerFrom(node.node), Math.min(node.to + 1, line.to)));
+      },
+    });
+  }
+  return Decoration.set(ranges, true);
+}
+
+// Never rendered — atomicRanges reads only the range bounds.
+const atomicMarker = Decoration.replace({});
+
+const atomicTaskMarkers = EditorView.atomicRanges.of((view) =>
+  taskMarkerRanges(view.state, view.visibleRanges),
+);
+
 /** Pure decoration computation, separated from the view for testability.
  *
  *  `hasFocus` gates the caret-reveal: an unfocused editor still HAS a
@@ -816,11 +1021,11 @@ export function computeLiveDecorations(
   const committed = (markerEnd: number) => /[ \t]/.test(state.doc.sliceString(markerEnd, markerEnd + 1));
   const tree = syntaxTree(state);
   const metrics = state.field(hangMetrics, false) ?? null;
-  // What stands before the text on a bullet or task row, in px, keyed by the
-  // row's line start — filled from the tree walk, read in the line loop.
-  // ponytail: ordered lists are left out; their "1." is text of a width
-  // that would need its own probe, so they still wrap to the edge.
+  // What stands before the text on a list row, in px, keyed by the row's line
+  // start — filled from the tree walk, read in the line loop. Every kind of
+  // marker occupies the same column, so it is the same number on all three.
   const markerWidth = new Map<number, number>();
+  const column = metrics ? markerColumn(metrics) : 0;
 
   for (const { from: rangeFrom, to: rangeTo } of visible) {
     // Inline constructs the parser DID match, per line — used to scan only
@@ -874,21 +1079,24 @@ export function computeLiveDecorations(
           }
           case "Blockquote": {
             // Every row of the quote carries the rule, lazy continuation lines
-            // included; the `> ` conceals per row, so editing one line of a
-            // quote reveals only that line's marker.
+            // included. The markers themselves are handled by the QuoteMark
+            // case: only the FIRST row's `>` is a child of the Blockquote —
+            // a continued row's belongs to the Paragraph inside it.
             const opener = node.node.getChild("QuoteMark");
             if (!opener || !committed(opener.to)) break;
             const last = state.doc.lineAt(node.to).number;
             for (let n = state.doc.lineAt(node.from).number; n <= last; n++) {
               ranges.push(marks.quoteLine.range(state.doc.line(n).from));
             }
+            break;
+          }
+          case "QuoteMark": {
             // Concealed even with the caret on the row, as a bullet is: the
             // rule already says "quote", and a `>` surfacing on the line you
             // are typing is noise. Backspace at the head still removes it.
-            for (const quoteMark of node.node.getChildren("QuoteMark")) {
-              if (!committed(quoteMark.to)) continue;
-              ranges.push(marks.hide.range(quoteMark.from, quoteMark.to + 1));
-            }
+            // Nested `> > ` gives two adjacent marks, which do not overlap.
+            if (!committed(node.to)) break;
+            ranges.push(marks.hide.range(node.from, node.to + 1));
             break;
           }
           case "InlineCode": {
@@ -910,18 +1118,23 @@ export function computeLiveDecorations(
           case "ListMark": {
             if (!committed(node.to)) break;
             const item = node.node.parent; // ListItem
-            if (item?.parent?.name !== "BulletList") break; // ordered numbers stay as-is
+            const lineFrom = state.doc.lineAt(node.from).from;
+            // Whatever the marker is, it fills the column and the document's
+            // own space follows it, so the text starts at the same x on all
+            // three kinds of row — and the row wraps under that text.
+            if (metrics) markerWidth.set(lineFrom, column + metrics.space);
+            if (item?.parent?.name !== "BulletList") {
+              // An ordered row keeps its "1." as text; only the column is ours.
+              ranges.push(orderedMark.range(node.from, node.to));
+              break;
+            }
             const isTask = item.getChild("Task") !== null;
             // Bullets render as glyphs even with the caret adjacent — a fresh
             // "- " from Enter shows its bullet before any content is typed.
             // Backspace still removes the marker via deleteMarkupBackward.
             if (isTask) {
-              // Task rows: the checkbox carries the affordance — hide "- ".
-              const end = state.doc.sliceString(node.to, node.to + 1) === " " ? node.to + 1 : node.to;
-              ranges.push(marks.hide.range(node.from, end));
-              if (metrics) {
-                markerWidth.set(state.doc.lineAt(node.from).from, metrics.checkbox + metrics.space);
-              }
+              // Nothing here: the TaskMarker case draws "- [ ]" as ONE
+              // checkbox, so the bullet is inside that decoration.
             } else {
               // Nesting depth picks the glyph (• then ◦).
               let depth = 0;
@@ -933,21 +1146,20 @@ export function computeLiveDecorations(
                   widget: new BulletWidget(depth === 0 ? "•" : "◦", marks.bullet),
                 }).range(node.from, node.to),
               );
-              if (metrics) {
-                markerWidth.set(
-                  state.doc.lineAt(node.from).from,
-                  (depth === 0 ? metrics.bullet : metrics.subBullet) + metrics.space,
-                );
-              }
             }
             break;
           }
           case "TaskMarker": {
             const checked = state.doc.sliceString(node.from, node.to).toLowerCase().includes("x");
+            // One decoration over the whole "- [ ]", not a hidden "- " beside
+            // a checkbox: the seam between two replaced ranges is a legal
+            // caret position that renders nowhere, and Backspace in it ate the
+            // space and took the checkbox with it.
+            const from = taskMarkerFrom(node.node);
             ranges.push(
               Decoration.replace({
-                widget: new CheckboxWidget(checked, marks.checkbox),
-              }).range(node.from, node.to),
+                widget: new CheckboxWidget(checked, marks.checkbox, node.from - from),
+              }).range(from, node.to),
             );
             if (checked) {
               const line = state.doc.lineAt(node.to);
@@ -995,7 +1207,7 @@ export function computeLiveDecorations(
         // was pasted in and is rare enough to be off by a little.
         const indent = /^[ \t]*/.exec(line.text)![0].length * metrics.space;
         const hang = indent + (markerWidth.get(line.from) ?? 0);
-        if (hang > 0) ranges.push(hangLine(hang).range(line.from));
+        if (hang > 0) ranges.push(hangLine(hang, column).range(line.from));
       }
       while (first < covered.length && covered[first][1] <= line.from) first++;
       const segments: [number, number][] = [];
@@ -1120,10 +1332,16 @@ export function liveMarkdownBase(placeholderText = ""): Extension[] {
     // pasteURLAsLink is the one piece of it this editor uses.
     proseMarkdown,
     pasteURLAsLink,
+    atomicTaskMarkers,
     keymap.of([
-      { key: "Enter", run: exitEmptyQuote },
+      { key: "Enter", run: exitEmptyBlock },
+      { key: "Enter", run: openItemAbove },
       { key: "Enter", run: insertNewlineContinueMarkupCommand({ nonTightLists: false }) },
       { key: "Backspace", run: deleteMarkupBackward },
+      { key: "Home", run: cursorTextStart, preventDefault: true },
+      // Cmd+Left only, mirroring standardKeymap: `Mod-ArrowLeft` is word-left
+      // off the Mac, and line start is a Mac-only binding there too.
+      { mac: "Cmd-ArrowLeft", run: cursorTextStart, preventDefault: true },
     ]),
     linkClickHandler,
     hangMetrics,
