@@ -575,21 +575,22 @@ export function formattingAt(state: EditorState): Formatting {
 
 const EMPTY_QUOTE = /^\s*(> ?)+$/;
 
-/** Enter on a row that is only a marker leaves the block — and leaves a BLANK
- *  line behind it. Clearing the marker in place is not enough: in CommonMark
- *  the next sentence typed directly under a quote or a list item is a lazy
- *  continuation of it, so it renders back inside the thing it just left.
+/** Enter on a row that is only a quote marker leaves the quote — and leaves
+ *  a BLANK line behind it. Clearing the marker in place is not enough: in
+ *  CommonMark the next sentence typed directly under a quote is a lazy
+ *  continuation of it, and the rule carries on down the left edge.
  *
- *  Only an unindented item: on a nested one CodeMirror outdents a level
- *  instead, which is the way out one step at a time. Quotes have no such
- *  step — `> > ` leaves the whole nesting at once, as it always has. */
-const exitEmptyBlock: StateCommand = ({ state, dispatch }) => {
+ *  Lists are left to CodeMirror, which clears the marker and stays on the
+ *  row: the glyph goes and the caret does not move, which is what a second
+ *  Enter feels like it should do. A sentence typed there is a continuation
+ *  of the item in markdown terms, but nothing on the surface says so, so the
+ *  extra row would only read as a jump. `> > ` leaves the whole nesting at
+ *  once, as it always has. */
+const exitEmptyQuote: StateCommand = ({ state, dispatch }) => {
   const { main } = state.selection;
   if (!main.empty) return false;
   const line = state.doc.lineAt(main.head);
-  const { indent, kind, end } = linePrefixOf(line.text);
-  const emptyItem = kind !== null && kind !== "quote" && indent === 0 && end === line.length;
-  if (!emptyItem && !EMPTY_QUOTE.test(line.text)) return false;
+  if (!EMPTY_QUOTE.test(line.text)) return false;
   dispatch(state.update({ changes: { from: line.from, to: line.to, insert: "\n" }, userEvent: "input" }));
   return true;
 };
@@ -1334,7 +1335,7 @@ export function liveMarkdownBase(placeholderText = ""): Extension[] {
     pasteURLAsLink,
     atomicTaskMarkers,
     keymap.of([
-      { key: "Enter", run: exitEmptyBlock },
+      { key: "Enter", run: exitEmptyQuote },
       { key: "Enter", run: openItemAbove },
       { key: "Enter", run: insertNewlineContinueMarkupCommand({ nonTightLists: false }) },
       { key: "Backspace", run: deleteMarkupBackward },

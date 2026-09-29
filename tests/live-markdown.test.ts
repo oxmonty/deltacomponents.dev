@@ -472,7 +472,7 @@ describe("quote markers conceal on every row", () => {
   });
 });
 
-describe("leaving a quote or a list leaves a blank line", () => {
+describe("leaving a quote leaves a blank line; leaving a list clears the marker", () => {
   const typeAtCaret = (state: EditorState, text: string) =>
     state.update({ changes: { from: state.selection.main.head, insert: text } }).state;
 
@@ -510,11 +510,17 @@ describe("leaving a quote or a list leaves a blank line", () => {
     expect(nodeNamesAt(state.doc.toString(), 5)).not.toContain("Blockquote");
   });
 
-  it("keeps what is typed after a list out of the item", () => {
-    let state = pressKey(pressKey(caretState("- one", 5), "Enter"), "Enter");
-    expect(state.doc.toString()).toBe("- one\n\n");
-    state = typeAtCaret(state, "x");
-    expect(nodeNamesAt(state.doc.toString(), 7)).not.toContain("ListItem");
+  it("clears a list marker in place and stays on the row", () => {
+    // given: the caret at the end of an item
+    let state = pressKey(caretState("- one", 5), "Enter");
+    expect(state.doc.toString()).toBe("- one\n- ");
+    // when: Enter on the empty item
+    state = pressKey(state, "Enter");
+    // then: the glyph goes, the caret does not move down a row
+    expect(state.doc.toString()).toBe("- one\n");
+    expect(state.selection.main.head).toBe(6);
+    expect(pressKey(caretState("- [ ] one\n- [ ] ", 16), "Enter").doc.toString()).toBe("- [ ] one\n");
+    expect(pressKey(caretState("1. one\n2. ", 10), "Enter").doc.toString()).toBe("1. one\n");
   });
 
   it("still outdents a nested empty item one level before leaving the list", () => {
@@ -522,9 +528,9 @@ describe("leaving a quote or a list leaves a blank line", () => {
     let state = pressKey(caretState("- one\n    - two", 15), "Enter");
     // when: Enter on it
     state = pressKey(state, "Enter");
-    // then: it outdents rather than exiting — the blank line is one more Enter
+    // then: it outdents rather than exiting — clearing the marker is one more Enter
     expect(state.doc.toString()).toBe("- one\n    - two\n- ");
-    expect(pressKey(state, "Enter").doc.toString()).toBe("- one\n    - two\n\n");
+    expect(pressKey(state, "Enter").doc.toString()).toBe("- one\n    - two\n");
   });
 });
 
