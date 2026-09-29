@@ -23,6 +23,19 @@ and `make check` is what CI runs.
 Please read the
 [contribution guidelines](https://www.deltacomponents.dev/docs/contributing).
 
+Before a component ships or after a bug report, run a QA pass on it. In
+Claude Code, with [Claude in Chrome](https://claude.com/chrome) enabled so the
+live site can be screenshotted:
+
+```
+/qa-component <slug>
+```
+
+It drives the component through its edge cases with Playwright, confirms
+each root cause against the code, and publishes a findings page with repro
+steps and screenshots to hand to whoever fixes it. The skill lives in
+`.agents/skills/qa-component/`.
+
 ## Inspiration
 
 Delta Components took inspiration from [Fluid Functionalism](https://fluidfunctionalism.com) and its use of layout and color palette — another shadcn registry worth checking out.

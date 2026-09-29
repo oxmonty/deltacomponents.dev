@@ -17,3 +17,13 @@ make run
 ```
 
 That installs dependencies and starts the dev server. `make check` runs what CI runs, and `make` on its own lists every target.
+
+## QA passes
+
+A component gets a QA pass before it ships and again after any bug report, and a pull request that fixes behaviour links the finding it closes. The pass is a skill in the repo, run from Claude Code with [Claude in Chrome](https://claude.com/chrome) enabled so it can screenshot the live site:
+
+```
+/qa-component <slug>
+```
+
+It scripts an editing session against the component's doc page, confirms every root cause against the code rather than the screenshot, and publishes a findings page (repro steps, expected vs actual, the file to look at, a picture) that an engineer can work from cold. Reproduce a finding from its steps before fixing it, and land each fix with a test that runs the same steps.

@@ -131,6 +131,11 @@ export const TOC: Record<string, TocEntry[]> = {
       "id": "how-to-contribute",
       "text": "How to contribute",
       "depth": 2
+    },
+    {
+      "id": "qa-passes",
+      "text": "QA passes",
+      "depth": 2
     }
   ],
   "/docs/editor": [
