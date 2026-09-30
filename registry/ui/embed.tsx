@@ -119,6 +119,45 @@ function YouTubeEmbed({ videoId, title = "YouTube video", className }: YouTubeEm
   const [thumbnailLoaded, setThumbnailLoaded] = React.useState(false)
   const [playerLoaded, setPlayerLoaded] = React.useState(false)
   const thumbRef = React.useRef<HTMLImageElement>(null)
+  const iframeRef = React.useRef<HTMLIFrameElement>(null)
+
+  // Once the video is going, a tap on the player is a tap on YouTube's own
+  // chrome, and on a phone-height embed the title bar across the top — a link
+  // into the YouTube app — takes a good share of it, so trying to pause opens
+  // the app instead. On a coarse pointer a layer of ours takes the tap and
+  // toggles playback over the player's message API; YouTube's control bar
+  // along the bottom stays uncovered for scrubbing, volume and fullscreen.
+  // The layer only exists once playback has been seen (state 1), because
+  // before that the first tap has to reach the player itself on iOS.
+  const [playerState, setPlayerState] = React.useState<number | null>(null)
+  const [origin, setOrigin] = React.useState("")
+  React.useEffect(() => setOrigin(window.location.origin), [])
+  React.useEffect(() => {
+    const onMessage = (event: MessageEvent) => {
+      if (event.source !== iframeRef.current?.contentWindow || typeof event.data !== "string") return
+      let data: { event?: string; info?: number | { playerState?: number } }
+      try {
+        data = JSON.parse(event.data)
+      } catch {
+        return
+      }
+      if (data.event === "onStateChange" && typeof data.info === "number") setPlayerState(data.info)
+      else if (data.event === "infoDelivery" && typeof data.info === "object" && typeof data.info?.playerState === "number")
+        setPlayerState(data.info.playerState)
+    }
+    window.addEventListener("message", onMessage)
+    return () => window.removeEventListener("message", onMessage)
+  }, [])
+  const sendToPlayer = (func: "playVideo" | "pauseVideo" | "listening") => {
+    const target = iframeRef.current?.contentWindow
+    if (!target) return
+    const message = func === "listening" ? { event: "listening", id: videoId } : { event: "command", func, args: [] }
+    target.postMessage(JSON.stringify(message), "https://www.youtube-nocookie.com")
+  }
+  const [started, setStarted] = React.useState(false)
+  React.useEffect(() => {
+    if (playerState === 1) setStarted(true)
+  }, [playerState])
   // A cached thumbnail can finish loading before hydration, which means
   // React's onLoad below never fires for it.
   React.useEffect(() => {
@@ -148,7 +187,10 @@ function YouTubeEmbed({ videoId, title = "YouTube video", className }: YouTubeEm
     >
       {showIframe && (
         <iframe
-          src={`https://www.youtube-nocookie.com/embed/${encodeURIComponent(videoId)}?playsinline=1${
+          ref={iframeRef}
+          // `enablejsapi` with our origin is what lets the player report its
+          // state and accept play/pause over postMessage — see the tap layer.
+          src={`https://www.youtube-nocookie.com/embed/${encodeURIComponent(videoId)}?playsinline=1&enablejsapi=1&origin=${encodeURIComponent(origin)}${
             playing ? "&autoplay=1" : ""
           }`}
           title={title}
@@ -156,7 +198,11 @@ function YouTubeEmbed({ videoId, title = "YouTube video", className }: YouTubeEm
           allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
           allowFullScreen
           referrerPolicy="strict-origin-when-cross-origin"
-          onLoad={() => setPlayerLoaded(true)}
+          onLoad={() => {
+            setPlayerLoaded(true)
+            // The player only posts state changes to a page that asked.
+            sendToPlayer("listening")
+          }}
         />
       )}
       {/* The facade sits over the player until the player has painted, then
@@ -215,6 +261,16 @@ function YouTubeEmbed({ videoId, title = "YouTube video", className }: YouTubeEm
           </span>
         )}
       </div>
+      {started && (
+        <button
+          type="button"
+          onClick={() => sendToPlayer(playerState === 1 ? "pauseVideo" : "playVideo")}
+          aria-label={playerState === 1 ? "Pause" : "Play"}
+          // Touch only, and never over the bottom strip where YouTube's own
+          // controls live; a mouse can aim, and desktop clicks already toggle.
+          className="absolute inset-x-0 top-0 bottom-12 hidden cursor-pointer pointer-coarse:block"
+        />
+      )}
       {!showIframe && (
         <button
           type="button"

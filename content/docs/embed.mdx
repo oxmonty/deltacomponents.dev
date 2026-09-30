@@ -27,6 +27,13 @@ on iOS the player is mounted eagerly once the block nears the viewport, since
 a tap on a cross-origin iframe there won't otherwise land inside it and start
 the video with sound.
 
+Once the video is playing, a tap on a touch screen is ours, not YouTube's: it
+toggles play and pause over the player's message API. Left to the player, a
+tap brings up its chrome, and the title bar across the top of a phone-height
+embed is a link into the YouTube app, so trying to pause opened the app
+instead. The strip along the bottom stays YouTube's, for scrubbing, volume and
+fullscreen. A mouse can aim, so on desktop the player keeps every click.
+
 The corners are square by default; pass `className="rounded-lg"` for a radius.
 
 <ComponentPreview name="embed-youtube" align="top" />
