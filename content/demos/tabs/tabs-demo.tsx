@@ -16,7 +16,7 @@ const LABELS: Record<string, string> = {
 
 export default function TabsDemo() {
   return (
-    <Tabs defaultValue="account" className="w-fit max-w-full">
+    <Tabs defaultValue="account" size="lg" className="w-fit max-w-full">
       <TabsList>
         {PANELS.map((panel) => (
           <TabsTrigger key={panel.value} value={panel.value}>
