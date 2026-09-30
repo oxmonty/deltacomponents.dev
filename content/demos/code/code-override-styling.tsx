@@ -27,7 +27,7 @@ export function useTheme() {
 // slot: pulled in.
 const OVERRIDES = [
   "rounded-md border-2 border-neutral-950 text-base shadow-[4px_4px_0_0_#0a0a0a]",
-  "dark:border-[#88aaee] dark:shadow-[4px_4px_0_0_#4d6fc2]",
+  "dark:border-[#88aaee] dark:shadow-[4px_4px_0_0_#2f4a8f]",
   "**:data-[slot=code-header]:border-b-2 **:data-[slot=code-header]:border-neutral-950 **:data-[slot=code-header]:bg-[#88aaee] **:data-[slot=code-header]:text-neutral-950 **:data-[slot=code-header]:py-3",
   "**:data-[slot=code-filename]:opacity-100",
   "**:data-[slot=code-gutter]:w-10 **:data-[slot=code-gutter]:pr-4 **:data-[slot=code-gutter]:pl-2",
