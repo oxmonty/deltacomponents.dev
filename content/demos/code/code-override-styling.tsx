@@ -15,9 +15,10 @@ export function useTheme() {
 }`;
 
 // A neobrutalist block, three overrides deep. The root: a 2px border and a
-// hard 4px offset shadow with no blur — black on the light page, and on the
-// dark one the bar's own blue, because a white slab-shadow on dark reads as
-// a glow where the accent reads as a block. `border-2` replaces the default
+// hard 4px offset shadow with no blur — black on the light page; on the dark
+// one the border takes the bar's blue and the shadow a darker cut of it,
+// because a white slab-shadow on dark reads as a glow where the accent reads
+// as a block. `border-2` replaces the default
 // hairline rather than stacking on it, because the class is merged; the type
 // stays at `text-base`. The title bar, through its slot: a flat pastel with a
 // hard rule under it (black on both pages) and near-black text. The filename
@@ -26,7 +27,7 @@ export function useTheme() {
 // slot: pulled in.
 const OVERRIDES = [
   "rounded-md border-2 border-neutral-950 text-base shadow-[4px_4px_0_0_#0a0a0a]",
-  "dark:border-[#88aaee] dark:shadow-[4px_4px_0_0_#88aaee]",
+  "dark:border-[#88aaee] dark:shadow-[4px_4px_0_0_#4d6fc2]",
   "**:data-[slot=code-header]:border-b-2 **:data-[slot=code-header]:border-neutral-950 **:data-[slot=code-header]:bg-[#88aaee] **:data-[slot=code-header]:text-neutral-950 **:data-[slot=code-header]:py-3",
   "**:data-[slot=code-filename]:opacity-100",
   "**:data-[slot=code-gutter]:w-10 **:data-[slot=code-gutter]:pr-4 **:data-[slot=code-gutter]:pl-2",
