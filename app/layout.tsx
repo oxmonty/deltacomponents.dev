@@ -58,11 +58,27 @@ export const metadata: Metadata = {
     template: `%s — ${site.name}`,
   },
   icons: {
+    // The SVG carries both fills behind a prefers-color-scheme query, and
+    // `sizes: "any"` is what makes Chrome and Firefox choose it over the
+    // sized PNGs below. The PNGs are for browsers that will not take an SVG
+    // favicon (Safari), so they come in a light and a dark cut, told apart by
+    // `media` — a bitmap cannot carry the query itself.
     icon: [
-      { url: "/metadata/favicon.svg", type: "image/svg+xml" },
-      { url: "/metadata/favicon-32x32.png", sizes: "32x32", type: "image/png" },
-      { url: "/metadata/favicon-16x16.png", sizes: "16x16", type: "image/png" },
-      { url: "/metadata/favicon-96x96.png", sizes: "96x96", type: "image/png" },
+      { url: "/metadata/favicon.svg", type: "image/svg+xml", sizes: "any" },
+      ...([32, 16, 96] as const).flatMap((size) => [
+        {
+          url: `/metadata/favicon-${size}x${size}.png`,
+          sizes: `${size}x${size}`,
+          type: "image/png",
+          media: "(prefers-color-scheme: light)",
+        },
+        {
+          url: `/metadata/favicon-${size}x${size}-dark.png`,
+          sizes: `${size}x${size}`,
+          type: "image/png",
+          media: "(prefers-color-scheme: dark)",
+        },
+      ]),
     ],
     shortcut: "/metadata/favicon.ico",
     apple: [
