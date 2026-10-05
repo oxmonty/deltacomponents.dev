@@ -18,6 +18,12 @@ interface ImageProps
   width?: number
   height?: number
   onZoomChange?: (open: boolean) => void
+  /** Whether a click on the enlarged view, a swipe on a phone or a scroll on
+   *  a desktop closes it. Off, only Escape and an `ImageClose` do: for a
+   *  view with its own controls, where a tap on the picture must not be a
+   *  tap out of it. Escape always works — a view that can't be left from
+   *  the keyboard is a trap, not a mode. */
+  dismissible?: boolean
   /** Rendered inside the enlarged view, over the picture: an `ImageClose`,
    *  say. An `ImageCaption` child is the one exception — it goes under the
    *  picture, like the `caption` prop. The rest is ignored when `zoomable`
@@ -40,6 +46,7 @@ function Image({
   srcSet,
   sizes,
   onZoomChange,
+  dismissible = true,
   children,
   figureClassName,
   className,
@@ -191,7 +198,7 @@ function Image({
     const t = event.touches[0]
     if (Math.hypot(t.clientX - swipe.x, t.clientY - swipe.y) > 48) {
       gesture.current.swipe = null
-      dialogRef.current?.close()
+      if (dismissible) dialogRef.current?.close()
     }
   }
 
@@ -225,14 +232,21 @@ function Image({
     // reader who scrolls has moved on, so the view closes rather than trapping
     // them. Desktop only in practice: on touch the view is `touch-none`, so
     // the page never moves and the swipe handlers below close it instead.
-    const startY = window.scrollY
-    const closeOnceScrolled = () => {
-      if (Math.abs(window.scrollY - startY) > 48) dialog.close()
+    if (dismissible) {
+      const startY = window.scrollY
+      const closeOnceScrolled = () => {
+        if (Math.abs(window.scrollY - startY) > 48) dialog.close()
+      }
+      window.addEventListener("scroll", closeOnceScrolled, { passive: true })
+      stopWatchingScroll.current = () => window.removeEventListener("scroll", closeOnceScrolled)
     }
-    window.addEventListener("scroll", closeOnceScrolled, { passive: true })
-    stopWatchingScroll.current = () => window.removeEventListener("scroll", closeOnceScrolled)
     onZoomChange?.(true)
   }
+
+  // Handed to an ImageClose among the children, so it closes the view itself
+  // rather than counting on its click bubbling to the dialog — which it no
+  // longer does when the view isn't dismissible.
+  const closeView = React.useCallback(() => dialogRef.current?.close(), [])
 
   const thumbnail = (
     /* eslint-disable-next-line @next/next/no-img-element -- a registry
@@ -308,7 +322,7 @@ function Image({
           <dialog
             ref={dialogRef}
             tabIndex={-1}
-            onClick={() => dialogRef.current?.close()}
+            onClick={dismissible ? closeView : undefined}
             onTouchStart={onViewTouchStart}
             onTouchMove={onViewTouchMove}
             onClose={() => {
@@ -342,7 +356,9 @@ function Image({
               // `touch-none` covers the backdrop too — a touch on it is
               // hit-tested to the dialog — so a phone never scrolls the page
               // under the view; a swipe closes it (see onViewTouchMove).
-              "rounded-none outline-none overflow-visible cursor-zoom-out touch-none",
+              "rounded-none outline-none overflow-visible touch-none",
+              // The cursor says what a click does: out of the view, or nothing.
+              dismissible ? "cursor-zoom-out" : "cursor-default",
               // It fades and grows in, in CSS alone. There is no matching
               // exit: `close()` drops a dialog from the top layer at once.
               // ponytail: `overlay` and `display` are listed for the day a
@@ -398,7 +414,7 @@ function Image({
                 "md:h-auto md:max-h-[100lvh] md:max-w-[100vw] md:w-[min(100vw,calc(100lvh*var(--zoom-ratio,1)))]"
               )}
             />
-            {overlayChildren}
+            <ImageViewContext.Provider value={closeView}>{overlayChildren}</ImageViewContext.Provider>
           </dialog>,
           document.body
         )}
@@ -420,14 +436,22 @@ function ImageCaption({ className, ...props }: ImageCaptionProps) {
   )
 }
 
+const ImageViewContext = React.createContext<(() => void) | null>(null)
+
 type ImageCloseProps = React.ComponentProps<"span">
 
-/** Holds a close button in the enlarged view. It needs no handler: any click
- *  inside that view closes it, this one included. */
-function ImageClose({ className, ...props }: ImageCloseProps) {
+/** Holds a close button in the enlarged view. The button needs no handler:
+ *  this closes the view on any click inside it, whether or not the view is
+ *  `dismissible`. */
+function ImageClose({ className, onClick, ...props }: ImageCloseProps) {
+  const closeView = React.useContext(ImageViewContext)
   return (
     <span
       data-slot="image-close"
+      onClick={(event) => {
+        onClick?.(event)
+        closeView?.()
+      }}
       className={cn(
         // The screen's corner, not the picture's, so it is in the same place
         // for every image; `max()` keeps it clear of a notch. `cursor-auto`

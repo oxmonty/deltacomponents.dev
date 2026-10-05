@@ -54,6 +54,12 @@ export const imageProps: PropDef[] = [
     description: "Called when the zoomed dialog opens or closes.",
   },
   {
+    name: "dismissible",
+    type: "boolean",
+    default: "true",
+    description: "Whether a click on the enlarged view, a swipe on a phone or a scroll on a desktop closes it. Off, only Escape and an `ImageClose` do — for a view with controls of its own, where a tap on the picture must not be a tap out of it.",
+  },
+  {
     name: "children",
     type: "ReactNode",
     description: "Rendered inside the enlarged view, over the picture — `ImageClose` is the one that ships — except an `ImageCaption`, which goes under the picture. Ignored when `zoomable` is false.",

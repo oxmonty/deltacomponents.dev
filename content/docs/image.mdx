@@ -61,13 +61,22 @@ Escape and a click anywhere already close the enlarged view, but neither is
 visible, and a reader on a phone has no Escape key. Whatever you put inside
 `Image` is drawn in the enlarged view, over the picture, and `ImageClose` is a
 holder for a button there: pinned to the top right corner of the screen, in
-the same place for every image. Any click inside the enlarged view closes it,
-so the button needs no handler. Focus goes to the view itself when it opens,
-so a tap never leaves a focus ring on the button, and one Tab reaches it. A
-`Button` inside comes out as a pill: `ImageClose` sets `--radius-button`,
+the same place for every image. The button needs no handler — `ImageClose`
+closes the view on any click inside it. Focus goes to the view itself when it
+opens, so a tap never leaves a focus ring on the button, and one Tab reaches
+it. A `Button` inside comes out as a pill: `ImageClose` sets `--radius-button`,
 which your own `className` still overrides.
 
 <ComponentPreview name="image-close-control" align="top" />
+
+The demo also turns `dismissible` off, which is when a close control stops
+being an affordance and becomes the control: a click on the picture or the
+backdrop, a swipe on a phone and a scroll on a desktop no longer close the
+view, and the cursor stops promising they will. Escape still does, always —
+a view that cannot be left from the keyboard is a trap, not a mode. Reach for
+it when the view carries controls of its own and a tap on the picture must
+not be a tap out of it; leave it on, the default, for a plain enlargement,
+where anywhere-to-close is what people expect.
 
 The secondary button is the one to reach for. It has a fill of its own, so
 the icon stays legible over any picture; tertiary and ghost are transparent

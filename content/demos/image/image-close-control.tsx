@@ -12,7 +12,8 @@ export default function ImageCloseControl() {
         alt="A painting of sheep resting on an orange and green hillside among open laptops, with a figure in orange working on one under a blue sky"
         width={560}
         height={748}
-        caption="Enlarge it: the close button sits in the top right corner of the screen."
+        caption="Enlarge it: only the button in the top right corner, or Escape, closes it."
+        dismissible={false}
       >
         <ImageClose>
           {/* icon-xl is the 48px touch target; a mouse doesn't need it, so
