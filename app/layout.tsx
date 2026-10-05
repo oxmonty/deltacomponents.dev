@@ -168,7 +168,7 @@ export default async function RootLayout({
           <SizeProvider>
             <SizeShortcut />
             <ThemeProvider>
-              <IconPlaygroundProvider defaultLibrary="untitledui">
+              <IconPlaygroundProvider defaultLibrary="hugeicons">
                 {/* One provider for the whole site so the tooltips share a
                     skip-delay group: after the first one opens, moving along a
                     row of icon buttons shows the rest instantly instead of
