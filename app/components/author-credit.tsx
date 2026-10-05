@@ -32,7 +32,9 @@ export function AuthorCredit({
       target="_blank"
       rel="noopener noreferrer"
       className={cn(
-        "group text-body text-muted-foreground hover:text-foreground flex w-fit items-center gap-2 rounded transition-colors duration-80",
+        // `active:` beside `hover:`: Tailwind wraps hover in @media (hover:
+        // hover), so a phone never sees it — the press is the hover there.
+        "group text-body text-muted-foreground hover:text-foreground active:text-foreground flex w-fit items-center gap-2 rounded transition-colors duration-80",
         "outline-none focus-visible:ring-1 focus-visible:ring-[color:var(--focus-ring,#6B97FF)] focus-visible:ring-offset-2",
         className
       )}
@@ -49,8 +51,8 @@ export function AuthorCredit({
             : // The raster ships with its own white ground; bg-white covers the
               // corners the circle crops. Damped at rest so it sits at the
               // weight of the muted label rather than shouting beside it,
-              // and up to full on hover with the label.
-              "bg-white bg-contain bg-center bg-no-repeat opacity-70 transition-opacity duration-80 group-hover:opacity-100"
+              // and up to full on hover — or a press — with the label.
+              "bg-white bg-contain bg-center bg-no-repeat opacity-70 transition-opacity duration-80 group-hover:opacity-100 group-active:opacity-100"
         )}
         style={
           tinted
