@@ -148,12 +148,12 @@ function Tabs({
 // Box and type read the globals.css tokens with a fallback, the way Button
 // does, so a strip stands exactly as tall as a button beside it on every step
 // (sm 32, default 36, lg 40) and follows the compact scope with it. Type:
-// `--control-text` is the 13px label step every control shares, and `lg` steps
-// up to `--fs-subtitle` so its taller row does not carry the small one's label.
+// `--control-text` is the 13px label step every control shares on all three,
+// the same as Button's — only its `xl` leaves it, and Tabs has no xl.
 const listSize: Record<TabSize, string> = {
   sm: "h-[var(--control-h-sm,32px)] text-[length:var(--control-text,13px)]",
   default: "h-[var(--control-h,36px)] text-[length:var(--control-text,13px)]",
-  lg: "h-[var(--control-h-lg,40px)] text-[length:var(--fs-subtitle,15px)]",
+  lg: "h-[var(--control-h-lg,40px)] text-[length:var(--control-text,13px)]",
 };
 
 /* The one thing that cannot be derived: the underline's weight is a design

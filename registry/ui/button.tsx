@@ -60,8 +60,8 @@ const buttonVariants = cva(
         sm: controlSize("h-[var(--control-h-sm,32px)]", "px-[var(--control-px-sm,12px)]"),
         default: controlSize("h-[var(--control-h,36px)]", "px-[var(--control-px,16px)]"),
         lg: controlSize("h-[var(--control-h-lg,40px)]", "px-[var(--control-px-lg,24px)]"),
-        // The one step past shadcn's ladder. Its label leaves the shared 13px
-        // control step, as Tabs' lg does, and its glyph grows with the box.
+        // The one step past shadcn's ladder, and the only one whose label
+        // leaves the shared 13px control step; its glyph grows with the box.
         xl: controlSize(
           "h-[var(--control-h-xl,48px)]",
           "px-[var(--control-px-xl,32px)]",
