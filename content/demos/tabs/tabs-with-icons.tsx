@@ -15,7 +15,7 @@ export default function TabsWithIcons() {
   const SettingsIcon = useIcon("settings");
 
   return (
-    <Tabs defaultValue="account" className="w-fit max-w-full">
+    <Tabs defaultValue="account" size="lg" className="w-fit max-w-full">
       <TabsList>
         <TabsTrigger value="account" icon={<UserIcon />}>
           Account

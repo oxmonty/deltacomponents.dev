@@ -16,7 +16,7 @@ const LABELS: Record<string, string> = {
 
 export default function TabsConcentric() {
   return (
-    <Tabs defaultValue="account" concentric className="w-fit max-w-full">
+    <Tabs defaultValue="account" concentric size="lg" className="w-fit max-w-full">
       <TabsList>
         {PANELS.map((panel) => (
           <TabsTrigger key={panel.value} value={panel.value}>
