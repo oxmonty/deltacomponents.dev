@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useIcon } from "@/registry/lib/icon-context";
 import { BottomNav, BottomNavItem } from "@/registry/ui/bottom-nav";
 import { PhoneFrame } from "@/lib/docs/phone-frame";
+import { Slider } from "@/app/components/ui/slider";
 
 const LINES = Array.from(
   { length: 24 },
@@ -21,19 +22,18 @@ export default function BottomNavFade() {
 
   return (
     <div className="flex flex-col items-center gap-5">
-      <label className="flex items-center gap-3 text-sm text-muted-foreground">
+      <div className="flex w-56 items-center gap-3 text-sm text-muted-foreground">
         fade
-        <input
-          type="range"
+        <Slider
+          aria-label="fade"
           min={0}
           max={1}
           step={0.05}
-          value={fade}
-          onChange={(e) => setFade(Number(e.target.value))}
-          className="w-40 accent-foreground"
+          value={[fade]}
+          onValueChange={(v) => setFade((v as number[])[0])}
         />
         <span className="w-8 tabular-nums text-foreground">{fade.toFixed(2)}</span>
-      </label>
+      </div>
       <PhoneFrame route={value}>
         <div className="px-5 pb-28">
           {LINES.map((line, i) => (
