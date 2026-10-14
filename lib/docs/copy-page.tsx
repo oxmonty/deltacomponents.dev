@@ -9,6 +9,9 @@ import { useIcon } from "@/registry/lib/icon-context";
 import { copyToClipboard } from "@/registry/lib/clipboard";
 import { useSizeVariant } from "@/lib/docs/size-context";
 
+const ICON_SWAP =
+  "absolute inset-0 flex items-center justify-center opacity-0 scale-25 blur-[4px] transition-[opacity,scale,filter] duration-(--motion-moderate-exit) ease-spring data-[shown=true]:opacity-100 data-[shown=true]:scale-100 data-[shown=true]:blur-none data-[shown=true]:duration-(--motion-moderate)";
+
 /**
  * "Copy page".
  *
@@ -84,7 +87,17 @@ export function CopyPage() {
         onClick={copy}
         aria-label={failed ? "Copy failed" : copied ? "Copied" : "Copy this page as markdown"}
       >
-        {copied ? <CheckIcon /> : <CopyIcon />}
+        {/* Same cross-morph as the Code block's copy button: both glyphs stay
+            mounted and the leaver shrinks to a blurred point as the arriver
+            grows out of one. The box tracks Button's own glyph size. */}
+        <span className="relative block size-[var(--control-icon-glyph,16px)]">
+          <span data-shown={!copied} className={ICON_SWAP}>
+            <CopyIcon />
+          </span>
+          <span data-shown={copied} className={ICON_SWAP}>
+            <CheckIcon />
+          </span>
+        </span>
       </Button>
     </Tooltip>
   );

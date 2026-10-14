@@ -294,6 +294,14 @@ function TerminalIcon(props: IconProps) {
 const CHROME_REST = "opacity-60"
 const CHROME_HOVER = "group-hover:opacity-100"
 
+/** Copy ⇄ check swap: both glyphs stay mounted, stacked, and cross-morph —
+ *  the leaver shrinks to a blurred point while the arriver grows out of one
+ *  (same choreography as MP3Player's play/pause). The leaver takes the exit
+ *  tier so the arriver is what the eye lands on. Spans, not the svgs, carry
+ *  the transition: Button already owns `[&_svg]:transition` for its press dip. */
+const ICON_SWAP =
+  "absolute inset-0 flex items-center justify-center opacity-0 scale-25 blur-[4px] transition-[opacity,scale,filter] duration-(--motion-moderate-exit) ease-spring data-[shown=true]:opacity-100 data-[shown=true]:scale-100 data-[shown=true]:blur-none data-[shown=true]:duration-(--motion-moderate)"
+
 /** Copy-to-clipboard control for a code surface.
  *
  *  Transparent at rest so it doesn't sit on the code as a visible chip; the
@@ -357,13 +365,21 @@ function CopyButton({
         if (await copyToClipboard(value)) setHasCopied(true)
       }}
     >
-      {hasCopied ? (
-        <CheckIcon className="size-3.5 opacity-100" />
-      ) : (
-        <CopyIcon
-          className={cn("size-3.5 transition-opacity", CHROME_REST, CHROME_HOVER)}
-        />
-      )}
+      <span
+        className={cn(
+          "relative block size-3.5 transition-opacity",
+          CHROME_REST,
+          CHROME_HOVER,
+          hasCopied && "opacity-100"
+        )}
+      >
+        <span data-shown={!hasCopied} className={ICON_SWAP}>
+          <CopyIcon className="size-3.5" />
+        </span>
+        <span data-shown={hasCopied} className={ICON_SWAP}>
+          <CheckIcon className="size-3.5" />
+        </span>
+      </span>
     </Button>
   )
 }
