@@ -24,7 +24,7 @@ export function useTheme() {
 // a pastel, so that slot is brought to full strength. The gutter, through its
 // slot: pulled in.
 const OVERRIDES = [
-  "rounded-md border-2 border-neutral-950 text-base shadow-[4px_4px_0_0_#0a0a0a]",
+  "rounded-xs border-2 border-neutral-950 text-base shadow-[4px_4px_0_0_#0a0a0a]",
   "dark:border-[#88aaee] dark:shadow-[4px_4px_0_0_#fff]",
   "**:data-[slot=code-header]:border-b-2 **:data-[slot=code-header]:border-neutral-950 **:data-[slot=code-header]:bg-[#88aaee] **:data-[slot=code-header]:text-neutral-950 **:data-[slot=code-header]:py-3",
   "**:data-[slot=code-filename]:opacity-100",
