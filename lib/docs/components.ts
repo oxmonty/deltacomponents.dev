@@ -45,6 +45,7 @@ export const componentList: ComponentEntry[] = [
   { slug: "editor", name: "Editor", isNew: true, gridSize: "large" },
   { slug: "tabs", name: "Tabs", isNew: true, gridSize: "medium" },
   { slug: "bottom-nav", name: "BottomNav", isNew: true, gridSize: "medium" },
+  { slug: "switch", name: "Switch", isNew: true, gridSize: "small" },
   { slug: "button", name: "Button", gridSize: "small" },
   { slug: "tooltip", name: "Tooltip", gridSize: "small" },
   { slug: "alert", name: "Alert", isNew: true, gridSize: "medium" },

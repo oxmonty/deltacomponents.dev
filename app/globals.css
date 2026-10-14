@@ -887,6 +887,23 @@ html.transitioning *::after {
   50%      { stroke-dasharray: 40 60; }
 }
 
+/* ── Switch thumb: slides with a double bounce ──
+   Past the end by --switch-overshoot at 55%, back on it by 80%, and held.
+   Both ends read the Switch's own custom properties, so a resized switch
+   bounces to its own travel. Mirrored in registry.json's `switch` item. */
+
+@keyframes switch-on {
+  0%   { translate: 0 0; }
+  55%  { translate: calc(var(--switch-end) + var(--switch-overshoot)) 0; }
+  80%, 100% { translate: var(--switch-end) 0; }
+}
+
+@keyframes switch-off {
+  0%   { translate: var(--switch-end) 0; }
+  55%  { translate: calc(0px - var(--switch-overshoot)) 0; }
+  80%, 100% { translate: 0 0; }
+}
+
 /* ── Responsive side-panel cross-fade ──
    The right panel is visible from xl (1280px) up, the same width at which the
    left sidebar switches rail↔sheet and the mobile header/footer take over.

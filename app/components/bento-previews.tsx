@@ -11,6 +11,7 @@ import { Image } from "@/registry/ui/image";
 import { BottomNav, BottomNavItem } from "@/registry/ui/bottom-nav";
 import { useIcon } from "@/registry/lib/icon-context";
 import { PhoneFrame } from "@/lib/docs/phone-frame";
+import { Switch } from "@/registry/ui/switch";
 import { PATRICK_DARK } from "@/lib/docs/code-themes";
 import {
   Tabs,
@@ -232,6 +233,30 @@ function BottomNavPreview() {
   );
 }
 
+function SwitchPreview() {
+  return (
+    // Three rows, two on: enough to click one and watch the bounce, and to
+    // see both states side by side.
+    <div className="flex flex-col gap-3">
+      {[
+        ["Airplane mode", true],
+        ["Wi-Fi", true],
+        ["Bluetooth", false],
+      ].map(([label, on]) => (
+        <label key={String(label)} className="flex items-center gap-3 text-sm">
+          {/* transitions.dev's own blue, so the card shows the on-colour is
+              one class away from the default `primary` track. */}
+          <Switch
+            defaultChecked={Boolean(on)}
+            className="data-[checked]:bg-[rgba(0,60,255,0.8)] data-[checked]:hover:bg-[rgba(0,60,255,0.9)]"
+          />
+          {label}
+        </label>
+      ))}
+    </div>
+  );
+}
+
 function EmbedPreview() {
   // LinkPreview, not a YouTube or Spotify part: the showcase loads a lot of
   // cards at once. The metadata is passed in so the card never asks the
@@ -283,6 +308,7 @@ export const previewMap: Record<string, React.FC> = {
   tooltip: TooltipPreview,
   "glyph": GlyphBasic,
   "bottom-nav": BottomNavPreview,
+  switch: SwitchPreview,
   alert: AlertDemo,
   embed: EmbedPreview,
   editor: EditorPreview,

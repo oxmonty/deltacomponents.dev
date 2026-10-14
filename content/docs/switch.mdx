@@ -1,0 +1,66 @@
+---
+description: "A toggle whose thumb slides with a double bounce, with hover and press states and geometry you can resize from CSS variables"
+---
+
+import { switchProps } from "./switch.props";
+
+<ComponentPreview name="switch-demo" />
+
+## Installation
+
+<InstallTabs slug="switch" />
+
+## Usage
+
+```tsx
+import { Switch } from "@/components/ui/switch";
+
+<Switch defaultChecked />
+```
+
+It is Base UI's Switch underneath, so it carries the `switch` role, full
+keyboard support, and a form `name`/`value` for free. The thumb's travel is a
+keyframe sequence that plays only on a change, never on mount.
+
+## Basic
+
+<ComponentPreview name="switch-demo" />
+
+## Controlled
+
+<ComponentPreview name="switch-controlled" />
+
+## Disabled
+
+<ComponentPreview name="switch-disabled" />
+
+## Resized
+
+The whole control is drawn from a handful of CSS variables on the root, so a
+`style` sets a new size and the travel, hover pill and press squash all follow.
+
+<ComponentPreview name="switch-resized" />
+
+| Variable | Default | Meaning |
+| --- | --- | --- |
+| `--switch-w` | `44px` | Track width |
+| `--switch-h` | `22px` | Track height |
+| `--switch-pad` | `3.67px` | Inset between track and resting thumb |
+| `--switch-thumb-w` | `22px` | Resting thumb width |
+| `--switch-thumb-h` | `14.67px` | Resting thumb height |
+| `--switch-pill` | `2px` | Extra width the thumb gains on hover |
+| `--switch-press` | `4px` | Extra width (and matching squash) on press |
+| `--switch-overshoot` | `1px` | How far the bounce overshoots the end |
+
+## Override Styling
+
+Parts you hold no reference to are reachable by `data-slot`:
+
+| Slot | Element |
+| --- | --- |
+| `switch` | The track, a button |
+| `switch-thumb` | The sliding thumb |
+
+## API Reference
+
+<PropsTable props={switchProps} />

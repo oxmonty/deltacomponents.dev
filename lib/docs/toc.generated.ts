@@ -614,6 +614,48 @@ export const TOC: Record<string, TocEntry[]> = {
       "depth": 3
     }
   ],
+  "/docs/switch": [
+    {
+      "id": "installation",
+      "text": "Installation",
+      "depth": 2
+    },
+    {
+      "id": "usage",
+      "text": "Usage",
+      "depth": 2
+    },
+    {
+      "id": "basic",
+      "text": "Basic",
+      "depth": 2
+    },
+    {
+      "id": "controlled",
+      "text": "Controlled",
+      "depth": 2
+    },
+    {
+      "id": "disabled",
+      "text": "Disabled",
+      "depth": 2
+    },
+    {
+      "id": "resized",
+      "text": "Resized",
+      "depth": 2
+    },
+    {
+      "id": "override-styling",
+      "text": "Override Styling",
+      "depth": 2
+    },
+    {
+      "id": "api-reference",
+      "text": "API Reference",
+      "depth": 2
+    }
+  ],
   "/docs/tabs": [
     {
       "id": "installation",

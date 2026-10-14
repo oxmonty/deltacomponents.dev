@@ -19,7 +19,7 @@ interface BentoGridProps {
 //   [ alert   ][ ]
 // The sidebar keeps componentList's reading order; slugs missing here follow
 // in that order, and dense flow drops a one-column card into the first gap.
-const SHOWCASE_ORDER = ["code", "button", "tooltip", "product-card", "tabs", "bottom-nav", "editor", "alert", "embed", "image"];
+const SHOWCASE_ORDER = ["code", "button", "tooltip", "product-card", "tabs", "bottom-nav", "switch", "editor", "alert", "embed", "image"];
 
 function showcaseRank(slug: string) {
   const i = SHOWCASE_ORDER.indexOf(slug);

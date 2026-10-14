@@ -1,0 +1,55 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "switch",
+  "title": "Switch",
+  "description": "A toggle whose thumb slides with a double bounce, ported from transitions.dev: past the end, back, settle. A wide pill thumb on a 44x22 track, hover and press states, geometry as CSS variables.",
+  "dependencies": [
+    "@base-ui/react"
+  ],
+  "registryDependencies": [
+    "https://www.deltacomponents.dev/r/utils.json",
+    "https://www.deltacomponents.dev/r/tokens.json"
+  ],
+  "files": [
+    {
+      "path": "registry/ui/switch.tsx",
+      "content": "\"use client\";\n\nimport * as React from \"react\";\nimport { Switch as SwitchPrimitive } from \"@base-ui/react/switch\";\n\nimport { cn } from \"@/lib/utils\";\n\ntype SwitchProps = SwitchPrimitive.Root.Props;\n\n/** The track and thumb geometry, as custom properties so a consumer can\n *  resize the whole control from `style` (the docs' compact step does) and\n *  every derived value — the travel, the hover pill, the press squash —\n *  follows. The defaults are transitions.dev's toggle: a 44×22 track and a\n *  wide pill thumb inset 3.67px. */\nconst GEOMETRY = {\n  \"--switch-w\": \"44px\",\n  \"--switch-h\": \"22px\",\n  \"--switch-pad\": \"3.67px\",\n  \"--switch-thumb-w\": \"22px\",\n  \"--switch-thumb-h\": \"14.67px\",\n  \"--switch-pill\": \"2px\",\n  \"--switch-press\": \"4px\",\n  \"--switch-overshoot\": \"1px\",\n} as React.CSSProperties;\n\nfunction Switch({ className, style, onCheckedChange, ...props }: SwitchProps) {\n  // The double bounce is a keyframe sequence, and a keyframe plays whenever\n  // its selector matches — so with it attached from the start the \"off\"\n  // sequence would run on mount. It is attached on the first change and\n  // dropped again when it ends, which also hands `translate` back to the\n  // transition below, so a hover that widens the thumb slides it rather\n  // than snapping it.\n  const [animate, setAnimate] = React.useState(false);\n\n  return (\n    <SwitchPrimitive.Root\n      data-slot=\"switch\"\n      data-animate={animate || undefined}\n      {...props}\n      onCheckedChange={(checked, eventDetails) => {\n        setAnimate(true);\n        onCheckedChange?.(checked, eventDetails);\n      }}\n      style={{ ...GEOMETRY, ...style }}\n      className={cn(\n        \"group/switch relative inline-flex h-(--switch-h) w-(--switch-w) shrink-0 cursor-pointer items-center rounded-full outline-none select-none\",\n        // Derived geometry. The thumb's live width and height start at the\n        // resting ones; hover widens it into a pill, press widens it further\n        // and squashes it, re-centred by half the lost height.\n        \"[--switch-travel:calc(var(--switch-w)-var(--switch-thumb-w)-2*var(--switch-pad))]\",\n        \"[--switch-tw:var(--switch-thumb-w)] [--switch-th:var(--switch-thumb-h)] [--switch-top:var(--switch-pad)]\",\n        \"hover:[--switch-tw:calc(var(--switch-thumb-w)+var(--switch-pill))]\",\n        \"active:[--switch-tw:calc(var(--switch-thumb-w)+var(--switch-press))] active:[--switch-th:calc(var(--switch-thumb-h)-var(--switch-press))] active:[--switch-top:calc(var(--switch-pad)+var(--switch-press)/2)]\",\n        // A widening thumb stays pinned to the track's far edge when on, so\n        // the travel gives back whatever width it gained.\n        \"[--switch-end:calc(var(--switch-travel)-(var(--switch-tw)-var(--switch-thumb-w)))]\",\n        // The target is the track plus 8px all round: a 22px-tall control\n        // is under the 44px a thumb needs.\n        \"before:absolute before:-inset-2 before:content-['']\",\n        \"bg-accent hover:bg-[color-mix(in_oklab,var(--accent),rgb(var(--overlay))_10%)]\",\n        \"data-[checked]:bg-primary data-[checked]:hover:bg-primary/90\",\n        \"transition-colors [transition-duration:var(--motion-fast,80ms)]\",\n        \"focus-visible:ring-1 focus-visible:ring-[color:var(--focus-ring,#6B97FF)] focus-visible:ring-offset-2 focus-visible:ring-offset-background\",\n        \"data-[disabled]:pointer-events-none data-[disabled]:opacity-50\",\n        className\n      )}\n    >\n      <SwitchPrimitive.Thumb\n        data-slot=\"switch-thumb\"\n        onAnimationEnd={() => setAnimate(false)}\n        className={cn(\n          \"pointer-events-none absolute top-(--switch-top) left-(--switch-pad) block h-(--switch-th) w-(--switch-tw) rounded-full shadow-sm\",\n          // shadcn's scheme: on a dark page the resting thumb is light on\n          // the muted track and dark on the primary one, or it vanishes.\n          \"bg-background dark:bg-foreground dark:group-data-[checked]/switch:bg-primary-foreground\",\n          \"translate-x-0 group-data-[checked]/switch:translate-x-(--switch-end)\",\n          \"transition-[translate,width,height,top] [transition-duration:var(--motion-moderate,160ms)] [transition-timing-function:var(--motion-ease,ease)]\",\n          // Thumb slides with a double bounce: past the end, back, settle.\n          // transitions.dev's toggle, on the slow tier; the curve is its\n          // own, the overshoot is in the keyframes.\n          \"group-data-[animate]/switch:group-data-[checked]/switch:animate-[switch-on_var(--motion-slow,240ms)_cubic-bezier(0.34,1.35,0.64,1)_both]\",\n          \"group-data-[animate]/switch:group-data-[unchecked]/switch:animate-[switch-off_var(--motion-slow,240ms)_cubic-bezier(0.34,1.35,0.64,1)_both]\"\n        )}\n      />\n    </SwitchPrimitive.Root>\n  );\n}\n\nexport { Switch, type SwitchProps };\n",
+      "type": "registry:ui",
+      "target": "components/ui/switch.tsx"
+    }
+  ],
+  "css": {
+    "@keyframes switch-on": {
+      "0%": {
+        "translate": "0 0"
+      },
+      "55%": {
+        "translate": "calc(var(--switch-end) + var(--switch-overshoot)) 0"
+      },
+      "80%, 100%": {
+        "translate": "var(--switch-end) 0"
+      }
+    },
+    "@keyframes switch-off": {
+      "0%": {
+        "translate": "var(--switch-end) 0"
+      },
+      "55%": {
+        "translate": "calc(0px - var(--switch-overshoot)) 0"
+      },
+      "80%, 100%": {
+        "translate": "0 0"
+      }
+    },
+    "@media (prefers-reduced-motion: reduce)": {
+      "[data-slot=switch-thumb]": {
+        "animation": "none"
+      }
+    }
+  },
+  "docs": "Docs: https://www.deltacomponents.dev/docs/switch.",
+  "categories": [
+    "components"
+  ],
+  "type": "registry:ui"
+}

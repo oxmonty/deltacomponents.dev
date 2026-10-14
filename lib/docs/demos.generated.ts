@@ -53,6 +53,10 @@ import DemoProductCardProductCardGrid from "@/content/demos/product-card/product
 import DemoProductCardProductCardInner from "@/content/demos/product-card/product-card-inner";
 import DemoProductCardProductCardOverrideStyling from "@/content/demos/product-card/product-card-override-styling";
 import DemoProductCardProductCardSizes from "@/content/demos/product-card/product-card-sizes";
+import DemoSwitchSwitchControlled from "@/content/demos/switch/switch-controlled";
+import DemoSwitchSwitchDemo from "@/content/demos/switch/switch-demo";
+import DemoSwitchSwitchDisabled from "@/content/demos/switch/switch-disabled";
+import DemoSwitchSwitchResized from "@/content/demos/switch/switch-resized";
 import DemoTabsTabsConcentric from "@/content/demos/tabs/tabs-concentric";
 import DemoTabsTabsDemo from "@/content/demos/tabs/tabs-demo";
 import DemoTabsTabsGhost from "@/content/demos/tabs/tabs-ghost";
@@ -274,6 +278,22 @@ export const demos: Record<string, DemoEntry> = {
   "product-card-sizes": {
     Component: DemoProductCardProductCardSizes,
     source: "import { useState } from \"react\";\nimport {\n  ProductCard,\n  ProductCardContent,\n  ProductCardHeader,\n  ProductCardImage,\n  ProductCardMetric,\n  ProductCardSubtitle,\n  ProductCardTitle,\n} from \"@/components/ui/product-card\";\n\nexport default function ProductCardSizes() {\n  const [size, setSize] = useState<\"sm\" | \"default\" | \"lg\">(\"lg\");\n\n  return (\n    <div className=\"flex w-full flex-col items-center gap-5\">\n      <ProductCard size={size}>\n        <ProductCardImage src=\"/images/products/analogue-pocket.webp\" alt=\"Analogue Pocket\" />\n        <ProductCardContent>\n          <ProductCardHeader>\n            <ProductCardTitle>Analogue Pocket</ProductCardTitle>\n            <ProductCardSubtitle>Gaming Console</ProductCardSubtitle>\n          </ProductCardHeader>\n          <ProductCardMetric>$219</ProductCardMetric>\n        </ProductCardContent>\n      </ProductCard>\n\n      {/* A bare <select>, not the library's — the point of this demo is the\n          card reacting to `size`, and a native control keeps the surrounding\n          chrome out of the way. */}\n      <label className=\"text-caption text-muted-foreground flex items-center gap-2\">\n        Size\n        <select\n          value={size}\n          onChange={(e) => setSize(e.target.value as \"sm\" | \"default\" | \"lg\")}\n          className=\"border-border bg-background text-foreground text-caption rounded-md border px-2 py-1 outline-none focus-visible:ring-1 focus-visible:ring-[color:var(--focus-ring,#6B97FF)]\"\n        >\n          <option value=\"sm\">sm</option>\n          <option value=\"default\">default</option>\n          <option value=\"lg\">lg</option>\n        </select>\n      </label>\n    </div>\n  );\n}",
+  },
+  "switch-controlled": {
+    Component: DemoSwitchSwitchControlled,
+    source: "import { useState } from \"react\";\n\nimport { Switch } from \"@/components/ui/switch\";\n\nexport default function SwitchControlled() {\n  const [on, setOn] = useState(false);\n\n  return (\n    <div className=\"flex flex-col gap-3\">\n      <Switch checked={on} onCheckedChange={setOn} />\n      <p className=\"text-sm text-muted-foreground\">\n        Notifications are {on ? \"on\" : \"off\"}\n      </p>\n    </div>\n  );\n}",
+  },
+  "switch-demo": {
+    Component: DemoSwitchSwitchDemo,
+    source: "import { Switch } from \"@/components/ui/switch\";\n\nexport default function SwitchDemo() {\n  return (\n    <label className=\"flex items-center gap-3 text-sm\">\n      <Switch defaultChecked />\n      Airplane mode\n    </label>\n  );\n}",
+  },
+  "switch-disabled": {
+    Component: DemoSwitchSwitchDisabled,
+    source: "import { Switch } from \"@/components/ui/switch\";\n\nexport default function SwitchDisabled() {\n  return (\n    <div className=\"flex items-center gap-6\">\n      <label className=\"flex items-center gap-3 text-sm\">\n        <Switch disabled />\n        Off\n      </label>\n      <label className=\"flex items-center gap-3 text-sm\">\n        <Switch disabled defaultChecked />\n        On\n      </label>\n    </div>\n  );\n}",
+  },
+  "switch-resized": {
+    Component: DemoSwitchSwitchResized,
+    source: "import type { CSSProperties } from \"react\";\n\nimport { Switch } from \"@/components/ui/switch\";\n\nexport default function SwitchResized() {\n  return (\n    <div className=\"flex items-center gap-6\">\n      <Switch\n        defaultChecked\n        aria-label=\"Compact\"\n        style={\n          {\n            \"--switch-w\": \"28px\",\n            \"--switch-h\": \"14px\",\n            \"--switch-pad\": \"2.33px\",\n            \"--switch-thumb-w\": \"14px\",\n            \"--switch-thumb-h\": \"9.33px\",\n            \"--switch-press\": \"3px\",\n          } as CSSProperties\n        }\n      />\n      <Switch defaultChecked aria-label=\"Default\" />\n      <Switch\n        defaultChecked\n        aria-label=\"Large\"\n        style={\n          {\n            \"--switch-w\": \"56px\",\n            \"--switch-h\": \"28px\",\n            \"--switch-pad\": \"4.67px\",\n            \"--switch-thumb-w\": \"28px\",\n            \"--switch-thumb-h\": \"18.67px\",\n          } as CSSProperties\n        }\n      />\n    </div>\n  );\n}",
   },
   "tabs-concentric": {
     Component: DemoTabsTabsConcentric,

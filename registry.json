@@ -381,6 +381,59 @@
       ]
     },
     {
+      "name": "switch",
+      "type": "registry:ui",
+      "title": "Switch",
+      "description": "A toggle whose thumb slides with a double bounce, ported from transitions.dev: past the end, back, settle. A wide pill thumb on a 44x22 track, hover and press states, geometry as CSS variables.",
+      "dependencies": [
+        "@base-ui/react"
+      ],
+      "registryDependencies": [
+        "utils",
+        "tokens"
+      ],
+      "css": {
+        "@keyframes switch-on": {
+          "0%": {
+            "translate": "0 0"
+          },
+          "55%": {
+            "translate": "calc(var(--switch-end) + var(--switch-overshoot)) 0"
+          },
+          "80%, 100%": {
+            "translate": "var(--switch-end) 0"
+          }
+        },
+        "@keyframes switch-off": {
+          "0%": {
+            "translate": "var(--switch-end) 0"
+          },
+          "55%": {
+            "translate": "calc(0px - var(--switch-overshoot)) 0"
+          },
+          "80%, 100%": {
+            "translate": "0 0"
+          }
+        },
+        "@media (prefers-reduced-motion: reduce)": {
+          "[data-slot=switch-thumb]": {
+            "animation": "none"
+          }
+        }
+      },
+      "files": [
+        {
+          "path": "registry/ui/switch.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/switch.tsx"
+        }
+      ],
+      "docs": "Docs: https://www.deltacomponents.dev/docs/switch.",
+      "categories": [
+        "components"
+      ]
+    },
+    {
       "name": "code",
       "type": "registry:ui",
       "title": "Code",
