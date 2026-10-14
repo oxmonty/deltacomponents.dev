@@ -71,7 +71,7 @@ function BottomNav({
           // way under the bar, as iOS does, rather than the bar being
           // see-through.
           gradient
-            ? "bg-background before:pointer-events-none before:absolute before:inset-x-0 before:bottom-full before:h-12 before:bg-linear-to-t before:from-background before:to-transparent"
+            ? "bg-background before:pointer-events-none before:absolute before:inset-x-0 before:bottom-full before:h-16 before:bg-linear-to-t before:from-background before:to-transparent"
             : "bg-background/85 backdrop-blur-lg",
           className
         )}
@@ -181,12 +181,17 @@ function BottomNavItem({
       >
         {/* The dip is on the glyph, not the whole target: a tap on a phone
             has no hover to confirm it landed, and the icon shrinking under
-            the thumb is the acknowledgement before the route changes. */}
+            the thumb is the acknowledgement before the route changes.
+            Button's press, exactly: the `scale` property (what `scale-*`
+            sets — transitioning `transform` leaves it snapping), in on the
+            moderate tier and out a tier quicker, to 0.9 and no deeper, on
+            its own compositor layer so the glyph is scaled as a cached
+            raster rather than re-rasterised and pixel-snapped every frame. */}
         <span
           className={cn(
-            "pointer-events-none flex flex-col items-center",
-            "transition-transform duration-(--motion-fast) ease-spring",
-            "group-active/item:scale-[0.86]"
+            "pointer-events-none flex flex-col items-center will-change-transform",
+            "transition-[scale] [transition-duration:var(--motion-moderate-exit)] ease-spring",
+            "group-active/item:scale-90 group-active/item:[transition-duration:var(--motion-moderate)]"
           )}
         >
           {icon && (
