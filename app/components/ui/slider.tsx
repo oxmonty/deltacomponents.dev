@@ -13,11 +13,13 @@ function Slider({
   max = 100,
   ...props
 }: SliderPrimitive.Root.Props) {
+  // One thumb per value. Upstream falls back to `[min, max]` for a scalar,
+  // which draws a second thumb on a plain single-value slider.
   const _values = Array.isArray(value)
     ? value
     : Array.isArray(defaultValue)
       ? defaultValue
-      : [min, max];
+      : [value ?? defaultValue ?? min];
 
   return (
     <SliderPrimitive.Root

@@ -29,8 +29,8 @@ export default function BottomNavFade() {
           min={0}
           max={1}
           step={0.05}
-          value={[fade]}
-          onValueChange={(v) => setFade((v as number[])[0])}
+          value={fade}
+          onValueChange={(v) => setFade(v as number)}
         />
         <span className="w-8 tabular-nums text-foreground">{fade.toFixed(2)}</span>
       </div>
