@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import dynamic from "next/dynamic";
 import { Button } from "@/registry/ui/button";
 import { Tooltip } from "@/registry/ui/tooltip";
@@ -7,6 +8,8 @@ import GlyphBasic from "@/content/demos/glyph/glyph-basic";
 import AlertDemo from "@/content/demos/alert/alert-demo";
 import { LinkPreview } from "@/registry/ui/embed";
 import { Image } from "@/registry/ui/image";
+import { BottomNav, BottomNavItem } from "@/registry/ui/bottom-nav";
+import { useIcon } from "@/registry/lib/icon-context";
 import { PATRICK_DARK } from "@/lib/docs/code-themes";
 import {
   Tabs,
@@ -190,6 +193,37 @@ function TabsPreview() {
 }
 
 
+function BottomNavPreview() {
+  const [value, setValue] = useState("home");
+  const HomeIcon = useIcon("home");
+  const SearchIcon = useIcon("search");
+  const InboxIcon = useIcon("inbox");
+  const UserIcon = useIcon("user");
+  return (
+    <div className="relative h-44 w-full max-w-sm overflow-hidden rounded-xl border border-border/60 bg-background">
+      <div aria-hidden className="flex flex-col gap-3 p-4">
+        <div className="h-3 w-3/4 rounded-full bg-muted" />
+        <div className="h-3 w-1/2 rounded-full bg-muted" />
+        <div className="h-3 w-5/6 rounded-full bg-muted" />
+      </div>
+      <BottomNav value={value} onValueChange={setValue} className="absolute">
+        <BottomNavItem value="home" icon={<HomeIcon />}>
+          Home
+        </BottomNavItem>
+        <BottomNavItem value="search" icon={<SearchIcon />}>
+          Search
+        </BottomNavItem>
+        <BottomNavItem value="inbox" icon={<InboxIcon />}>
+          Inbox
+        </BottomNavItem>
+        <BottomNavItem value="profile" icon={<UserIcon />}>
+          Profile
+        </BottomNavItem>
+      </BottomNav>
+    </div>
+  );
+}
+
 function EmbedPreview() {
   // LinkPreview, not a YouTube or Spotify part: the showcase loads a lot of
   // cards at once. The metadata is passed in so the card never asks the
@@ -240,6 +274,7 @@ export const previewMap: Record<string, React.FC> = {
   button: ButtonPreview,
   tooltip: TooltipPreview,
   "glyph": GlyphBasic,
+  "bottom-nav": BottomNavPreview,
   alert: AlertDemo,
   embed: EmbedPreview,
   editor: EditorPreview,

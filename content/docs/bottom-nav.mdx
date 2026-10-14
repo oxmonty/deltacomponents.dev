@@ -1,0 +1,56 @@
+---
+description: "Fixed bottom tab bar for phones, with a gradient that fades the page into it and an active item you hand it from your router"
+---
+
+import { bottomNavProps, bottomNavItemProps } from "./bottom-nav.props";
+
+<ComponentPreview name="bottom-nav-demo" padding="compact" />
+
+## Installation
+
+<InstallTabs slug="bottom-nav" />
+
+## Usage
+
+```tsx
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { Home, Search, User } from "lucide-react";
+import { BottomNav, BottomNavItem } from "@/components/ui/bottom-nav";
+
+const pathname = usePathname();
+
+<BottomNav value={pathname} linkComponent={Link} className="md:hidden">
+  <BottomNavItem value="/" href="/" icon={<Home />}>Home</BottomNavItem>
+  <BottomNavItem value="/search" href="/search" icon={<Search />}>Search</BottomNavItem>
+  <BottomNavItem value="/profile" href="/profile" icon={<User />}>Profile</BottomNavItem>
+</BottomNav>
+```
+
+The nav never reads the URL itself: `value` is whatever your router says is current. `linkComponent` is how a Next app keeps client-side routing (omit it and items are plain `<a>` tags). The component carries no breakpoint, so `md:hidden` is the layout's call. Re-tapping the active item scrolls back to the top.
+
+## Basic
+
+<ComponentPreview name="bottom-nav-demo" padding="compact" />
+
+## Icon Only
+
+Icon-only keeps each label as screen-reader text.
+
+<ComponentPreview name="bottom-nav-icon-only" padding="compact" />
+
+## Solid
+
+A blurred solid strip instead of the gradient, for pages whose content shouldn't bleed into the bar.
+
+<ComponentPreview name="bottom-nav-solid" padding="compact" />
+
+## API Reference
+
+### BottomNav
+
+<PropsTable props={bottomNavProps} />
+
+### BottomNavItem
+
+<PropsTable props={bottomNavItemProps} />

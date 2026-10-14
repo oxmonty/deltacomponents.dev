@@ -32,6 +32,48 @@ export const TOC: Record<string, TocEntry[]> = {
       "depth": 2
     }
   ],
+  "/docs/bottom-nav": [
+    {
+      "id": "installation",
+      "text": "Installation",
+      "depth": 2
+    },
+    {
+      "id": "usage",
+      "text": "Usage",
+      "depth": 2
+    },
+    {
+      "id": "basic",
+      "text": "Basic",
+      "depth": 2
+    },
+    {
+      "id": "icon-only",
+      "text": "Icon Only",
+      "depth": 2
+    },
+    {
+      "id": "solid",
+      "text": "Solid",
+      "depth": 2
+    },
+    {
+      "id": "api-reference",
+      "text": "API Reference",
+      "depth": 2
+    },
+    {
+      "id": "bottomnav",
+      "text": "BottomNav",
+      "depth": 3
+    },
+    {
+      "id": "bottomnavitem",
+      "text": "BottomNavItem",
+      "depth": 3
+    }
+  ],
   "/docs/button": [
     {
       "id": "installation",

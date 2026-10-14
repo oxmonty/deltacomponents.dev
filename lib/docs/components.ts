@@ -44,6 +44,7 @@ export const componentList: ComponentEntry[] = [
   { slug: "product-card", name: "ProductCard", isNew: true, gridSize: "large", gridClassName: "xl:col-start-2" },
   { slug: "editor", name: "Editor", isNew: true, gridSize: "large" },
   { slug: "tabs", name: "Tabs", isNew: true, gridSize: "medium" },
+  { slug: "bottom-nav", name: "BottomNav", isNew: true, gridSize: "medium" },
   { slug: "button", name: "Button", gridSize: "small" },
   { slug: "tooltip", name: "Tooltip", gridSize: "small" },
   { slug: "alert", name: "Alert", isNew: true, gridSize: "medium" },

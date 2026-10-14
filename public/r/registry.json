@@ -359,6 +359,28 @@
       ]
     },
     {
+      "name": "bottom-nav",
+      "type": "registry:ui",
+      "title": "Bottom Nav",
+      "description": "Fixed bottom tab bar for phones: icon and label per item, a gradient that fades the page into the background behind it, and an active item you hand it from your router, so it works under Next, Remix or a plain anchor.",
+      "registryDependencies": [
+        "utils",
+        "motion",
+        "tokens"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/bottom-nav.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/bottom-nav.tsx"
+        }
+      ],
+      "docs": "Docs: https://www.deltacomponents.dev/docs/bottom-nav.",
+      "categories": [
+        "components"
+      ]
+    },
+    {
       "name": "code",
       "type": "registry:ui",
       "title": "Code",
