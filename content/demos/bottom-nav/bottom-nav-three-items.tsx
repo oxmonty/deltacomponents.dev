@@ -6,6 +6,13 @@ import { useIcon } from "@/registry/lib/icon-context";
 import { BottomNav, BottomNavItem } from "@/registry/ui/bottom-nav";
 import { PhoneFrame } from "@/lib/docs/phone-frame";
 
+// Photos rather than grey blocks, so the fade above the bar has colour and
+// detail to dissolve. Seeded, so the feed is the same on every load.
+const PHOTOS = Array.from(
+  { length: 8 },
+  (_, i) => `https://picsum.photos/seed/bottom-nav-${i}/600/450`
+);
+
 const LABELS: Record<string, string> = {
   home: "Home",
   search: "Search",
@@ -21,9 +28,12 @@ export default function BottomNavThreeItems() {
   return (
     <PhoneFrame route={value}>
       <p className="px-5 text-lg font-semibold">{LABELS[value]}</p>
-      {Array.from({ length: 10 }).map((_, i) => (
-        <div key={i} aria-hidden className="mx-5 mt-3 h-16 rounded-xl bg-muted" />
-      ))}
+      <div className="px-5">
+        {PHOTOS.map((src) => (
+          // eslint-disable-next-line @next/next/no-img-element -- a mock feed, not a page asset
+          <img key={src} src={src} alt="" loading="lazy" className="mt-3 aspect-4/3 w-full rounded-xl object-cover" />
+        ))}
+      </div>
       <BottomNav value={value} onValueChange={setValue}>
         <BottomNavItem value="home" icon={<HomeIcon />}>
           Home

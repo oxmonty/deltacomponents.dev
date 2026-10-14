@@ -7,9 +7,11 @@ import { BottomNav, BottomNavItem } from "@/registry/ui/bottom-nav";
 import { PhoneFrame } from "@/lib/docs/phone-frame";
 import { Slider } from "@/app/components/ui/slider";
 
-const LINES = Array.from(
-  { length: 24 },
-  (_, i) => `Line ${i + 1} of the page, scrolling up under the bar.`
+// Photos rather than grey blocks, so the fade above the bar has colour and
+// detail to dissolve. Seeded, so the feed is the same on every load.
+const PHOTOS = Array.from(
+  { length: 8 },
+  (_, i) => `https://picsum.photos/seed/bottom-nav-${i}/600/450`
 );
 
 export default function BottomNavFade() {
@@ -35,11 +37,10 @@ export default function BottomNavFade() {
         <span className="w-8 tabular-nums text-foreground">{fade.toFixed(2)}</span>
       </div>
       <PhoneFrame route={value}>
-        <div className="px-5 pb-28">
-          {LINES.map((line, i) => (
-            <p key={i} className="mt-3 text-sm">
-              {line}
-            </p>
+        <div className="px-5">
+          {PHOTOS.map((src) => (
+            // eslint-disable-next-line @next/next/no-img-element -- a mock feed, not a page asset
+            <img key={src} src={src} alt="" loading="lazy" className="mt-3 aspect-4/3 w-full rounded-xl object-cover" />
           ))}
         </div>
         <BottomNav value={value} onValueChange={setValue} fade={fade}>
