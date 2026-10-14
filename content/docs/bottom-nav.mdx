@@ -3,6 +3,12 @@ description: "Fixed bottom tab bar for phones, with a gradient that fades the pa
 ---
 
 import { bottomNavProps, bottomNavItemProps } from "./bottom-nav.props";
+import { Alert } from "@/registry/ui/alert";
+
+<Alert type="tip" title="On a phone?" className="md:hidden">
+  Open the [full-page preview](/preview/bottom-nav) to try the bar against real
+  routes, outside the frame below.
+</Alert>
 
 <ComponentPreview name="bottom-nav-demo" padding="compact" />
 
