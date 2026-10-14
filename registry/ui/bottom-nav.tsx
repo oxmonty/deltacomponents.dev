@@ -78,15 +78,16 @@ function BottomNav({
       >
         {/* Four or more items fill the bar, as iPhone's own tab bar does at
             any count. Fewer leave a thumb's width of nothing between them, so
-            two or three are drawn in toward the middle on Material's
-            navigation-bar rule: three destinations occupy 60% of the bar
-            (two, one step down the same ramp, 50%). Counted in CSS, so a
-            conditionally rendered item needs no prop to say so. */}
+            two or three are drawn in toward the middle. Material's
+            navigation bar puts three destinations on 60% of the bar; that
+            read as crowded at phone widths, so three take 72% here and two
+            56%. Counted in CSS, so a conditionally rendered item needs no
+            prop to say so. */}
         <ul
           data-slot="bottom-nav-list"
           className={cn(
             "flex items-stretch justify-around",
-            "has-[li:nth-child(2):last-child]:px-[25%] has-[li:nth-child(3):last-child]:px-[20%]"
+            "has-[li:nth-child(2):last-child]:px-[22%] has-[li:nth-child(3):last-child]:px-[14%]"
           )}
         >
           {children}
@@ -166,7 +167,13 @@ function BottomNavItem({
           // answered the instant it lands rather than feeling ignored.
           "touch-manipulation select-none [-webkit-touch-callout:none]",
           "transition-colors duration-(--motion-fast) ease-spring",
-          isActive ? "text-foreground" : "text-muted-foreground",
+          // Inactive sits a step under muted-foreground so the active item
+          // reads at a glance, but no lower: 4.0:1 on light and 4.5:1 on
+          // dark keeps the 10px labels legible (WCAG wants 4.5 for text,
+          // 3 for the icons; iOS's own inactive gray is 3.1 on white).
+          isActive
+            ? "text-foreground"
+            : "text-muted-foreground/85 dark:text-muted-foreground/75",
           "rounded-[var(--radius-bg,var(--radius,0.5rem))] outline-none",
           "focus-visible:ring-1 focus-visible:ring-[color:var(--focus-ring,#6B97FF)]",
           className
