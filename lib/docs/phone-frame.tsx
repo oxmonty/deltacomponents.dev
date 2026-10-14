@@ -45,10 +45,9 @@ function PhoneFrame({
             element whose containing block is itself the scroller scrolls
             away with the content. */}
         <div className="relative min-h-0 flex-1 [contain:paint]">
-          {/* Native scrollbar, not hidden: the site's thin low-contrast theme
-              (globals.css §4) on a mouse, the OS's own overlay bar on touch —
-              the screen scrolls, and should look like it. */}
-          <div ref={screenRef} className="absolute inset-0 overflow-y-auto pt-12">
+          {/* iOS's scroll indicator (globals.css §4, `.scrollbar-ios`): the
+              screen scrolls, and should look like the phone it is drawn as. */}
+          <div ref={screenRef} className="scrollbar-ios absolute inset-0 overflow-y-auto pt-12">
             {children}
           </div>
         </div>

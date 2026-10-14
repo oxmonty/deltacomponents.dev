@@ -822,6 +822,29 @@ html.transitioning *::after {
   display: none;
 }
 
+/* iOS's own indicator, for the docs' phone frame: a 3px rounded thumb two
+   pixels off the edge, no track, dark enough to read as the real thing. Both
+   syntaxes for the same reason as the theme above. */
+.scrollbar-ios {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(var(--overlay) / 0.35) transparent;
+}
+
+.scrollbar-ios::-webkit-scrollbar {
+  width: 7px;
+}
+
+.scrollbar-ios::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-ios::-webkit-scrollbar-thumb {
+  background-color: rgb(var(--overlay) / 0.35);
+  border: 2px solid transparent;
+  background-clip: content-box;
+  border-radius: 9999px;
+}
+
 /* ============================================================================
    5. UTILITIES
 ============================================================================ */
