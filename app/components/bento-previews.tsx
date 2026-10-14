@@ -10,6 +10,7 @@ import { LinkPreview } from "@/registry/ui/embed";
 import { Image } from "@/registry/ui/image";
 import { BottomNav, BottomNavItem } from "@/registry/ui/bottom-nav";
 import { useIcon } from "@/registry/lib/icon-context";
+import { PhoneFrame } from "@/lib/docs/phone-frame";
 import { PATRICK_DARK } from "@/lib/docs/code-themes";
 import {
   Tabs,
@@ -200,13 +201,19 @@ function BottomNavPreview() {
   const InboxIcon = useIcon("inbox");
   const UserIcon = useIcon("user");
   return (
-    <div className="relative h-44 w-full max-w-sm overflow-hidden rounded-xl border border-border/60 bg-background">
-      <div aria-hidden className="flex flex-col gap-3 p-4">
-        <div className="h-3 w-3/4 rounded-full bg-muted" />
-        <div className="h-3 w-1/2 rounded-full bg-muted" />
-        <div className="h-3 w-5/6 rounded-full bg-muted" />
-      </div>
-      <BottomNav value={value} onValueChange={setValue} className="absolute">
+    // The same phone as the doc page's demos, with the top cut off by the
+    // card: a 300px row cannot hold a 656px phone, and the bar is the point.
+    // The window sits on the stage's bottom edge (over its padding) and clips
+    // the frame from the top; grey cards instead of the demos' photos, so
+    // the showcase stays quiet.
+    <div className="-mb-16 flex h-60 items-end self-end overflow-hidden">
+      <PhoneFrame>
+        <div className="px-5">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} aria-hidden className="mt-3 aspect-4/3 w-full rounded-xl bg-muted" />
+          ))}
+        </div>
+        <BottomNav value={value} onValueChange={setValue}>
         <BottomNavItem value="home" icon={<HomeIcon />}>
           Home
         </BottomNavItem>
@@ -219,7 +226,8 @@ function BottomNavPreview() {
         <BottomNavItem value="profile" icon={<UserIcon />}>
           Profile
         </BottomNavItem>
-      </BottomNav>
+        </BottomNav>
+      </PhoneFrame>
     </div>
   );
 }
