@@ -31,6 +31,9 @@ interface BottomNavProps
   /** Fade the page into the background colour behind the bar rather than
    *  sitting a solid blurred strip on top of it. */
   gradient?: boolean;
+  /** How tall the fade above the bar is, as a CSS length. The bar's own
+   *  box never changes with it. */
+  fade?: string;
   /** What an item with an `href` renders as. `"a"` by default; a Next app
    *  passes `Link` here once to keep client-side routing and prefetching. */
   linkComponent?: React.ElementType;
@@ -41,8 +44,10 @@ function BottomNav({
   onValueChange,
   labels = true,
   gradient = true,
+  fade = "4rem",
   linkComponent = "a",
   className,
+  style,
   children,
   ...props
 }: BottomNavProps) {
@@ -56,6 +61,7 @@ function BottomNav({
       <nav
         data-slot="bottom-nav"
         {...props}
+        style={{ "--bottom-nav-fade": fade, ...style } as React.CSSProperties}
         className={cn(
           // No breakpoint of its own: the layout that mounts it decides where
           // it hides (`md:hidden`), which is also what lets a demo show it on
@@ -70,7 +76,7 @@ function BottomNav({
           // way under the bar, as iOS does, rather than the bar being
           // see-through.
           gradient
-            ? "bg-background before:pointer-events-none before:absolute before:inset-x-0 before:bottom-full before:h-16 before:bg-linear-to-t before:from-background before:to-transparent"
+            ? "bg-background before:pointer-events-none before:absolute before:inset-x-0 before:bottom-full before:h-(--bottom-nav-fade) before:bg-linear-to-t before:from-background before:to-transparent"
             : "bg-background/85 backdrop-blur-lg",
           className
         )}
