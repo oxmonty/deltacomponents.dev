@@ -31,8 +31,11 @@ interface BottomNavProps
   /** Fade the page into the background colour behind the bar rather than
    *  sitting a solid blurred strip on top of it. */
   gradient?: boolean;
-  /** How far the fade reaches above the bar, 0 (none) to 1 (160px). The
-   *  bar's own box never changes with it. */
+  /** Where the fade above the bar lands, 0 to 1. At 0.5 it reaches full
+   *  background colour exactly at the icons' top edge; lower ends it below
+   *  that, inside the icons (0 is their bottom edge), higher ends it above
+   *  them (1 is the bar's top edge). It always starts 160px above the bar,
+   *  and the bar's own box never changes with it. */
   fade?: number;
   /** What an item with an `href` renders as. `"a"` by default; a Next app
    *  passes `Link` here once to keep client-side routing and prefetching. */
@@ -44,7 +47,7 @@ function BottomNav({
   onValueChange,
   labels = true,
   gradient = true,
-  fade = 0.4,
+  fade = 0.5,
   linkComponent = "a",
   className,
   style,
@@ -61,7 +64,10 @@ function BottomNav({
       <nav
         data-slot="bottom-nav"
         {...props}
-        style={{ "--bottom-nav-fade": `${fade * 10}rem`, ...style } as React.CSSProperties}
+        // How far into the bar the fade's solid end sits: the icons' top
+        // edge is 12px down (the bar's 4px plus the item's 8px), their
+        // bottom 36px; the scale runs 0 → 24px, 0.5 → 12px, 1 → 0.
+        style={{ "--bottom-nav-fade-end": `${(1 - fade) * 24}px`, ...style } as React.CSSProperties}
         className={cn(
           // No breakpoint of its own: the layout that mounts it decides where
           // it hides (`md:hidden`), which is also what lets a demo show it on
@@ -70,13 +76,17 @@ function BottomNav({
           // the same 4px as the top otherwise. The fade below is a strip
           // above the bar, so lengthening it never changes this box.
           "fixed inset-x-0 bottom-0 z-50 pt-1 pb-[max(env(safe-area-inset-bottom,0px),0.25rem)]",
-          // The bar itself is always opaque, so the icons never have page
-          // text showing through around them. The gradient is the strip
-          // ABOVE it: the page dissolves into the background colour on its
-          // way under the bar, as iOS does, rather than the bar being
-          // see-through.
+          // The bar is solid from the fade's end down, so the labels (and,
+          // at the default, the icons) never have page text showing through
+          // around them; above that line the fade strip takes over, 160px
+          // of the page dissolving into the background colour on its way
+          // under the bar, as iOS does.
           gradient
-            ? "bg-background before:pointer-events-none before:absolute before:inset-x-0 before:bottom-full before:h-(--bottom-nav-fade) before:bg-linear-to-t before:from-background before:to-transparent"
+            ? cn(
+                "bg-[linear-gradient(transparent_var(--bottom-nav-fade-end),var(--background)_var(--bottom-nav-fade-end))]",
+                "before:pointer-events-none before:absolute before:inset-x-0 before:bottom-[calc(100%-var(--bottom-nav-fade-end))] before:h-[calc(10rem+var(--bottom-nav-fade-end))]",
+                "before:bg-linear-to-t before:from-background before:to-transparent"
+              )
             : "bg-background/85 backdrop-blur-lg",
           className
         )}

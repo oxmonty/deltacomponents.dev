@@ -14,31 +14,11 @@ const VARIANTS: {
   className?: string;
   style?: React.CSSProperties;
 }[] = [
-  { id: "A", label: "fade 0.4 · 64px, linear (current)" , fade: 0.4 },
-  { id: "B", label: "fade 0.6 · 96px, linear", fade: 0.6 },
-  { id: "C", label: "fade 0.8 · 128px, linear", fade: 0.8 },
-  { id: "D", label: "fade 1 · 160px, linear", fade: 1 },
-  {
-    id: "E",
-    label: "fade 0.8 · long tail: 40% at a third, then gentle",
-    fade: 0.8,
-    className: "before:via-background/40 before:via-[33%]",
-  },
-  {
-    id: "F",
-    label: "fade 0.8 · holds: 80% to the middle, then drops",
-    fade: 0.8,
-    className: "before:via-background/80 before:via-[50%]",
-  },
-  {
-    // The strip reaches 12px into the bar (its top padding plus the item's)
-    // so the fade ends at the icon line, and the bar is solid only below it.
-    id: "G",
-    label: "fade 1 · starts at the icons, not the bar's edge",
-    fade: 1,
-    className: "before:bottom-[calc(100%-12px)]",
-    style: { background: "linear-gradient(transparent 12px, var(--background) 12px)" },
-  },
+  { id: "A", label: "fade 0 · ends at the icons' bottom edge", fade: 0 },
+  { id: "B", label: "fade 0.25 · ends halfway down the icons", fade: 0.25 },
+  { id: "C", label: "fade 0.5 · ends at the icons' top edge (default)", fade: 0.5 },
+  { id: "D", label: "fade 0.75 · ends between the icons and the bar's edge", fade: 0.75 },
+  { id: "E", label: "fade 1 · ends at the bar's top edge", fade: 1 },
 ];
 
 const LINES = Array.from({ length: 24 }, (_, i) => `Line ${i + 1} of the page, scrolling up under the bar so the fade can be judged on text.`);
