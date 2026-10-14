@@ -60,14 +60,18 @@ function BottomNav({
           // No breakpoint of its own: the layout that mounts it decides where
           // it hides (`md:hidden`), which is also what lets a demo show it on
           // a desktop inside a phone-sized frame.
-          "fixed inset-x-0 bottom-0 z-50 pt-1 pb-[env(safe-area-inset-bottom,4px)]",
+          // Bottom padding is the home-indicator inset when there is one and
+          // the same 8px as the top otherwise (a browser toolbar sitting
+          // under the bar zeroes the inset, and 4px there read as the labels
+          // being crammed against it).
+          "fixed inset-x-0 bottom-0 z-50 pt-2 pb-[max(env(safe-area-inset-bottom,0px),0.5rem)]",
           // The bar itself is always opaque, so the icons never have page
           // text showing through around them. The gradient is the strip
           // ABOVE it: the page dissolves into the background colour on its
           // way under the bar, as iOS does, rather than the bar being
           // see-through.
           gradient
-            ? "bg-background before:pointer-events-none before:absolute before:inset-x-0 before:bottom-full before:h-6 before:bg-linear-to-t before:from-background before:to-transparent"
+            ? "bg-background before:pointer-events-none before:absolute before:inset-x-0 before:bottom-full before:h-12 before:bg-linear-to-t before:from-background before:to-transparent"
             : "bg-background/85 backdrop-blur-lg",
           className
         )}

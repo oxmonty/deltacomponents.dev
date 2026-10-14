@@ -38,16 +38,18 @@ function PhoneFrame({
           aria-hidden
           className="absolute top-2 left-1/2 z-10 h-[26px] w-[90px] -translate-x-1/2 rounded-full bg-neutral-950"
         />
-        {/* `contain: paint` makes this the containing block for any `fixed`
-            descendant, so BottomNav pins to the frame's content area instead
-            of the real viewport, letting the demo use it exactly as a
-            consumer would. The scroller is a child, not this box: a fixed
-            element whose containing block is itself the scroller scrolls
-            away with the content. */}
-        <div className="relative min-h-0 flex-1 [contain:paint]">
+        {/* The bar is `position: fixed` in the wild. Here the frame pins it
+            to this box instead by making it absolute — this box is the
+            nearest positioned ancestor, so it sits at the box's bottom and
+            stays there while the (static) scroller underneath moves. Plain
+            positioning on purpose: `contain: paint` as a fixed-position
+            containing block looked right in every desktop engine and broke on
+            iOS Safari, which clipped the bar to a strip mid-screen. Explicit
+            height so the scroller's `h-full` resolves. */}
+        <div className="relative h-[610px] [&_[data-slot=bottom-nav]]:absolute">
           {/* iOS's scroll indicator (globals.css §4, `.scrollbar-ios`): the
               screen scrolls, and should look like the phone it is drawn as. */}
-          <div ref={screenRef} className="scrollbar-ios absolute inset-0 overflow-y-auto pt-12">
+          <div ref={screenRef} className="scrollbar-ios h-full overflow-y-auto pt-12">
             {children}
           </div>
         </div>
