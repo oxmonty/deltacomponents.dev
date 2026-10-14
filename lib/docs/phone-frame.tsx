@@ -32,7 +32,9 @@ function PhoneFrame({
         // Full width up to the phone's own, so the frame shrinks with a
         // narrow container (the showcase card on a phone) rather than
         // overflowing it.
-        "relative mx-auto w-full max-w-[316px] rounded-[52px] bg-neutral-950 p-2 shadow-xl ring-1 ring-black/10 dark:ring-white/10",
+        // No drop shadow: the showcase card clips the frame, and a shadow
+        // cut off at the clip reads as a smear.
+        "relative mx-auto w-full max-w-[316px] rounded-[52px] bg-neutral-950 p-2 ring-1 ring-black/10 dark:ring-white/10",
         className
       )}
     >

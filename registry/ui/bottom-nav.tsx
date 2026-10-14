@@ -28,8 +28,8 @@ interface BottomNavProps
   onValueChange?: (value: string) => void;
   /** Caption under each icon. Off gives the icon-only bar. */
   labels?: boolean;
-  /** Fade the page into the background colour behind the bar rather than
-   *  sitting a solid blurred strip on top of it. */
+  /** Fade the page into the background colour above the bar rather than
+   *  ending it at a hard edge. */
   gradient?: boolean;
   /** Where the fade above the bar lands, 0 to 1. At 0.5 it reaches full
    *  background colour exactly at the icons' top edge; lower ends it below
@@ -87,7 +87,7 @@ function BottomNav({
                 "before:pointer-events-none before:absolute before:inset-x-0 before:bottom-[calc(100%-var(--bottom-nav-fade-end))] before:h-[calc(10rem+var(--bottom-nav-fade-end))]",
                 "before:bg-linear-to-t before:from-background before:to-transparent"
               )
-            : "bg-background/85 backdrop-blur-lg",
+            : "bg-background",
           className
         )}
       >
