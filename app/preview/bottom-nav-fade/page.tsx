@@ -7,22 +7,37 @@ import { PhoneFrame } from "@/lib/docs/phone-frame";
 
 // Throwaway comparison of the fade above the bar: height, and how the
 // gradient is distributed over it. Delete once a default is chosen.
-const VARIANTS = [
-  { id: "A", label: "64px, linear (current)", fade: "4rem", className: "" },
-  { id: "B", label: "96px, linear", fade: "6rem", className: "" },
-  { id: "C", label: "128px, linear", fade: "8rem", className: "" },
-  { id: "D", label: "160px, linear", fade: "10rem", className: "" },
+const VARIANTS: {
+  id: string;
+  label: string;
+  fade: number;
+  className?: string;
+  style?: React.CSSProperties;
+}[] = [
+  { id: "A", label: "fade 0.4 · 64px, linear (current)" , fade: 0.4 },
+  { id: "B", label: "fade 0.6 · 96px, linear", fade: 0.6 },
+  { id: "C", label: "fade 0.8 · 128px, linear", fade: 0.8 },
+  { id: "D", label: "fade 1 · 160px, linear", fade: 1 },
   {
     id: "E",
-    label: "128px, long tail: 40% at a third, then gentle",
-    fade: "8rem",
+    label: "fade 0.8 · long tail: 40% at a third, then gentle",
+    fade: 0.8,
     className: "before:via-background/40 before:via-[33%]",
   },
   {
     id: "F",
-    label: "128px, holds: 80% to the middle, then drops",
-    fade: "8rem",
+    label: "fade 0.8 · holds: 80% to the middle, then drops",
+    fade: 0.8,
     className: "before:via-background/80 before:via-[50%]",
+  },
+  {
+    // The strip reaches 12px into the bar (its top padding plus the item's)
+    // so the fade ends at the icon line, and the bar is solid only below it.
+    id: "G",
+    label: "fade 1 · starts at the icons, not the bar's edge",
+    fade: 1,
+    className: "before:bottom-[calc(100%-12px)]",
+    style: { background: "linear-gradient(transparent 12px, var(--background) 12px)" },
   },
 ];
 
@@ -47,7 +62,13 @@ export default function BottomNavFadePage() {
                 </p>
               ))}
             </div>
-            <BottomNav value={value} onValueChange={setValue} fade={v.fade} className={v.className}>
+            <BottomNav
+              value={value}
+              onValueChange={setValue}
+              fade={v.fade}
+              className={v.className}
+              style={v.style}
+            >
               <BottomNavItem value="home" icon={<HomeIcon />}>
                 Home
               </BottomNavItem>
