@@ -61,10 +61,9 @@ function BottomNav({
           // it hides (`md:hidden`), which is also what lets a demo show it on
           // a desktop inside a phone-sized frame.
           // Bottom padding is the home-indicator inset when there is one and
-          // the same 8px as the top otherwise (a browser toolbar sitting
-          // under the bar zeroes the inset, and 4px there read as the labels
-          // being crammed against it).
-          "fixed inset-x-0 bottom-0 z-50 pt-2 pb-[max(env(safe-area-inset-bottom,0px),0.5rem)]",
+          // the same 4px as the top otherwise. The fade below is a strip
+          // above the bar, so lengthening it never changes this box.
+          "fixed inset-x-0 bottom-0 z-50 pt-1 pb-[max(env(safe-area-inset-bottom,0px),0.25rem)]",
           // The bar itself is always opaque, so the icons never have page
           // text showing through around them. The gradient is the strip
           // ABOVE it: the page dissolves into the background colour on its

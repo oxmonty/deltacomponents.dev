@@ -50,7 +50,7 @@ function PhoneFrame({
             on a phone grows as the browser's toolbar hides, but the frame
             draws its own home indicator below and the bar should not
             move for the toolbar of the page it is pictured on. */}
-        <div className="relative h-[610px] [&_[data-slot=bottom-nav]]:absolute [&_[data-slot=bottom-nav]]:pb-2">
+        <div className="relative h-[610px] [&_[data-slot=bottom-nav]]:absolute [&_[data-slot=bottom-nav]]:pb-1">
           {/* iOS's scroll indicator (globals.css §4, `.scrollbar-ios`): the
               screen scrolls, and should look like the phone it is drawn as. */}
           <div ref={screenRef} className="scrollbar-ios h-full overflow-y-auto pt-12">
