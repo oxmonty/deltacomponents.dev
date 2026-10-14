@@ -204,7 +204,7 @@ function BottomNavItem({
           {labels && children && (
             <span
               data-slot="bottom-nav-label"
-              className="mt-1 truncate text-center text-[10px] leading-tight font-medium"
+              className="mt-1.5 truncate text-center text-[10px] leading-tight font-medium"
             >
               {children}
             </span>
