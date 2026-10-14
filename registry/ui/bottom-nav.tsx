@@ -116,8 +116,11 @@ function BottomNavItem({
     onClick?.(event);
     if (event.defaultPrevented) return;
     // Re-tapping the tab you are on scrolls back to the top, as it does in
-    // every iOS tab bar.
+    // every iOS tab bar — and does not navigate: a link to the page you are
+    // already on would reload it, or have the router scroll its first
+    // element into view and cut the glide short.
     if (isActive) {
+      event.preventDefault();
       scrollParentOf(itemRef.current).scrollTo({ top: 0, behavior: "smooth" });
       return;
     }

@@ -186,6 +186,10 @@ export function SidebarLayout({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [router]);
 
+  // `/preview/*` is a component standing in for a whole app screen (the
+  // bottom nav's phone test page), so it gets the theme and icon providers
+  // from the root layout and none of the docs chrome around it.
+  if (pathname.startsWith("/preview/")) return children;
 
   return (
     <RightRailProvider>

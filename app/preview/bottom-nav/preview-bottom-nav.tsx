@@ -5,25 +5,25 @@ import Link from "next/link";
 import { BottomNav, BottomNavItem } from "@/registry/ui/bottom-nav";
 import { useIcon } from "@/registry/lib/icon-context";
 
-function LabBottomNav() {
+function PreviewBottomNav() {
   const pathname = usePathname();
   const HomeIcon = useIcon("home");
   const SearchIcon = useIcon("search");
   const UserIcon = useIcon("user");
   return (
-    // No `md:hidden`: the lab must be testable on desktop too.
+    // No `md:hidden`: the preview is for trying the bar, on a desktop too.
     <BottomNav value={pathname} linkComponent={Link}>
-      <BottomNavItem value="/lab/bottom-nav" href="/lab/bottom-nav" icon={<HomeIcon />}>
+      <BottomNavItem value="/preview/bottom-nav" href="/preview/bottom-nav" icon={<HomeIcon />}>
         Home
       </BottomNavItem>
-      <BottomNavItem value="/lab/bottom-nav/search" href="/lab/bottom-nav/search" icon={<SearchIcon />}>
+      <BottomNavItem value="/preview/bottom-nav/search" href="/preview/bottom-nav/search" icon={<SearchIcon />}>
         Search
       </BottomNavItem>
-      <BottomNavItem value="/lab/bottom-nav/profile" href="/lab/bottom-nav/profile" icon={<UserIcon />}>
+      <BottomNavItem value="/preview/bottom-nav/profile" href="/preview/bottom-nav/profile" icon={<UserIcon />}>
         Profile
       </BottomNavItem>
     </BottomNav>
   );
 }
 
-export { LabBottomNav };
+export { PreviewBottomNav };

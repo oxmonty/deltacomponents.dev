@@ -21,7 +21,7 @@ export default function BottomNavDemo() {
   const UserIcon = useIcon("user");
 
   return (
-    <PhoneFrame>
+    <PhoneFrame route={value}>
       <p className="px-5 text-lg font-semibold">{LABELS[value]}</p>
       {Array.from({ length: 10 }).map((_, i) => (
         <div key={i} aria-hidden className="mx-5 mt-3 h-16 rounded-xl bg-muted" />
