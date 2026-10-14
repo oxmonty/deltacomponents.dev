@@ -61,13 +61,30 @@ function BottomNav({
           // it hides (`md:hidden`), which is also what lets a demo show it on
           // a desktop inside a phone-sized frame.
           "fixed inset-x-0 bottom-0 z-50 pt-1 pb-[env(safe-area-inset-bottom,4px)]",
+          // The bar itself is always opaque, so the icons never have page
+          // text showing through around them. The gradient is the strip
+          // ABOVE it: the page dissolves into the background colour on its
+          // way under the bar, as iOS does, rather than the bar being
+          // see-through.
           gradient
-            ? "bg-linear-to-b from-transparent via-background/80 via-25% to-background to-45%"
+            ? "bg-background before:pointer-events-none before:absolute before:inset-x-0 before:bottom-full before:h-6 before:bg-linear-to-t before:from-background before:to-transparent"
             : "bg-background/85 backdrop-blur-lg",
           className
         )}
       >
-        <ul data-slot="bottom-nav-list" className="flex items-stretch justify-around">
+        {/* Four or more items fill the bar, as iPhone's own tab bar does at
+            any count. Fewer leave a thumb's width of nothing between them, so
+            two or three are drawn in toward the middle on Material's
+            navigation-bar rule: three destinations occupy 60% of the bar
+            (two, one step down the same ramp, 50%). Counted in CSS, so a
+            conditionally rendered item needs no prop to say so. */}
+        <ul
+          data-slot="bottom-nav-list"
+          className={cn(
+            "flex items-stretch justify-around",
+            "has-[li:nth-child(2):last-child]:px-[25%] has-[li:nth-child(3):last-child]:px-[20%]"
+          )}
+        >
           {children}
         </ul>
       </nav>

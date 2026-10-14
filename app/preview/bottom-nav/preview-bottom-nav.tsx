@@ -9,6 +9,7 @@ function PreviewBottomNav() {
   const pathname = usePathname();
   const HomeIcon = useIcon("home");
   const SearchIcon = useIcon("search");
+  const HeartIcon = useIcon("heart");
   const UserIcon = useIcon("user");
   return (
     // No `md:hidden`: the preview is for trying the bar, on a desktop too.
@@ -18,6 +19,9 @@ function PreviewBottomNav() {
       </BottomNavItem>
       <BottomNavItem value="/preview/bottom-nav/search" href="/preview/bottom-nav/search" icon={<SearchIcon />}>
         Search
+      </BottomNavItem>
+      <BottomNavItem value="/preview/bottom-nav/likes" href="/preview/bottom-nav/likes" icon={<HeartIcon />}>
+        Likes
       </BottomNavItem>
       <BottomNavItem value="/preview/bottom-nav/profile" href="/preview/bottom-nav/profile" icon={<UserIcon />}>
         Profile

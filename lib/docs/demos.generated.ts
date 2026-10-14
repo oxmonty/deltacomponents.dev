@@ -9,6 +9,7 @@ import DemoAlertAlertTypes from "@/content/demos/alert/alert-types";
 import DemoBottomNavBottomNavDemo from "@/content/demos/bottom-nav/bottom-nav-demo";
 import DemoBottomNavBottomNavIconOnly from "@/content/demos/bottom-nav/bottom-nav-icon-only";
 import DemoBottomNavBottomNavSolid from "@/content/demos/bottom-nav/bottom-nav-solid";
+import DemoBottomNavBottomNavThreeItems from "@/content/demos/bottom-nav/bottom-nav-three-items";
 import DemoButtonButtonBasic from "@/content/demos/button/button-basic";
 import DemoButtonButtonDemo from "@/content/demos/button/button-demo";
 import DemoButtonButtonIcon from "@/content/demos/button/button-icon";
@@ -96,6 +97,10 @@ export const demos: Record<string, DemoEntry> = {
   "bottom-nav-solid": {
     Component: DemoBottomNavBottomNavSolid,
     source: "import { useState } from \"react\";\n\nimport { useIcon } from \"@/lib/icon-context\";\nimport { BottomNav, BottomNavItem } from \"@/components/ui/bottom-nav\";\nimport { PhoneFrame } from \"@/lib/docs/phone-frame\";\n\nconst LABELS: Record<string, string> = {\n  home: \"Home\",\n  search: \"Search\",\n  likes: \"Likes\",\n  profile: \"Profile\",\n};\n\nexport default function BottomNavSolid() {\n  const [value, setValue] = useState(\"home\");\n  const HomeIcon = useIcon(\"home\");\n  const SearchIcon = useIcon(\"search\");\n  const HeartIcon = useIcon(\"heart\");\n  const UserIcon = useIcon(\"user\");\n\n  return (\n    <PhoneFrame route={value}>\n      <p className=\"px-5 text-lg font-semibold\">{LABELS[value]}</p>\n      {Array.from({ length: 10 }).map((_, i) => (\n        <div key={i} aria-hidden className=\"mx-5 mt-3 h-16 rounded-xl bg-muted\" />\n      ))}\n      <BottomNav value={value} onValueChange={setValue} gradient={false}>\n        <BottomNavItem value=\"home\" icon={<HomeIcon />}>\n          Home\n        </BottomNavItem>\n        <BottomNavItem value=\"search\" icon={<SearchIcon />}>\n          Search\n        </BottomNavItem>\n        <BottomNavItem value=\"likes\" icon={<HeartIcon />}>\n          Likes\n        </BottomNavItem>\n        <BottomNavItem value=\"profile\" icon={<UserIcon />}>\n          Profile\n        </BottomNavItem>\n      </BottomNav>\n    </PhoneFrame>\n  );\n}",
+  },
+  "bottom-nav-three-items": {
+    Component: DemoBottomNavBottomNavThreeItems,
+    source: "import { useState } from \"react\";\n\nimport { useIcon } from \"@/lib/icon-context\";\nimport { BottomNav, BottomNavItem } from \"@/components/ui/bottom-nav\";\nimport { PhoneFrame } from \"@/lib/docs/phone-frame\";\n\nconst LABELS: Record<string, string> = {\n  home: \"Home\",\n  search: \"Search\",\n  profile: \"Profile\",\n};\n\nexport default function BottomNavThreeItems() {\n  const [value, setValue] = useState(\"home\");\n  const HomeIcon = useIcon(\"home\");\n  const SearchIcon = useIcon(\"search\");\n  const UserIcon = useIcon(\"user\");\n\n  return (\n    <PhoneFrame route={value}>\n      <p className=\"px-5 text-lg font-semibold\">{LABELS[value]}</p>\n      {Array.from({ length: 10 }).map((_, i) => (\n        <div key={i} aria-hidden className=\"mx-5 mt-3 h-16 rounded-xl bg-muted\" />\n      ))}\n      <BottomNav value={value} onValueChange={setValue}>\n        <BottomNavItem value=\"home\" icon={<HomeIcon />}>\n          Home\n        </BottomNavItem>\n        <BottomNavItem value=\"search\" icon={<SearchIcon />}>\n          Search\n        </BottomNavItem>\n        <BottomNavItem value=\"profile\" icon={<UserIcon />}>\n          Profile\n        </BottomNavItem>\n      </BottomNav>\n    </PhoneFrame>\n  );\n}",
   },
   "button-basic": {
     Component: DemoButtonButtonBasic,
