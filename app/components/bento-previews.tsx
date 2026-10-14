@@ -206,7 +206,7 @@ function BottomNavPreview() {
     // The window sits on the stage's bottom edge (over its padding) and clips
     // the frame from the top; grey cards instead of the demos' photos, so
     // the showcase stays quiet.
-    <div className="-mb-16 flex h-60 items-end self-end overflow-hidden">
+    <div className="-mb-12 flex h-60 w-full items-end justify-center self-end overflow-hidden">
       <PhoneFrame>
         <div className="px-5">
           {Array.from({ length: 6 }).map((_, i) => (
