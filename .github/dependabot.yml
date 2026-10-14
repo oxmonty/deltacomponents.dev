@@ -1,0 +1,9 @@
+version: 2
+updates:
+  - package-ecosystem: "bun"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    # Security updates only: the limit disables the version-bump PRs while
+    # Dependabot still raises a PR for an advisory against bun.lock.
+    open-pull-requests-limit: 0
