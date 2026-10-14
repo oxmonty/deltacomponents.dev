@@ -49,6 +49,11 @@ export const TOC: Record<string, TocEntry[]> = {
       "depth": 2
     },
     {
+      "id": "fade",
+      "text": "Fade",
+      "depth": 2
+    },
+    {
       "id": "icon-only",
       "text": "Icon Only",
       "depth": 2
