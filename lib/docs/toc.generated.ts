@@ -82,6 +82,11 @@ export const TOC: Record<string, TocEntry[]> = {
       "id": "bottomnavitem",
       "text": "BottomNavItem",
       "depth": 3
+    },
+    {
+      "id": "bottomnavlabel",
+      "text": "BottomNavLabel",
+      "depth": 3
     }
   ],
   "/docs/button": [

@@ -2,7 +2,7 @@
 description: "Fixed bottom tab bar for phones, with a gradient that fades the page into it and an active item you hand it from your router"
 ---
 
-import { bottomNavProps, bottomNavItemProps } from "./bottom-nav.props";
+import { bottomNavProps, bottomNavItemProps, bottomNavLabelProps } from "./bottom-nav.props";
 import { Alert } from "@/registry/ui/alert";
 
 <Alert type="tip" title="On a phone?" className="md:hidden">
@@ -81,3 +81,10 @@ A solid bar with a hard top edge instead of the fade, for pages whose content sh
 ### BottomNavItem
 
 <PropsTable props={bottomNavItemProps} />
+
+### BottomNavLabel
+
+An item wraps its text in one of these itself. Pass one explicitly to restyle
+the caption for that item, as in `<BottomNavItem value="home" icon={<Home />}><BottomNavLabel className="mt-2">Home</BottomNavLabel></BottomNavItem>`.
+
+<PropsTable props={bottomNavLabelProps} />

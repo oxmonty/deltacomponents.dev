@@ -15,6 +15,11 @@ export const bottomNavItemProps: PropDef[] = [
   { name: "href", type: "string", description: "With it the item renders as `linkComponent`; without it as a button, for an item that opens something rather than going somewhere." },
   { name: "icon", type: "ReactNode", description: "Glyph rendered above the label, sized to 24px." },
   { name: "onClick", type: "(event: MouseEvent) => void", description: "Runs before the item's own selection handler, call `event.preventDefault()` to stop it selecting." },
-  { name: "children", type: "ReactNode", description: "The label, also read by screen readers when `labels` is off." },
+  { name: "children", type: "ReactNode", description: "The label: text, or a `BottomNavLabel` to restyle it. Also read by screen readers when `labels` is off." },
   { name: "className", type: "string", description: "Merged onto the item's link or button element." },
+];
+
+export const bottomNavLabelProps: PropDef[] = [
+  { name: "className", type: "string", description: "Merged over the caption's own classes, so its spacing or size can change for one item." },
+  { name: "children", type: "ReactNode", description: "The caption text." },
 ];

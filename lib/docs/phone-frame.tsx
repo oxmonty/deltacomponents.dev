@@ -59,7 +59,14 @@ function PhoneFrame({
         <div className="relative h-full [&_[data-slot=bottom-nav]]:absolute [&_[data-slot=bottom-nav]]:pb-6">
           {/* iOS's scroll indicator (globals.css §4, `.scrollbar-ios`): the
               screen scrolls, and should look like the phone it is drawn as. */}
-          <div ref={screenRef} className="scrollbar-ios h-full overflow-y-auto pt-12">
+          {/* A classic scrollbar takes its width out of the content box and
+              nudges everything left of the screen's centre; reserving the
+              same gutter on both edges keeps the feed centred. Overlay
+              scrollbars reserve nothing, so this costs them nothing. */}
+          <div
+            ref={screenRef}
+            className="scrollbar-ios h-full overflow-y-auto pt-12 [scrollbar-gutter:stable_both-edges]"
+          >
             {children}
           </div>
         </div>

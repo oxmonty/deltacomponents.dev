@@ -135,6 +135,21 @@ function scrollParentOf(el: HTMLElement | null): Element | Window {
   return window;
 }
 
+type BottomNavLabelProps = React.ComponentProps<"span">;
+
+/** The caption under an icon. An item wraps plain children in one of these
+ *  itself; pass one explicitly to restyle it (its spacing, its size) for
+ *  that item. */
+function BottomNavLabel({ className, ...props }: BottomNavLabelProps) {
+  return (
+    <span
+      data-slot="bottom-nav-label"
+      className={cn("mt-1.5 truncate text-center text-[10px] leading-tight font-medium", className)}
+      {...props}
+    />
+  );
+}
+
 function BottomNavItem({
   value,
   href,
@@ -148,6 +163,14 @@ function BottomNavItem({
   const isActive = activeValue === value;
   const itemRef = React.useRef<HTMLElement>(null);
   const Element: React.ElementType = href ? LinkComponent : "button";
+
+  // Children are the label: either a ready-made BottomNavLabel, kept as is,
+  // or text to wrap in one. The bare text is also what an icon-only bar
+  // gives a screen reader.
+  const isLabelElement =
+    React.isValidElement<BottomNavLabelProps>(children) && children.type === BottomNavLabel;
+  const labelText = isLabelElement ? children.props.children : children;
+  const label = isLabelElement ? children : children ? <BottomNavLabel>{children}</BottomNavLabel> : null;
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     onClick?.(event);
@@ -217,20 +240,20 @@ function BottomNavItem({
               {icon}
             </span>
           )}
-          {labels && children && (
-            <span
-              data-slot="bottom-nav-label"
-              className="mt-1.5 truncate text-center text-[10px] leading-tight font-medium"
-            >
-              {children}
-            </span>
-          )}
+          {labels && label}
         </span>
         {/* Icon-only bars still name every item for a screen reader. */}
-        {!labels && children && <span className="sr-only">{children}</span>}
+        {!labels && labelText && <span className="sr-only">{labelText}</span>}
       </Element>
     </li>
   );
 }
 
-export { BottomNav, BottomNavItem, type BottomNavProps, type BottomNavItemProps };
+export {
+  BottomNav,
+  BottomNavItem,
+  BottomNavLabel,
+  type BottomNavProps,
+  type BottomNavItemProps,
+  type BottomNavLabelProps,
+};
