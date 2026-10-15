@@ -75,6 +75,15 @@ const ITEMS: { value: string; label: string; icon: keyof typeof ICONS }[] = [
   { value: "profile", label: "Profile", icon: "profile" },
 ];
 
+// Each tab shows the same eight photos in its own fixed order, so a route
+// change reshuffles the feed without fetching anything new.
+const FEEDS: Record<string, string[]> = Object.fromEntries(
+  ITEMS.map(({ value: route }, r) => [
+    route,
+    PHOTOS.map((_, i) => PHOTOS[(i * 3 + r * 3) % PHOTOS.length]),
+  ])
+);
+
 export default function BottomNavOverrideStyling() {
   const [value, setValue] = useState("home");
 
@@ -82,7 +91,7 @@ export default function BottomNavOverrideStyling() {
     <PhoneFrame route={value}>
       <p className="px-5 text-lg font-semibold">{ITEMS.find((i) => i.value === value)?.label}</p>
       <div className="px-5">
-        {PHOTOS.map((src) => (
+        {FEEDS[value].map((src) => (
           // eslint-disable-next-line @next/next/no-img-element -- a mock feed, not a page asset
           <img key={src} src={src} alt="" loading="lazy" className="mt-3 aspect-4/3 w-full rounded-xl object-cover" />
         ))}
