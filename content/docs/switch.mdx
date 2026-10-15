@@ -33,7 +33,8 @@ keyframe sequence that plays only on a change, never on mount.
 ## Sizes
 
 `sm` is Ant Design's small switch (28×16), the default its 44×22, and `lg` the
-default at iOS's 51×31 proportion. The thumb keeps its 3:2 at every step.
+default at iOS's 51×31 proportion. The thumb is iOS 26's at every step: a wide
+pill filling most of the track's height behind a thin inset.
 
 <ComponentPreview name="switch-sizes" />
 
@@ -46,9 +47,9 @@ geometry of its own and the travel, hover pill and press squash follow:
 | --- | --- | --- |
 | `--switch-w` | `44px` | Track width |
 | `--switch-h` | `22px` | Track height |
-| `--switch-pad` | `3.67px` | Inset between track and resting thumb |
-| `--switch-thumb-w` | `22px` | Resting thumb width |
-| `--switch-thumb-h` | `14.67px` | Resting thumb height |
+| `--switch-pad` | `2px` | Inset between track and resting thumb |
+| `--switch-thumb-w` | `26px` | Resting thumb width |
+| `--switch-thumb-h` | `18px` | Resting thumb height |
 | `--switch-pill` | `2px` | Extra width the thumb gains on hover |
 | `--switch-press` | `4px` | Extra width (and matching squash) on press |
 | `--switch-overshoot` | `1px` | How far the bounce overshoots the end |

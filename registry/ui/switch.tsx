@@ -13,18 +13,18 @@ interface SwitchProps extends SwitchPrimitive.Root.Props {
 
 /** The track and thumb geometry per size, as custom properties, so every
  *  derived value — the travel, the hover pill, the press squash — follows,
- *  and a consumer can still resize from `style`. The default is
- *  transitions.dev's toggle, a 44×22 track with a wide pill thumb inset
- *  3.67px, which is also Ant Design's default switch; `sm` is Ant's small
- *  (28×16, 2px inset) with the thumb kept at the same 3:2; `lg` is the
- *  default scaled by iOS's 51×31 proportion. */
+ *  and a consumer can still resize from `style`. The tracks are Ant
+ *  Design's default (44×22) and small (28×16), and the default scaled by
+ *  iOS's 51×31 proportion; the thumb is iOS 26's: a wide pill filling most
+ *  of the track's height behind a thin inset, rather than a ball floating
+ *  in it. */
 const GEOMETRY: Record<SwitchSize, React.CSSProperties> = {
   sm: {
     "--switch-w": "28px",
     "--switch-h": "16px",
-    "--switch-pad": "2px",
-    "--switch-thumb-w": "18px",
-    "--switch-thumb-h": "12px",
+    "--switch-pad": "1.5px",
+    "--switch-thumb-w": "17px",
+    "--switch-thumb-h": "13px",
     "--switch-pill": "1px",
     "--switch-press": "2px",
     "--switch-overshoot": "1px",
@@ -32,9 +32,9 @@ const GEOMETRY: Record<SwitchSize, React.CSSProperties> = {
   default: {
     "--switch-w": "44px",
     "--switch-h": "22px",
-    "--switch-pad": "3.67px",
-    "--switch-thumb-w": "22px",
-    "--switch-thumb-h": "14.67px",
+    "--switch-pad": "2px",
+    "--switch-thumb-w": "26px",
+    "--switch-thumb-h": "18px",
     "--switch-pill": "2px",
     "--switch-press": "4px",
     "--switch-overshoot": "1px",
@@ -42,9 +42,9 @@ const GEOMETRY: Record<SwitchSize, React.CSSProperties> = {
   lg: {
     "--switch-w": "56px",
     "--switch-h": "28px",
-    "--switch-pad": "4.67px",
-    "--switch-thumb-w": "28px",
-    "--switch-thumb-h": "18.67px",
+    "--switch-pad": "2.5px",
+    "--switch-thumb-w": "33px",
+    "--switch-thumb-h": "23px",
     "--switch-pill": "3px",
     "--switch-press": "5px",
     "--switch-overshoot": "1.5px",
@@ -59,15 +59,26 @@ function Switch({ size = "default", className, style, onCheckedChange, ...props 
   // transition below, so a hover that widens the thumb slides it rather
   // than snapping it.
   const [animate, setAnimate] = React.useState(false);
+  // Hover is a promise of what a press will do, and the press just
+  // happened. So a change takes the hover state away until the pointer
+  // leaves and comes back, rather than the thumb widening into its hover
+  // pill the instant it lands.
+  const [hoverSuspended, setHoverSuspended] = React.useState(false);
 
   return (
     <SwitchPrimitive.Root
       data-slot="switch"
       data-animate={animate || undefined}
+      data-no-hover={hoverSuspended || undefined}
       {...props}
       onCheckedChange={(checked, eventDetails) => {
         setAnimate(true);
+        setHoverSuspended(true);
         onCheckedChange?.(checked, eventDetails);
+      }}
+      onPointerLeave={(event) => {
+        setHoverSuspended(false);
+        props.onPointerLeave?.(event);
       }}
       data-size={size}
       style={{ ...GEOMETRY[size], ...style }}
@@ -78,7 +89,7 @@ function Switch({ size = "default", className, style, onCheckedChange, ...props 
         // and squashes it, re-centred by half the lost height.
         "[--switch-travel:calc(var(--switch-w)-var(--switch-thumb-w)-2*var(--switch-pad))]",
         "[--switch-tw:var(--switch-thumb-w)] [--switch-th:var(--switch-thumb-h)] [--switch-top:var(--switch-pad)]",
-        "hover:[--switch-tw:calc(var(--switch-thumb-w)+var(--switch-pill))]",
+        "not-data-[no-hover]:hover:[--switch-tw:calc(var(--switch-thumb-w)+var(--switch-pill))]",
         "active:[--switch-tw:calc(var(--switch-thumb-w)+var(--switch-press))] active:[--switch-th:calc(var(--switch-thumb-h)-var(--switch-press))] active:[--switch-top:calc(var(--switch-pad)+var(--switch-press)/2)]",
         // A widening thumb stays pinned to the track's far edge when on, so
         // the travel gives back whatever width it gained.
@@ -90,9 +101,9 @@ function Switch({ size = "default", className, style, onCheckedChange, ...props 
         // the thumb stays white and the track stays grey — darker off,
         // lighter on — rather than shadcn's inversion to a white track with
         // a dark thumb, which reads as the control turning inside out.
-        "bg-accent hover:bg-[color-mix(in_oklab,var(--accent),rgb(var(--overlay))_10%)]",
-        "data-[checked]:bg-primary data-[checked]:hover:bg-primary/90",
-        "dark:data-[checked]:bg-muted-foreground dark:data-[checked]:hover:bg-[color-mix(in_oklab,var(--muted-foreground),white_12%)]",
+        "bg-accent not-data-[no-hover]:hover:bg-[color-mix(in_oklab,var(--accent),rgb(var(--overlay))_10%)]",
+        "data-[checked]:bg-primary not-data-[no-hover]:data-[checked]:hover:bg-primary/90",
+        "dark:data-[checked]:bg-muted-foreground dark:not-data-[no-hover]:data-[checked]:hover:bg-[color-mix(in_oklab,var(--muted-foreground),white_12%)]",
         "transition-colors [transition-duration:var(--motion-fast,80ms)]",
         "focus-visible:ring-1 focus-visible:ring-[color:var(--focus-ring,#6B97FF)] focus-visible:ring-offset-2 focus-visible:ring-offset-background",
         "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",

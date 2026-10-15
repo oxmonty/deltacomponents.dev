@@ -248,7 +248,7 @@ function SwitchPreview() {
               one class away from the default `primary` track. */}
           <Switch
             defaultChecked={Boolean(on)}
-            className="data-[checked]:bg-[rgba(0,60,255,0.8)] data-[checked]:hover:bg-[rgba(0,60,255,0.9)] dark:data-[checked]:bg-[rgba(0,60,255,0.8)] dark:data-[checked]:hover:bg-[rgba(0,60,255,0.9)]"
+            className="data-[checked]:bg-[rgba(0,60,255,0.8)] not-data-[no-hover]:data-[checked]:hover:bg-[rgba(0,60,255,0.9)] dark:data-[checked]:bg-[rgba(0,60,255,0.8)] dark:not-data-[no-hover]:data-[checked]:hover:bg-[rgba(0,60,255,0.9)]"
           />
           {label}
         </label>
