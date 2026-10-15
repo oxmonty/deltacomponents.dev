@@ -38,7 +38,10 @@ function PhoneFrame({
         className
       )}
     >
-      <div className="relative h-[640px] w-full overflow-hidden rounded-[44px] bg-background">
+      {/* clip-path as well as overflow: a `backdrop-filter` layer (a blurred
+          bar) escapes an overflow clip's rounded corners in Chromium and
+          pokes square corners out of the screen; the clip-path clips it. */}
+      <div className="relative h-[640px] w-full overflow-hidden rounded-[44px] bg-background [clip-path:inset(0_round_44px)]">
         <div
           aria-hidden
           className="absolute top-2 left-1/2 z-10 h-[26px] w-[90px] -translate-x-1/2 rounded-full bg-neutral-950"

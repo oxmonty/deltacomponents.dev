@@ -66,6 +66,26 @@ they don't sit a thumb's width apart.
 
 <ComponentPreview name="bottom-nav-three-items" padding="compact" />
 
+## Override Styling
+
+Three overrides at once. Outline-and-fill icon pairs: both forms are rendered
+and CSS picks one off the item's `data-state`, so an active item shows its fill
+with nothing from the component. A translucent bar that blurs the feed under
+it, which is the solid variant with its background made see-through. And one
+item on a tile, reached through its icon slot.
+
+<ComponentPreview name="bottom-nav-override-styling" padding="compact" />
+
+Parts you hold no reference to are reachable by `data-slot`:
+
+| Slot | Element |
+| --- | --- |
+| `bottom-nav` | The bar |
+| `bottom-nav-list` | The row of items |
+| `bottom-nav-item` | One item, a link or a button, with `data-state` |
+| `bottom-nav-icon` | The box around an item's icon |
+| `bottom-nav-label` | The caption |
+
 ## Solid
 
 A solid bar with a hard top edge instead of the fade, for pages whose content shouldn't bleed into it.

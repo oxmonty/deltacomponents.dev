@@ -199,7 +199,10 @@ function BottomNavItem({
         data-state={isActive ? "active" : "inactive"}
         onClick={handleClick}
         className={cn(
-          "group/item flex w-full cursor-pointer flex-col items-center justify-center px-1",
+          // h-full: the row stretches every item to the tallest, and this is
+          // what centres each one's glyph in that height rather than at the
+          // top of its own.
+          "group/item flex h-full w-full cursor-pointer flex-col items-center justify-center px-1",
           labels ? "py-2" : "py-3",
           // `touch-manipulation` drops the 300ms double-tap wait, so a tap is
           // answered the instant it lands rather than feeling ignored.
@@ -235,7 +238,10 @@ function BottomNavItem({
           {icon && (
             <span
               data-slot="bottom-nav-icon"
-              className="[&_svg]:size-6 [&_svg]:stroke-[1.5] [&_svg]:pointer-events-none"
+              // inline-flex, not inline: the slot hugs the glyph rather than
+              // sitting it on a text baseline with line-height slack under
+              // it, which shows the moment the slot is given a background.
+              className="inline-flex [&_svg]:size-6 [&_svg]:stroke-[1.5] [&_svg]:pointer-events-none"
             >
               {icon}
             </span>
