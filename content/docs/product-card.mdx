@@ -1,11 +1,10 @@
 ---
-description: "Compound card for commerce rows — image well, overlaid badge, and a title/subtitle/metric footer"
+description: "Compound card for commerce rows — image well and a title/subtitle/metric footer"
 ---
 
 import {
   productCardProps,
   productCardImageProps,
-  productCardBadgeProps,
   productCardContentProps,
   productCardHeaderProps,
   productCardTitleProps,
@@ -54,10 +53,6 @@ import {
 
 <ComponentPreview name="product-card-sizes" padding="compact" />
 
-## Badge
-
-<ComponentPreview name="product-card-badge" padding="compact" />
-
 ## Grid
 
 <ComponentPreview name="product-card-grid" padding="compact" />
@@ -85,8 +80,7 @@ Finder](https://support.apple.com/guide/mac-help/perform-quick-actions-in-the-fi
 Every part takes its own `className`, merged last through `tailwind-merge`, so a
 utility that conflicts with a default replaces it instead of stacking with it.
 The card's type size is set once on the root and inherited by the title,
-subtitle and metric — and the badge, which is sized in `em` — so one `text-*`
-moves the whole block.
+subtitle and metric, so one `text-*` moves the whole block.
 
 <ComponentPreview name="product-card-override-styling" padding="compact" align="top" />
 
@@ -97,7 +91,6 @@ Parts you hold no reference to are reachable by `data-slot`:
 | `product-card` | The card root |
 | `product-card-image` | The square image well |
 | `product-card-img` | The `<img>` inside it — or use `imageClassName` |
-| `product-card-badge` | The badge pinned over the image |
 | `product-card-content` | The row holding the header and the metric |
 | `product-card-header` | The title and subtitle group |
 | `product-card-title` | The product name |
@@ -118,8 +111,7 @@ The root is a `div`, not a control. Passing `onClick` gives it a pointer cursor
 but no keyboard access — for a card that must be reachable by keyboard, put a
 real `<a>` or `<button>` on the title and stretch it over the card with
 `after:absolute after:inset-0`, the way the grid example wraps each card in a
-link. That keeps a badge inside the card legal, which nesting a control inside
-`role="button"` would not.
+link, which nesting a control inside `role="button"` would not allow.
 
 ## API Reference
 
@@ -130,10 +122,6 @@ link. That keeps a badge inside the card legal, which nesting a control inside
 ### ProductCardImage
 
 <PropsTable props={productCardImageProps} />
-
-### ProductCardBadge
-
-<PropsTable props={productCardBadgeProps} />
 
 ### ProductCardContent
 

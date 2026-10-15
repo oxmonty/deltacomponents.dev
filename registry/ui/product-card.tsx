@@ -81,12 +81,6 @@ const contentPaddingInner: Record<ProductCardSize, string> = {
   lg: "p-4",
 }
 
-const badgePosition: Record<ProductCardSize, string> = {
-  sm: "top-1.5 right-1.5 px-1.5 py-0.5",
-  default: "top-2 right-2 px-2 py-1",
-  lg: "top-3 right-3 px-3 py-1.5",
-}
-
 /* ------------------------------------------------------------------
  * ProductCard (root)
  * ------------------------------------------------------------------ */
@@ -111,8 +105,8 @@ function ProductCard({
   // actually arrives, so a plain card no longer shows a pointer cursor it
   // cannot honour. A card that has to be keyboard-reachable should put a real
   // <a>/<button> on its title and stretch it (`after:absolute after:inset-0`)
-  // rather than making this div interactive — that keeps the badge inside it
-  // legal, which nesting a control inside role="button" would not.
+  // rather than making this div interactive — a control nested inside
+  // role="button" would not be legal.
   const interactive = Boolean(props.onClick)
 
   return (
@@ -220,59 +214,6 @@ function ProductCardImage({
       />
       {children}
     </div>
-  )
-}
-
-/* ------------------------------------------------------------------
- * ProductCardBadge
- * ------------------------------------------------------------------ */
-
-interface ProductCardBadgeProps extends React.ComponentProps<"button"> {
-  /** Swaps the badge to the filled treatment. */
-  isActive?: boolean
-  icon?: React.ReactNode
-}
-
-function ProductCardBadge({
-  className,
-  isActive = false,
-  icon,
-  children,
-  onClick,
-  ...props
-}: ProductCardBadgeProps) {
-  const { size } = useProductCardContext()
-
-  return (
-    <button
-      data-slot="product-card-badge"
-      type="button"
-      onClick={(e) => {
-        // The badge sits on a card that may itself be clickable; a wishlist
-        // toggle must not also open the product.
-        e.stopPropagation()
-        onClick?.(e)
-      }}
-      className={cn(
-        "absolute flex items-center gap-1 font-medium",
-        "transition-colors duration-(--motion-fast) ease-spring",
-        "rounded-[var(--radius-button,var(--radius,0.5rem))]",
-        // Relative to the card's own type size rather than a third size
-        // table, so a `text-*` override on the root carries the badge with
-        // it. Lands within 0.4px of the sizes the tables used to hardcode.
-        "text-[0.85em]",
-        badgePosition[size],
-        isActive
-          ? "bg-primary text-primary-foreground hover:bg-primary/90"
-          : "bg-popover text-popover-foreground hover:bg-accent",
-        "outline-none focus-visible:ring-1 focus-visible:ring-[color:var(--focus-ring,#6B97FF)] focus-visible:ring-offset-2",
-        className
-      )}
-      {...props}
-    >
-      {icon && <span aria-hidden="true">{icon}</span>}
-      {children}
-    </button>
   )
 }
 
@@ -399,7 +340,6 @@ function ProductCardMetric({
 export {
   ProductCard,
   ProductCardImage,
-  ProductCardBadge,
   ProductCardContent,
   ProductCardHeader,
   ProductCardTitle,
@@ -407,7 +347,6 @@ export {
   ProductCardMetric,
   type ProductCardProps,
   type ProductCardImageProps,
-  type ProductCardBadgeProps,
   type ProductCardContentProps,
   type ProductCardHeaderProps,
   type ProductCardTitleProps,
