@@ -889,17 +889,20 @@ html.transitioning *::after {
 
 /* ── Switch thumb: slides with a double bounce ──
    Past the end by --switch-overshoot at 55%, back on it by 80%, and held.
-   Both ends read the Switch's own custom properties, so a resized switch
-   bounces to its own travel. Mirrored in registry.json's `switch` item. */
+   The first frame reads --switch-from, the thumb's position at the moment
+   of the change, so a toggle mid-flight continues from there instead of
+   snapping to the far end. Both ends read the Switch's own custom
+   properties, so a resized switch bounces to its own travel. Mirrored in
+   registry.json's `switch` item. */
 
 @keyframes switch-on {
-  0%   { translate: 0 0; }
+  0%   { translate: var(--switch-from, 0px) 0; }
   55%  { translate: calc(var(--switch-end) + var(--switch-overshoot)) 0; }
   80%, 100% { translate: var(--switch-end) 0; }
 }
 
 @keyframes switch-off {
-  0%   { translate: var(--switch-end) 0; }
+  0%   { translate: var(--switch-from, var(--switch-end)) 0; }
   55%  { translate: calc(0px - var(--switch-overshoot)) 0; }
   80%, 100% { translate: 0 0; }
 }
