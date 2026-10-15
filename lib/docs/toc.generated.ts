@@ -631,18 +631,13 @@ export const TOC: Record<string, TocEntry[]> = {
       "depth": 2
     },
     {
-      "id": "controlled",
-      "text": "Controlled",
-      "depth": 2
-    },
-    {
       "id": "disabled",
       "text": "Disabled",
       "depth": 2
     },
     {
-      "id": "resized",
-      "text": "Resized",
+      "id": "sizes",
+      "text": "Sizes",
       "depth": 2
     },
     {

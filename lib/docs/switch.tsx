@@ -1,6 +1,6 @@
 "use client";
 
-import { forwardRef, useId, type CSSProperties, type HTMLAttributes } from "react";
+import { forwardRef, useId, type HTMLAttributes } from "react";
 
 import { cn } from "@/registry/lib/utils";
 import { Switch as SwitchControl } from "@/registry/ui/switch";
@@ -20,18 +20,6 @@ interface SwitchProps extends HTMLAttributes<HTMLDivElement> {
    *  surrounding SizeProvider. */
   size?: SizeVariant;
 }
-
-/** The compact step is the control's own geometry at 28×14, so the hover
- *  pill, the press squash and the bounce all come along. The default step
- *  is the control's own defaults. */
-const COMPACT_GEOMETRY = {
-  "--switch-w": "28px",
-  "--switch-h": "14px",
-  "--switch-pad": "2.33px",
-  "--switch-thumb-w": "14px",
-  "--switch-thumb-h": "9.33px",
-  "--switch-press": "3px",
-} as CSSProperties;
 
 const Switch = forwardRef<HTMLDivElement, SwitchProps>(
   ({ label, checked, onToggle, disabled = false, size, className, ...props }, ref) => {
@@ -59,7 +47,7 @@ const Switch = forwardRef<HTMLDivElement, SwitchProps>(
           aria-labelledby={labelId}
           onCheckedChange={onToggle}
           disabled={disabled}
-          style={compact ? COMPACT_GEOMETRY : undefined}
+          size={compact ? "sm" : "default"}
           onClick={(e) => e.stopPropagation()}
         />
 

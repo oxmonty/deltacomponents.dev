@@ -26,20 +26,21 @@ keyframe sequence that plays only on a change, never on mount.
 
 <ComponentPreview name="switch-demo" />
 
-## Controlled
-
-<ComponentPreview name="switch-controlled" />
-
 ## Disabled
 
 <ComponentPreview name="switch-disabled" />
 
-## Resized
+## Sizes
 
-The whole control is drawn from a handful of CSS variables on the root, so a
-`style` sets a new size and the travel, hover pill and press squash all follow.
+`sm` is Ant Design's small switch (28×16), the default its 44×22, and `lg` the
+default at iOS's 51×31 proportion. The thumb keeps its 3:2 at every step.
 
-<ComponentPreview name="switch-resized" />
+<ComponentPreview name="switch-sizes" />
+
+## Override Styling
+
+Every size is a handful of CSS variables on the root, so a `style` can set a
+geometry of its own and the travel, hover pill and press squash follow:
 
 | Variable | Default | Meaning |
 | --- | --- | --- |
@@ -52,8 +53,6 @@ The whole control is drawn from a handful of CSS variables on the root, so a
 | `--switch-press` | `4px` | Extra width (and matching squash) on press |
 | `--switch-overshoot` | `1px` | How far the bounce overshoots the end |
 
-## Override Styling
-
 Parts you hold no reference to are reachable by `data-slot`:
 
 | Slot | Element |
@@ -62,5 +61,4 @@ Parts you hold no reference to are reachable by `data-slot`:
 | `switch-thumb` | The sliding thumb |
 
 ## API Reference
-
 <PropsTable props={switchProps} />
