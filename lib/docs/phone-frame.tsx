@@ -34,7 +34,7 @@ function PhoneFrame({
         // overflowing it.
         // No drop shadow: the showcase card clips the frame, and a shadow
         // cut off at the clip reads as a smear.
-        "relative mx-auto w-full max-w-[316px] rounded-[52px] bg-neutral-950 p-2 ring-1 ring-black/10 dark:ring-white/10",
+        "relative mx-auto w-full max-w-[360px] rounded-[52px] bg-neutral-950 p-2 ring-1 ring-black/10 dark:ring-white/10",
         className
       )}
     >
