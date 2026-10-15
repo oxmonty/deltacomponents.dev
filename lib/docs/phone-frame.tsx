@@ -5,8 +5,10 @@ import { useEffect, useRef, type ReactNode } from "react";
 import { cn } from "@/registry/lib/utils";
 
 /**
- * A CSS-only mock of an iPhone Pro Max in portrait, for demos that need a
- * phone-sized viewport rather than the full doc page width.
+ * A CSS-only mock of an iPhone 17 Pro Max in portrait, for demos that need a
+ * phone-sized viewport rather than the full doc page width. From `md` up the
+ * screen is its 440×956pt proportion at 344×748px; below that it stays the
+ * 300×640 the showcase card and a phone-width page have room for.
  */
 function PhoneFrame({
   route,
@@ -34,14 +36,14 @@ function PhoneFrame({
         // overflowing it.
         // No drop shadow: the showcase card clips the frame, and a shadow
         // cut off at the clip reads as a smear.
-        "relative mx-auto w-full max-w-[360px] rounded-[52px] bg-neutral-950 p-2 ring-1 ring-black/10 dark:ring-white/10",
+        "relative mx-auto w-full max-w-[316px] md:max-w-[360px] rounded-[52px] bg-neutral-950 p-2 ring-1 ring-black/10 dark:ring-white/10",
         className
       )}
     >
       {/* clip-path as well as overflow: a `backdrop-filter` layer (a blurred
           bar) escapes an overflow clip's rounded corners in Chromium and
           pokes square corners out of the screen; the clip-path clips it. */}
-      <div className="relative h-[640px] w-full overflow-hidden rounded-[44px] bg-background [clip-path:inset(0_round_44px)]">
+      <div className="relative h-[640px] md:h-[748px] w-full overflow-hidden rounded-[44px] bg-background [clip-path:inset(0_round_44px)]">
         <div
           aria-hidden
           className="absolute top-2 left-1/2 z-10 h-[26px] w-[90px] -translate-x-1/2 rounded-full bg-neutral-950"

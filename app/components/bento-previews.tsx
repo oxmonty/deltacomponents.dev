@@ -204,7 +204,7 @@ function BottomNavPreview() {
     // the frame from the top; grey cards instead of the demos' photos, so
     // the showcase stays quiet.
     <div className="-mb-12 flex h-60 w-full items-end justify-center self-end overflow-hidden">
-      <PhoneFrame className="max-w-[316px]">
+      <PhoneFrame className="md:max-w-[316px]">
         <div className="px-5">
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} aria-hidden className="mt-3 aspect-4/3 w-full rounded-xl bg-foreground/8" />
