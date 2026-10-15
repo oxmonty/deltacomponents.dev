@@ -6,9 +6,13 @@ import { cn } from "@/registry/lib/utils";
 
 /**
  * A CSS-only mock of an iPhone 17 Pro Max in portrait, for demos that need a
- * phone-sized viewport rather than the full doc page width. From `md` up the
- * screen is its 440×956pt proportion at 344×748px; below that it stays the
- * 300×640 the showcase card and a phone-width page have room for.
+ * phone-sized viewport rather than the full doc page width. Every dimension
+ * derives from `--phone-w`, the screen's width, in the proportions measured
+ * off the macOS Simulator: a 440×956pt screen, a 4px titanium rim round a
+ * 7px bezel, the island, and the buttons either side. It is 344px wide from
+ * `md` up and 300px below, where a phone-width page and the showcase card
+ * have no room for more; a `className` of `md:[--phone-w:300px]` pins the
+ * small one.
  */
 function PhoneFrame({
   route,
@@ -31,22 +35,33 @@ function PhoneFrame({
   return (
     <div
       className={cn(
+        "[--phone-w:300px] md:[--phone-w:344px]",
+        "[--phone-rim:calc(var(--phone-w)*0.0117)] [--phone-pad:calc(var(--phone-w)*0.0204)] [--phone-r:calc(var(--phone-w)*0.148)]",
         // Full width up to the phone's own, so the frame shrinks with a
         // narrow container (the showcase card on a phone) rather than
         // overflowing it.
         // No drop shadow: the showcase card clips the frame, and a shadow
         // cut off at the clip reads as a smear.
-        "relative mx-auto w-full max-w-[316px] md:max-w-[360px] rounded-[52px] bg-neutral-950 p-2 ring-1 ring-black/10 dark:ring-white/10",
+        "relative mx-auto w-full max-w-[calc(var(--phone-w)+2*(var(--phone-rim)+var(--phone-pad)))] rounded-[calc(var(--phone-w)*0.166)] border-[length:var(--phone-rim)] border-[#3c3c3c] bg-[#141414] p-(--phone-pad)",
         className
       )}
     >
+      {/* Action, volume up, volume down on the left; side button on the
+          right. Placed as fractions of the body's height, lit from the body
+          side and darker at the tip, as the Simulator draws them. Absolute
+          offsets count from the padding edge, inside the rim, hence twice
+          the rim to clear it. */}
+      <span aria-hidden className="absolute top-[18%] left-[calc(-2*var(--phone-rim))] h-[3.2%] w-(--phone-rim) rounded-l-[2px] bg-linear-to-l from-[#5c5c5c] to-[#2b2b2b]" />
+      <span aria-hidden className="absolute top-[26.9%] left-[calc(-2*var(--phone-rim))] h-[6.3%] w-(--phone-rim) rounded-l-[2px] bg-linear-to-l from-[#5c5c5c] to-[#2b2b2b]" />
+      <span aria-hidden className="absolute top-[35.7%] left-[calc(-2*var(--phone-rim))] h-[6.3%] w-(--phone-rim) rounded-l-[2px] bg-linear-to-l from-[#5c5c5c] to-[#2b2b2b]" />
+      <span aria-hidden className="absolute top-[29.5%] right-[calc(-2*var(--phone-rim))] h-[10.1%] w-(--phone-rim) rounded-r-[2px] bg-linear-to-r from-[#5c5c5c] to-[#2b2b2b]" />
       {/* clip-path as well as overflow: a `backdrop-filter` layer (a blurred
           bar) escapes an overflow clip's rounded corners in Chromium and
           pokes square corners out of the screen; the clip-path clips it. */}
-      <div className="relative h-[640px] md:h-[748px] w-full overflow-hidden rounded-[44px] bg-background [clip-path:inset(0_round_44px)]">
+      <div className="relative h-[calc(var(--phone-w)*956/440)] w-full overflow-hidden rounded-(--phone-r) bg-background [clip-path:inset(0_round_var(--phone-r))]">
         <div
           aria-hidden
-          className="absolute top-2 left-1/2 z-10 h-[26px] w-[90px] -translate-x-1/2 rounded-full bg-neutral-950"
+          className="absolute top-[calc(var(--phone-w)*0.032)] left-1/2 z-10 h-[calc(var(--phone-w)*0.081)] w-[calc(var(--phone-w)*0.282)] -translate-x-1/2 rounded-full bg-black"
         />
         {/* The bar is `position: fixed` in the wild. Here the frame pins it
             to this box instead by making it absolute — this box is the
