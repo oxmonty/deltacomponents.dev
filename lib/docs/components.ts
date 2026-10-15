@@ -40,18 +40,18 @@ export function labelOf(entry: Pick<ComponentEntry, "name" | "label">): string {
 }
 
 export const componentList: ComponentEntry[] = [
-  { slug: "code", name: "Code", isNew: true, gridSize: "large" },
-  { slug: "product-card", name: "ProductCard", isNew: true, gridSize: "large", gridClassName: "xl:col-start-2" },
-  { slug: "editor", name: "Editor", isNew: true, gridSize: "large" },
-  { slug: "tabs", name: "Tabs", isNew: true, gridSize: "medium" },
+  { slug: "code", name: "Code", gridSize: "large" },
+  { slug: "product-card", name: "ProductCard", gridSize: "large", gridClassName: "xl:col-start-2" },
+  { slug: "editor", name: "Editor", gridSize: "large" },
+  { slug: "tabs", name: "Tabs", gridSize: "medium" },
   { slug: "bottom-nav", name: "BottomNav", isNew: true, gridSize: "medium" },
   { slug: "switch", name: "Switch", isNew: true, gridSize: "small" },
   { slug: "button", name: "Button", gridSize: "small" },
   { slug: "tooltip", name: "Tooltip", gridSize: "small" },
-  { slug: "alert", name: "Alert", isNew: true, gridSize: "medium" },
-  { slug: "embed", name: "Embed", isNew: true, gridSize: "tall", gridClassName: "xl:col-start-1" },
-  { slug: "image", name: "Image", isNew: true, gridSize: "medium" },
-  { slug: "glyph", name: "Glyph", isNew: true, gridSize: "small", draft: true },
+  { slug: "alert", name: "Alert", gridSize: "medium" },
+  { slug: "embed", name: "Embed", gridSize: "tall", gridClassName: "xl:col-start-1" },
+  { slug: "image", name: "Image", gridSize: "medium" },
+  { slug: "glyph", name: "Glyph", gridSize: "small", draft: true },
   { slug: "mp3-player", name: "MP3Player", gridSize: "medium", draft: true },
 ];
 
