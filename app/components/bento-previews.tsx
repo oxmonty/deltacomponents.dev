@@ -9,9 +9,9 @@ import AlertDemo from "@/content/demos/alert/alert-demo";
 import { LinkPreview } from "@/registry/ui/embed";
 import { Image } from "@/registry/ui/image";
 import { BottomNav, BottomNavItem } from "@/registry/ui/bottom-nav";
-import { useIcon } from "@/registry/lib/icon-context";
 import { PhoneFrame } from "@/lib/docs/phone-frame";
 import { Switch } from "@/registry/ui/switch";
+import { ICONS as NAV_ICONS, FilledOnActive } from "@/content/demos/bottom-nav/bottom-nav-override-styling";
 import { PATRICK_DARK } from "@/lib/docs/code-themes";
 import {
   Tabs,
@@ -197,10 +197,6 @@ function TabsPreview() {
 
 function BottomNavPreview() {
   const [value, setValue] = useState("home");
-  const HomeIcon = useIcon("home");
-  const SearchIcon = useIcon("search");
-  const InboxIcon = useIcon("inbox");
-  const UserIcon = useIcon("user");
   return (
     // The same phone as the doc page's demos, with the top cut off by the
     // card: a 300px row cannot hold a 656px phone, and the bar is the point.
@@ -215,16 +211,16 @@ function BottomNavPreview() {
           ))}
         </div>
         <BottomNav value={value} onValueChange={setValue}>
-        <BottomNavItem value="home" icon={<HomeIcon />}>
+        <BottomNavItem value="home" icon={<FilledOnActive {...NAV_ICONS.home} />}>
           Home
         </BottomNavItem>
-        <BottomNavItem value="search" icon={<SearchIcon />}>
+        <BottomNavItem value="search" icon={<FilledOnActive {...NAV_ICONS.search} />}>
           Search
         </BottomNavItem>
-        <BottomNavItem value="inbox" icon={<InboxIcon />}>
-          Inbox
+        <BottomNavItem value="activity" icon={<FilledOnActive {...NAV_ICONS.heart} />}>
+          Activity
         </BottomNavItem>
-        <BottomNavItem value="profile" icon={<UserIcon />}>
+        <BottomNavItem value="profile" icon={<FilledOnActive {...NAV_ICONS.profile} />}>
           Profile
         </BottomNavItem>
         </BottomNav>

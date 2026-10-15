@@ -8,7 +8,7 @@ import { PhoneFrame } from "@/lib/docs/phone-frame";
 // Icon pairs as path data: the outline the bar rests at and the fill it
 // switches to when the item is active. Search and Create have no filled
 // form and are only recoloured.
-const ICONS = {
+export const ICONS = {
   home: {
     outline:
       "M13.4056 3.72522C12.5838 3.06783 11.4162 3.06783 10.5944 3.72522L4.28209 8.7751C3.62975 9.29697 3.25 10.0871 3.25 10.9225V18C3.25 19.5188 4.48122 20.75 6 20.75H18C19.5188 20.75 20.75 19.5188 20.75 18V10.9225C20.75 10.0871 20.3703 9.29697 19.7179 8.7751L13.4056 3.72522ZM9.0327 1.77305C10.7675 0.385221 13.2325 0.38522 14.9673 1.77305L21.2796 6.82293C22.525 7.81923 23.25 9.32762 23.25 10.9225V18C23.25 20.8995 20.8995 23.25 18 23.25H6C3.1005 23.25 0.75 20.8995 0.75 18V10.9225C0.75 9.32763 1.47497 7.81923 2.72035 6.82293L9.0327 1.77305Z",
@@ -48,7 +48,7 @@ function Glyph({ d }: { d: string }) {
 // Both forms are rendered and CSS picks one off the item's `data-state`, so
 // the swap needs nothing from the component: an active item simply shows
 // its filled glyph.
-function FilledOnActive({ outline, filled }: { outline: string; filled?: string }) {
+export function FilledOnActive({ outline, filled }: { outline: string; filled?: string }) {
   if (!filled) return <Glyph d={outline} />;
   return (
     <>
@@ -105,7 +105,7 @@ export default function BottomNavOverrideStyling() {
             // a muted rounded box around the glyph and nothing else.
             className={
               item.value === "create"
-                ? "**:data-[slot=bottom-nav-icon]:rounded-xl **:data-[slot=bottom-nav-icon]:bg-muted **:data-[slot=bottom-nav-icon]:px-3 **:data-[slot=bottom-nav-icon]:py-2.5"
+                ? "**:data-[slot=bottom-nav-icon]:rounded-xl **:data-[slot=bottom-nav-icon]:bg-muted **:data-[slot=bottom-nav-icon]:px-[18px] **:data-[slot=bottom-nav-icon]:py-2"
                 : undefined
             }
           >
