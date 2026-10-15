@@ -4,8 +4,8 @@ export const bottomNavProps: PropDef[] = [
   { name: "value", type: "string", description: "The active item's value. The nav never guesses this from the URL, hand it the router's current path (or any state)." },
   { name: "onValueChange", type: "(value: string) => void", description: "Called with the tapped item's value, link or button, unless it is already active (that tap scrolls to the top instead)." },
   { name: "labels", type: "boolean", default: "true", description: "Caption under each icon. Off gives the icon-only bar." },
-  { name: "gradient", type: "boolean", default: "true", description: "Fade the page into the background colour above the bar rather than ending it at a hard edge." },
-  { name: "fade", type: "number", default: "0.5", description: "Where the fade lands: 0.5 reaches full background colour at the icons' top edge, 0 at their bottom edge (the icons sit inside the fade), 1 at the bar's top edge. It always starts 160px above the bar." },
+  { name: "gradient", type: "boolean", default: "true", description: "Fade the page into the background colour through the bar's top rather than ending it at a hard edge." },
+  { name: "fade", type: "number", default: "1", description: "How much of the bar the fade runs through, 0 to 1. 0 is a solid bar; 1 turns solid at the icons' bottom edge, so the page shows through behind them. It never reaches above the bar or behind the labels." },
   { name: "linkComponent", type: "React.ElementType", default: '"a"', description: "What an item with an `href` renders as. A Next app passes `Link` here once to keep client-side routing and prefetching." },
   { name: "className", type: "string", description: "Merged onto the nav. No breakpoint of its own, a layout's own `md:hidden` decides where it hides." },
 ];

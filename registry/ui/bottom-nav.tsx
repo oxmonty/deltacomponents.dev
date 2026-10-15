@@ -28,14 +28,13 @@ interface BottomNavProps
   onValueChange?: (value: string) => void;
   /** Caption under each icon. Off gives the icon-only bar. */
   labels?: boolean;
-  /** Fade the page into the background colour above the bar rather than
-   *  ending it at a hard edge. */
+  /** Fade the page into the background colour through the bar's top
+   *  rather than ending it at a hard edge. */
   gradient?: boolean;
-  /** Where the fade above the bar lands, 0 to 1. At 0.5 it reaches full
-   *  background colour exactly at the icons' top edge; lower ends it below
-   *  that, inside the icons (0 is their bottom edge), higher ends it above
-   *  them (1 is the bar's top edge). It always starts 160px above the bar,
-   *  and the bar's own box never changes with it. */
+  /** How much of the bar the fade runs through, 0 to 1. 0 is a solid bar;
+   *  1 turns solid at the icons' bottom edge, so the page shows through
+   *  behind them. It never reaches above the bar or behind the labels, and
+   *  the bar's own box never changes with it. */
   fade?: number;
   /** What an item with an `href` renders as. `"a"` by default; a Next app
    *  passes `Link` here once to keep client-side routing and prefetching. */
@@ -47,7 +46,7 @@ function BottomNav({
   onValueChange,
   labels = true,
   gradient = true,
-  fade = 0.5,
+  fade = 1,
   linkComponent = "a",
   className,
   style,
@@ -64,29 +63,28 @@ function BottomNav({
       <nav
         data-slot="bottom-nav"
         {...props}
-        // How far into the bar the fade's solid end sits: the icons' top
-        // edge is 12px down (the bar's 4px plus the item's 8px), their
-        // bottom 36px; the scale runs 0 → 24px, 0.5 → 12px, 1 → 0.
-        style={{ "--bottom-nav-fade-end": `${(1 - fade) * 24}px`, ...style } as React.CSSProperties}
+        // The icons' bottom edge: the bar's 4px padding, the item's (8px
+        // with labels, 12px without) and the 24px glyph.
+        style={
+          {
+            "--bottom-nav-fade": `${Math.min(Math.max(fade, 0), 1) * (labels ? 36 : 40)}px`,
+            ...style,
+          } as React.CSSProperties
+        }
         className={cn(
           // No breakpoint of its own: the layout that mounts it decides where
           // it hides (`md:hidden`), which is also what lets a demo show it on
           // a desktop inside a phone-sized frame.
           // Bottom padding is the home-indicator inset when there is one and
-          // the same 4px as the top otherwise. The fade below is a strip
-          // above the bar, so lengthening it never changes this box.
+          // the same 4px as the top otherwise. The fade is painted inside
+          // this box, so lengthening it never changes it.
           "fixed inset-x-0 bottom-0 z-50 pt-1 pb-[max(env(safe-area-inset-bottom,0px),0.25rem)]",
-          // The bar is solid from the fade's end down, so the labels (and,
-          // at the default, the icons) never have page text showing through
-          // around them; above that line the fade strip takes over, 160px
-          // of the page dissolving into the background colour on its way
-          // under the bar, as iOS does.
+          // The fade runs from the bar's top edge, never above it: clear
+          // there, solid at --bottom-nav-fade, eased through the stops between
+          // (15%, 40%, 60%, 80% at 1/9, 2/9, 3/9, 5/9 of the way) so it
+          // builds quickly and settles gently rather than ramping evenly.
           gradient
-            ? cn(
-                "bg-[linear-gradient(transparent_var(--bottom-nav-fade-end),var(--background)_var(--bottom-nav-fade-end))]",
-                "before:pointer-events-none before:absolute before:inset-x-0 before:bottom-[calc(100%-var(--bottom-nav-fade-end))] before:h-[calc(10rem+var(--bottom-nav-fade-end))]",
-                "before:bg-linear-to-t before:from-background before:to-transparent"
-              )
+            ? "bg-[linear-gradient(transparent,color-mix(in_srgb,var(--background)_15%,transparent)_calc(var(--bottom-nav-fade)/9),color-mix(in_srgb,var(--background)_40%,transparent)_calc(var(--bottom-nav-fade)*2/9),color-mix(in_srgb,var(--background)_60%,transparent)_calc(var(--bottom-nav-fade)/3),color-mix(in_srgb,var(--background)_80%,transparent)_calc(var(--bottom-nav-fade)*5/9),var(--background)_var(--bottom-nav-fade))]"
             : "bg-background",
           className
         )}

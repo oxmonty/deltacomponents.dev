@@ -36,7 +36,7 @@ export default function BottomNavSolid() {
           <img key={src} src={src} alt="" loading="lazy" className="mt-3 aspect-4/3 w-full rounded-xl object-cover" />
         ))}
       </div>
-      <BottomNav value={value} onValueChange={setValue} gradient={false}>
+      <BottomNav value={value} onValueChange={setValue} fade={0}>
         <BottomNavItem value="home" icon={<HomeIcon />}>
           Home
         </BottomNavItem>

@@ -45,10 +45,11 @@ The nav never reads the URL itself: `value` is whatever your router says is curr
 
 ## Fade
 
-The page dissolves into the background over the 160px above the bar. `fade`
-says where that lands: at the default `0.5` it is solid from the icons' top edge
-down; lower lets it run into the icons, `1` ends it at the bar's top edge.
-Scroll the screen a little and drag the slider.
+The page dissolves into the background through the top of the bar, never above
+it, so the bar's box is the same as the Solid one below. `fade` says how far
+down: `0` is a solid bar, and `1`, the default, turns solid at the icons' bottom
+edge, so the page shows through behind them. Scroll the screen a little and
+drag the slider.
 
 <ComponentPreview name="bottom-nav-fade" padding="compact" />
 
@@ -88,7 +89,7 @@ Parts you hold no reference to are reachable by `data-slot`:
 
 ## Solid
 
-A solid bar with a hard top edge instead of the fade, for pages whose content shouldn't bleed into it.
+`fade={0}` gives a solid bar with a hard top edge, for pages whose content shouldn't bleed into it.
 
 <ComponentPreview name="bottom-nav-solid" padding="compact" />
 

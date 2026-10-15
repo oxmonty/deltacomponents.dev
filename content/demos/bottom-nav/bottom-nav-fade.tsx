@@ -16,7 +16,7 @@ const PHOTOS = Array.from(
 
 export default function BottomNavFade() {
   const [value, setValue] = useState("home");
-  const [fade, setFade] = useState(0.5);
+  const [fade, setFade] = useState(1);
   const HomeIcon = useIcon("home");
   const SearchIcon = useIcon("search");
   const HeartIcon = useIcon("heart");
@@ -34,7 +34,7 @@ export default function BottomNavFade() {
           value={fade}
           onValueChange={(v) => setFade(v as number)}
         />
-        <span className="w-8 tabular-nums text-foreground">{fade.toFixed(2)}</span>
+        <span className="w-12 tabular-nums text-foreground">{fade.toFixed(2)}</span>
       </div>
       <PhoneFrame route={value}>
         <div className="px-5">

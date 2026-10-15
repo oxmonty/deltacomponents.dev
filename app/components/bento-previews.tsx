@@ -207,7 +207,7 @@ function BottomNavPreview() {
       <PhoneFrame>
         <div className="px-5">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} aria-hidden className="mt-3 aspect-4/3 w-full rounded-xl bg-muted" />
+            <div key={i} aria-hidden className="mt-3 aspect-4/3 w-full rounded-xl bg-foreground/8" />
           ))}
         </div>
         <BottomNav value={value} onValueChange={setValue}>
