@@ -137,7 +137,7 @@ export function MobileNav() {
         >
           <Popover.Popup
             className={cn(
-              "scroll-fade h-(--available-height) w-(--available-width) overflow-y-auto outline-none",
+              "h-(--available-height) w-(--available-width) outline-none",
               "bg-background",
               "origin-top transition-[opacity,transform] duration-(--motion-moderate) ease-spring",
               "data-[instant]:duration-0",
@@ -150,30 +150,35 @@ export function MobileNav() {
                 to escape. Visually hidden: the hamburger above is the visible
                 way out. */}
             <Popover.Close className="sr-only">Close menu</Popover.Close>
-            <div className="flex flex-col gap-8 px-6 py-6">
-              <NavGroup label="Menu">
-                {sectionList.map((section) => (
-                  <NavLink
-                    key={section.href}
-                    href={section.href}
-                    isActive={pathname === section.href}
-                  >
-                    {section.name}
-                  </NavLink>
-                ))}
-              </NavGroup>
-
-              <NavGroup label="Components">
-                {visibleComponents.map((entry) => {
-                  const href = `/docs/${entry.slug}`;
-                  return (
-                    <NavLink key={entry.slug} href={href} isActive={pathname === href}>
-                      {labelOf(entry)}
-                      <StatusDot entry={entry} />
+            {/* The fade's scroll-driven animations never finish, and Base UI
+                holds the popup open until every animation on it has, so the
+                scroller is a child, outside that wait. */}
+            <div className="scroll-fade h-full overflow-y-auto">
+              <div className="flex flex-col gap-8 px-6 py-6">
+                <NavGroup label="Menu">
+                  {sectionList.map((section) => (
+                    <NavLink
+                      key={section.href}
+                      href={section.href}
+                      isActive={pathname === section.href}
+                    >
+                      {section.name}
                     </NavLink>
-                  );
-                })}
-              </NavGroup>
+                  ))}
+                </NavGroup>
+
+                <NavGroup label="Components">
+                  {visibleComponents.map((entry) => {
+                    const href = `/docs/${entry.slug}`;
+                    return (
+                      <NavLink key={entry.slug} href={href} isActive={pathname === href}>
+                        {labelOf(entry)}
+                        <StatusDot entry={entry} />
+                      </NavLink>
+                    );
+                  })}
+                </NavGroup>
+              </div>
             </div>
           </Popover.Popup>
         </Popover.Positioner>
