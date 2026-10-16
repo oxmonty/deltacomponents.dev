@@ -28,7 +28,7 @@ const iconOnlySize = (box: string, glyph = "[&_svg]:size-[var(--control-icon-gly
 
 const buttonVariants = cva(
   [
-    "group relative isolate inline-flex items-center justify-center outline-none cursor-pointer font-medium",
+    "group relative isolate inline-flex items-center justify-center outline-none cursor-pointer select-none font-medium",
     "rounded-[var(--radius-button,var(--radius,0.5rem))]",
     // The colour still lands in 80ms; the press dips the whole button — label,
     // icon and ground together — on the moderate tier and releases a tier
