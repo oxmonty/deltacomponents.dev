@@ -5,7 +5,7 @@ export const bottomNavProps: PropDef[] = [
   { name: "onValueChange", type: "(value: string) => void", description: "Called with the tapped item's value, link or button, unless it is already active (that tap scrolls to the top instead)." },
   { name: "labels", type: "boolean", default: "true", description: "Caption under each icon. Off gives the icon-only bar." },
   { name: "gradient", type: "boolean", default: "true", description: "Fade the page into the background colour through the bar's top rather than ending it at a hard edge." },
-  { name: "fade", type: "number", default: "1", description: "How much of the bar the fade runs through, 0 to 1. 0 is a solid bar; 1 turns solid at the icons' bottom edge, so the page shows through behind them. It never reaches above the bar or behind the labels." },
+  { name: "fade", type: "number", default: "0.5", description: "How far the bar gives way to the page, 0 to 1. 0 is a solid bar; 0.5 turns solid at the icons' bottom edge, so the page shows through behind them; past that the bar itself thins out, until at 1 nothing is drawn but the items. It never reaches above the bar." },
   { name: "linkComponent", type: "React.ElementType", default: '"a"', description: "What an item with an `href` renders as. A Next app passes `Link` here once to keep client-side routing and prefetching." },
   { name: "className", type: "string", description: "Merged onto the nav. No breakpoint of its own, a layout's own `md:hidden` decides where it hides." },
 ];

@@ -25,7 +25,7 @@ const FEEDS: Record<string, string[]> = Object.fromEntries(
 
 export default function BottomNavFade() {
   const [value, setValue] = useState("home");
-  const [fade, setFade] = useState(1);
+  const [fade, setFade] = useState(0.5);
   const HomeIcon = useIcon("home");
   const SearchIcon = useIcon("search");
   const HeartIcon = useIcon("heart");

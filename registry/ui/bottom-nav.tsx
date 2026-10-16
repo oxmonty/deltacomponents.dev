@@ -31,10 +31,11 @@ interface BottomNavProps
   /** Fade the page into the background colour through the bar's top
    *  rather than ending it at a hard edge. */
   gradient?: boolean;
-  /** How much of the bar the fade runs through, 0 to 1. 0 is a solid bar;
-   *  1 turns solid at the icons' bottom edge, so the page shows through
-   *  behind them. It never reaches above the bar or behind the labels, and
-   *  the bar's own box never changes with it. */
+  /** How far the bar gives way to the page, 0 to 1. 0 is a solid bar; 0.5
+   *  turns solid at the icons' bottom edge, so the page shows through behind
+   *  them; past that the bar itself thins out, until at 1 nothing is drawn
+   *  but the items. It never reaches above the bar, and the bar's own box
+   *  never changes with it. */
   fade?: number;
   /** What an item with an `href` renders as. `"a"` by default; a Next app
    *  passes `Link` here once to keep client-side routing and prefetching. */
@@ -46,7 +47,7 @@ function BottomNav({
   onValueChange,
   labels = true,
   gradient = true,
-  fade = 1,
+  fade = 0.5,
   linkComponent = "a",
   className,
   style,
@@ -58,6 +59,13 @@ function BottomNav({
     [value, onValueChange, labels, linkComponent]
   );
 
+  // Two halves of one dial. Up to 0.5 the fade reaches further down the bar,
+  // to the icons' bottom edge; past it the reach stays there and the colour
+  // itself thins out, so at 1 the bar draws nothing but its items.
+  const dial = Math.min(Math.max(fade, 0), 1);
+  const reach = Math.min(dial, 0.5) * 2;
+  const strength = Math.min(1, (1 - dial) * 2);
+
   return (
     <BottomNavContext.Provider value={contextValue}>
       <nav
@@ -67,7 +75,8 @@ function BottomNav({
         // with labels, 12px without) and the 24px glyph.
         style={
           {
-            "--bottom-nav-fade": `${Math.min(Math.max(fade, 0), 1) * (labels ? 36 : 40)}px`,
+            "--bottom-nav-fade": `${reach * (labels ? 36 : 40)}px`,
+            "--bottom-nav-bg": `color-mix(in srgb, var(--background) ${strength * 100}%, transparent)`,
             ...style,
           } as React.CSSProperties
         }
@@ -84,7 +93,7 @@ function BottomNav({
           // (15%, 40%, 60%, 80% at 1/9, 2/9, 3/9, 5/9 of the way) so it
           // builds quickly and settles gently rather than ramping evenly.
           gradient
-            ? "bg-[linear-gradient(transparent,color-mix(in_srgb,var(--background)_15%,transparent)_calc(var(--bottom-nav-fade)/9),color-mix(in_srgb,var(--background)_40%,transparent)_calc(var(--bottom-nav-fade)*2/9),color-mix(in_srgb,var(--background)_60%,transparent)_calc(var(--bottom-nav-fade)/3),color-mix(in_srgb,var(--background)_80%,transparent)_calc(var(--bottom-nav-fade)*5/9),var(--background)_var(--bottom-nav-fade))]"
+            ? "bg-[linear-gradient(transparent,color-mix(in_srgb,var(--bottom-nav-bg)_15%,transparent)_calc(var(--bottom-nav-fade)/9),color-mix(in_srgb,var(--bottom-nav-bg)_40%,transparent)_calc(var(--bottom-nav-fade)*2/9),color-mix(in_srgb,var(--bottom-nav-bg)_60%,transparent)_calc(var(--bottom-nav-fade)/3),color-mix(in_srgb,var(--bottom-nav-bg)_80%,transparent)_calc(var(--bottom-nav-fade)*5/9),var(--bottom-nav-bg)_var(--bottom-nav-fade))]"
             : "bg-background",
           className
         )}
