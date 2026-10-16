@@ -137,7 +137,7 @@ export function MobileNav() {
         >
           <Popover.Popup
             className={cn(
-              "h-(--available-height) w-(--available-width) overflow-y-auto outline-none",
+              "scroll-fade h-(--available-height) w-(--available-width) overflow-y-auto outline-none",
               "bg-background",
               "origin-top transition-[opacity,transform] duration-(--motion-moderate) ease-spring",
               "data-[instant]:duration-0",
