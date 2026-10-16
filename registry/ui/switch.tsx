@@ -80,6 +80,8 @@ function Switch({
   // re-enters — after a click the pointer is already inside, so the next
   // enter is the re-entry; a keyboard or label-text toggle made with the
   // pointer elsewhere gets its hover back the moment the pointer arrives.
+  // A disabled switch promises nothing, so it never hovers either — it
+  // keeps its pointer events for the not-allowed cursor.
   const [hoverSuspended, setHoverSuspended] = React.useState(false);
   const thumbRef = React.useRef<HTMLSpanElement>(null);
   const [from, setFrom] = React.useState("0px");
@@ -88,7 +90,7 @@ function Switch({
     <SwitchPrimitive.Root
       data-slot="switch"
       data-animate={animate || undefined}
-      data-no-hover={hoverSuspended || undefined}
+      data-no-hover={hoverSuspended || props.disabled || undefined}
       {...props}
       checked={isChecked}
       onCheckedChange={(next, eventDetails) => {
@@ -143,7 +145,7 @@ function Switch({
         "inset-ring inset-ring-[rgb(var(--overlay)/0.12)]",
         "transition-colors [transition-duration:var(--motion-fast,80ms)]",
         "focus-visible:ring-1 focus-visible:ring-[color:var(--focus-ring,#6B97FF)] focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-        "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+        "data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50",
         className
       )}
     >
