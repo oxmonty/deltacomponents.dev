@@ -126,9 +126,12 @@ function Switch({
         // A widening thumb stays pinned to the track's far edge when on, so
         // the travel gives back whatever width it gained.
         "[--switch-end:calc(var(--switch-travel)-(var(--switch-tw)-var(--switch-thumb-w)))]",
-        // The target is 44px tall at every size: 8px either side, and
-        // whatever makes the height up to the 44px a thumb needs.
-        "before:absolute before:-inset-x-2 before:-inset-y-[calc((44px-var(--switch-h))/2)] before:content-['']",
+        // The target is at least 44px tall (48px on touch, Material's
+        // minimum), with the same slop either side — never under 8px — so
+        // the smaller the track, the more forgiving the margin around it.
+        "[--switch-hit:44px] pointer-coarse:[--switch-hit:48px]",
+        "[--switch-slop:max(8px,calc((var(--switch-hit)-var(--switch-h))/2))]",
+        "before:absolute before:-inset-(--switch-slop) before:content-['']",
         // Light is input-grey off and primary on with a white thumb; dark
         // follows iOS 26's dark switch — the off track is the input fill
         // with a white thumb, on is primary with a primary-foreground
