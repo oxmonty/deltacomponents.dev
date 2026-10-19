@@ -12,6 +12,7 @@ import "@/registry/lib/prism-languages"
 
 import { cn } from "@/registry/lib/utils"
 import { copyToClipboard } from "@/registry/lib/clipboard"
+import { useIcon } from "@/registry/lib/icon-context"
 import { getIconForFile } from "@/registry/ui/code-icons"
 import { Button } from "@/registry/ui/button"
 
@@ -215,11 +216,10 @@ function convertNpxToPackageManagers(npxCommand: string): {
 /* ------------------------------------------------------------------
  * Icons
  * ------------------------------------------------------------------
- * Inlined rather than imported from lucide-react. Three glyphs are not worth
- * an install-time dependency on a consumer's project: the registry item lists
- * what `shadcn add` installs, and every package there is one the reader did
- * not choose. The paths are lucide's own (ISC), drawn at its 24px grid so they
- * sit correctly beside icons a consumer does bring from it.
+ * The copy button's glyphs come from the icon context, like Button's and
+ * MP3Player's, so a consumer's chosen icon set carries through to it. The
+ * terminal glyph has no name there, so it stays inlined: lucide's own path
+ * (ISC), drawn at its 24px grid so it sits correctly beside the rest.
  */
 
 interface IconProps {
@@ -239,23 +239,6 @@ function iconProps({ className, style }: IconProps) {
     strokeLinejoin: "round" as const,
     "aria-hidden": true,
   }
-}
-
-function CopyIcon(props: IconProps) {
-  return (
-    <svg {...iconProps(props)}>
-      <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
-      <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
-    </svg>
-  )
-}
-
-function CheckIcon(props: IconProps) {
-  return (
-    <svg {...iconProps(props)}>
-      <path d="M20 6 9 17l-5-5" />
-    </svg>
-  )
 }
 
 function TerminalIcon(props: IconProps) {
@@ -327,6 +310,8 @@ function CopyButton({
   floating?: boolean
 }) {
   const [hasCopied, setHasCopied] = useState(false)
+  const CopyIcon = useIcon("copy")
+  const CheckIcon = useIcon("check")
 
   useEffect(() => {
     if (!hasCopied) return

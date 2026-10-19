@@ -446,7 +446,8 @@
         "utils",
         "button",
         "tokens",
-        "clipboard"
+        "clipboard",
+        "icon-context"
       ],
       "cssVars": {
         "light": {
