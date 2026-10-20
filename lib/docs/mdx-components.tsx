@@ -84,6 +84,10 @@ export const mdxComponents: MDXComponents = {
   // wash). A colour and a weight, on the fast tier.
   a: ({ className, ...props }: ComponentProps<"a">) => (
     <a
+      {...(/^https?:\/\//.test(props.href ?? "") && {
+        target: "_blank",
+        rel: "noopener noreferrer",
+      })}
       className={cn(
         "text-foreground underline underline-offset-4",
         // A SOLID token at rest, not `decoration-foreground/45`. Tailwind v4
