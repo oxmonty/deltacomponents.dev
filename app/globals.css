@@ -41,10 +41,12 @@
   /* `muted` decouples from the surface ladder: the light ladder is so
      compressed (#FAFAFA → #FCFCFC → #FFFFFF) that a ladder value would read
      as near-white, leaving anything sitting on it (a Tabs track, say) with no
-     separation. A greyer value gives muted real semantic presence. */
-  --muted: #F4F4F5;
-  /* #666666, not shadcn's #737373: that one is 4.3:1 on --muted, just under
-     the 4.5:1 body-text floor. This clears it on every light surface and on
+     separation. A greyer value gives muted real semantic presence: 6% of
+     --foreground over --background, the ink wash a product card's well sits
+     on, and the same recipe in both themes. */
+  --muted: #ECECEC;
+  /* #666666, not shadcn's #737373: that one is 4.0:1 on --muted, under the
+     4.5:1 body-text floor. This clears it (4.86:1) on every light surface and on
      the --active wash (#6B6B6B was 4.35:1 there, so an unlit label over an
      active row failed Lighthouse). */
   --muted-foreground: #666666;
@@ -214,7 +216,7 @@
   --primary-foreground: #171717;
   --secondary: #1E1E1E;
   --secondary-foreground: #F5F5F5;
-  --muted: #1E1E1E;
+  --muted: #242424;
   --muted-foreground: #A3A3A3;
   --accent: #525252;
   --accent-foreground: #F5F5F5;
