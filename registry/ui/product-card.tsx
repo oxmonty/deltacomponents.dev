@@ -139,8 +139,10 @@ function ProductCard({
  * ------------------------------------------------------------------ */
 
 interface ProductCardImageProps extends React.ComponentProps<"div"> {
-  src: string
-  alt: string
+  /** Omit it and the well is an empty stage for whatever children you put
+   *  in it — a widget, a chart, a video — with the same ground and corners. */
+  src?: string
+  alt?: string
   /** Classes for the `<img>` itself — the one element in the card a caller
    *  cannot reach with a className of its own. */
   imageClassName?: string
@@ -181,37 +183,108 @@ function ProductCardImage({
       onPointerDown={pressToHold}
       className={cn(
         "group/card-image relative aspect-square w-full overflow-hidden",
-        "transition-colors duration-(--motion-fast) ease-spring",
         "rounded-[var(--radius-container,calc(var(--radius,0.5rem)_+_4px))]",
-        // Plain `hover:`/`active:` variants, not the `[&:hover]:` arbitrary
-        // ones this used to carry. tailwind-merge deliberately does not
-        // resolve an arbitrary variant against a standard modifier, so a
-        // caller passing `hover:bg-amber-100` used to lose the hover to the
-        // component and the well snapped back to muted on mouse-enter.
-        "bg-muted hover:bg-muted/80 active:bg-muted/80 data-[pressed]:bg-muted/80",
+        // One ground, in every state. The well used to dim on hover and
+        // press; the image's lift is the whole response to the pointer.
+        "bg-muted",
         className
       )}
       {...props}
     >
-      {/* eslint-disable-next-line @next/next/no-img-element -- a registry
-          component installs into any React project, so it must not depend on
-          next/image; the consumer swaps this for their framework's loader. */}
-      <img
-        data-slot="product-card-img"
-        src={src || "/placeholder.svg"}
-        alt={alt}
-        className={cn(
-          "absolute inset-0 h-full w-full object-contain",
-          animated && [
-            "transition-transform duration-(--motion-slow) ease-spring",
-            "group-hover/card-image:-translate-y-2 group-active/card-image:-translate-y-2",
-            "group-data-[pressed]/card-image:-translate-y-2",
-          ],
-          imagePadding[size],
-          variant === "inner" && imagePaddingInner[size],
-          imageClassName
-        )}
-      />
+      {/* A registry component installs into any React project, so it must
+          not depend on next/image; the consumer swaps this for their
+          framework's loader. */}
+      {src && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          data-slot="product-card-img"
+          src={src}
+          alt={alt ?? ""}
+          className={cn(
+            "absolute inset-0 h-full w-full object-contain",
+            animated && [
+              "transition-transform duration-(--motion-slow) ease-spring",
+              "group-hover/card-image:-translate-y-2 group-active/card-image:-translate-y-2",
+              "group-data-[pressed]/card-image:-translate-y-2",
+            ],
+            imagePadding[size],
+            variant === "inner" && imagePaddingInner[size],
+            imageClassName
+          )}
+        />
+      )}
+      {children}
+    </div>
+  )
+}
+
+/* ------------------------------------------------------------------
+ * ProductCardOverlay
+ * ------------------------------------------------------------------
+ * A corner of the well: a tag, a save button, a label, an action cluster.
+ * Renders inside <ProductCardImage>, which is the positioning context.
+ */
+
+type ProductCardOverlayPosition =
+  | "top-left"
+  | "top-right"
+  | "bottom-left"
+  | "bottom-right"
+
+const overlayPosition: Record<ProductCardOverlayPosition, string> = {
+  "top-left": "top-0 left-0",
+  "top-right": "top-0 right-0",
+  "bottom-left": "bottom-0 left-0",
+  "bottom-right": "bottom-0 right-0",
+}
+
+const overlayInset: Record<ProductCardSize, string> = {
+  sm: "m-2",
+  default: "m-3",
+  lg: "m-4",
+}
+
+interface ProductCardOverlayProps extends React.ComponentProps<"div"> {
+  position: ProductCardOverlayPosition
+  /** `hover` hides it until the well is hovered or holds focus, or the
+   *  overlay carries `data-on`. Only where hovering is possible: a touch
+   *  screen sees it from the start. */
+  reveal?: "always" | "hover"
+}
+
+function ProductCardOverlay({
+  className,
+  position,
+  reveal = "always",
+  children,
+  ...props
+}: ProductCardOverlayProps) {
+  const { size } = useProductCardContext()
+
+  return (
+    <div
+      data-slot="product-card-overlay"
+      data-position={position}
+      className={cn(
+        "absolute z-10",
+        overlayPosition[position],
+        overlayInset[size],
+        reveal === "hover" && [
+          // The hidden state is gated on hover capability, so a device that
+          // cannot hover is never shown a control it has no way to reveal.
+          "[@media(hover:hover)]:opacity-0 [@media(hover:hover)]:translate-y-1",
+          "transition-[opacity,translate] duration-(--motion-moderate) ease-spring",
+          "group-hover/card-image:opacity-100 group-hover/card-image:translate-y-0",
+          // Keyboard focus anywhere in the well reveals it; `:focus-visible`
+          // rather than `:focus-within` so a mouse click on a control inside
+          // the well does not leave the overlays pinned after the pointer goes.
+          "group-has-[:focus-visible]/card-image:opacity-100 group-has-[:focus-visible]/card-image:translate-y-0",
+          "data-[on]:opacity-100 data-[on]:translate-y-0",
+        ],
+        className
+      )}
+      {...props}
+    >
       {children}
     </div>
   )
@@ -340,6 +413,7 @@ function ProductCardMetric({
 export {
   ProductCard,
   ProductCardImage,
+  ProductCardOverlay,
   ProductCardContent,
   ProductCardHeader,
   ProductCardTitle,
@@ -347,6 +421,8 @@ export {
   ProductCardMetric,
   type ProductCardProps,
   type ProductCardImageProps,
+  type ProductCardOverlayProps,
+  type ProductCardOverlayPosition,
   type ProductCardContentProps,
   type ProductCardHeaderProps,
   type ProductCardTitleProps,

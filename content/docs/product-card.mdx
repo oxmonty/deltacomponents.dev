@@ -5,6 +5,7 @@ description: "Compound card for commerce rows — image well and a title/subtitl
 import {
   productCardProps,
   productCardImageProps,
+  productCardOverlayProps,
   productCardContentProps,
   productCardHeaderProps,
   productCardTitleProps,
@@ -66,6 +67,16 @@ spreads the DOM props it is given.
 
 <ComponentPreview name="product-card-animated" padding="compact" />
 
+## Overlays
+
+A tag, a save button, a label, an action cluster: each is an overlay in one
+corner of the well. `reveal="hover"` hides one until the pointer arrives, but
+only on a device that can hover; a touch screen sees every control from the
+start. Leave `src` off the image well and it becomes a stage for a widget
+instead of a picture.
+
+<ComponentPreview name="product-card-overlays" padding="compact" />
+
 ## Preparing images
 
 The best product images are ones cut out from their background.
@@ -91,6 +102,7 @@ Parts you hold no reference to are reachable by `data-slot`:
 | `product-card` | The card root |
 | `product-card-image` | The square image well |
 | `product-card-img` | The `<img>` inside it — or use `imageClassName` |
+| `product-card-overlay` | A corner overlay; `data-position` names the corner |
 | `product-card-content` | The row holding the header and the metric |
 | `product-card-header` | The title and subtitle group |
 | `product-card-title` | The product name |
@@ -100,10 +112,9 @@ Parts you hold no reference to are reachable by `data-slot`:
 `size` caps the card's width; a `w-*` or `max-w-*` in `className` overrides that
 cap outright, which is what the grid above relies on.
 
-The image well's resting ground and its mouse-enter ground are two separate
-utilities. Passing `bg-stone-200` alone leaves the component's own
-`hover:bg-muted/80` in charge from the moment the pointer arrives, so recolour
-both: `bg-stone-200 hover:bg-stone-300`.
+The image well has one ground in every state, so `bg-stone-200` on
+`ProductCardImage` recolours it outright. A well that should react to the
+pointer adds its own `hover:` utility.
 
 ## Accessibility
 
@@ -122,6 +133,10 @@ link, which nesting a control inside `role="button"` would not allow.
 ### ProductCardImage
 
 <PropsTable props={productCardImageProps} />
+
+### ProductCardOverlay
+
+<PropsTable props={productCardOverlayProps} />
 
 ### ProductCardContent
 
