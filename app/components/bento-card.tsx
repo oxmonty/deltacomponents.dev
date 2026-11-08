@@ -6,6 +6,8 @@ import { cn } from "@/registry/lib/utils";
 import { fontWeights } from "@/registry/lib/font-weight";
 import { Badge } from "@/app/components/ui/badge";
 import { useIcon } from "@/registry/lib/icon-context";
+import { ProductCard, ProductCardImage, ProductCardOverlay } from "@/registry/ui/product-card";
+import { showcase } from "@/lib/config";
 
 // From `xl` the columns are narrow, slim, narrow. A wide tile takes a narrow
 // one plus the slim one, a little under two thirds, and can do so from either
@@ -37,7 +39,12 @@ interface BentoCardProps {
   children: ReactNode;
 }
 
-export function BentoCard({ slug, name, isNew, gridSize = "small", action, className: extraClassName, previewClassName, style, children }: BentoCardProps) {
+/** The showcase tile. `showcase.tile` in lib/config.ts picks the build. */
+export function BentoCard(props: BentoCardProps) {
+  return showcase.tile === "overlay" ? <OverlayTile {...props} /> : <BorderedTile {...props} />;
+}
+
+function BorderedTile({ slug, name, isNew, gridSize = "small", action, className: extraClassName, previewClassName, style, children }: BentoCardProps) {
   // Rotated arrow-right rather than a dedicated arrow-up-right key: that key
   // would have to be added to the IconName union and to all five icon packs
   // for one glyph that a 45deg turn already draws correctly in every pack.
@@ -131,5 +138,66 @@ export function BentoCard({ slug, name, isNew, gridSize = "small", action, class
         )}
       </div>
     </div>
+  );
+}
+
+// The ProductCard build: the well is the whole tile, the demo sits on the
+// stage, the New badge holds the top-left corner, and the docs link waits in
+// the bottom-left until the pointer (or keyboard focus) arrives.
+function OverlayTile({ slug, name, isNew, gridSize = "small", action, className, previewClassName, style, children }: BentoCardProps) {
+  const ArrowRight = useIcon("arrow-right");
+
+  return (
+    // `animated={false}`: there is no image to lift, so the well should not
+    // listen for the touch press-to-hold either. The root's own `text-sm` is
+    // undone so every demo inside keeps the size it was designed at.
+    <ProductCard
+      animated={false}
+      className={cn("h-full w-full max-w-none rounded-[28px] text-[length:inherit]", sizeClasses[gridSize], className)}
+      style={style}
+    >
+      {/* No `src`: the well is a stage. Its named `group/card-image` is what
+          the overlays key their reveal on, and being named it never fires the
+          unnamed `group-hover:` styling the demos inside use for themselves.
+          A ProductCard demo nested in here would otherwise sit on the same
+          grey as the tile, so its well steps up to the card surface. */}
+      <ProductCardImage
+        className={cn(
+          "flex aspect-auto h-full items-center justify-center rounded-[28px] px-6 py-16",
+          "**:data-[slot=product-card-image]:bg-card",
+          previewClassName
+        )}
+      >
+        {children}
+
+        {isNew && (
+          <ProductCardOverlay position="top-left">
+            <Badge variant="dot" color="blue" size="sm">
+              New
+            </Badge>
+          </ProductCardOverlay>
+        )}
+
+        {slug && (
+          <ProductCardOverlay position="bottom-left" reveal="hover">
+            <Link
+              href={`/docs/${slug}`}
+              className={cn(
+                "flex h-9 items-center gap-2 rounded-full bg-background/95 px-3.5 shadow-surface-2",
+                "text-body text-muted-foreground transition-colors duration-80 hover:text-foreground",
+                "outline-none focus-visible:shadow-[0_0_0_1px_var(--focus-ring,#6B97FF)]"
+              )}
+              style={{ fontVariationSettings: fontWeights.medium }}
+            >
+              {name}
+              <span className="sr-only"> documentation</span>
+              <ArrowRight aria-hidden className="-ml-1 size-3.5 -rotate-45" />
+            </Link>
+          </ProductCardOverlay>
+        )}
+
+        {action && <ProductCardOverlay position="bottom-right">{action}</ProductCardOverlay>}
+      </ProductCardImage>
+    </ProductCard>
   );
 }

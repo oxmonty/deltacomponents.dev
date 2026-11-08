@@ -69,3 +69,12 @@ export const site = {
     threads: "https://www.threads.com/@pprunty97",
   },
 } as const;
+
+/**
+ * How the landing page's showcase tiles are drawn. `bordered` is the hairline
+ * card with the name in a footer row; `overlay` is the ProductCard build, a
+ * flat 28px well with the name revealed in a corner on hover.
+ */
+export const showcase = {
+  tile: "bordered" as "bordered" | "overlay",
+};
