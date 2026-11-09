@@ -289,8 +289,11 @@ function Image({
             // rather than a picture that happens to be there. 0.98, not the
             // 0.96 a button takes: 2% of a picture is already a few pixels.
             // Moderate, not fast: a scale across a whole picture is travel,
-            // and 80ms of it reads as a snap. The release is one tier quicker.
-            "transition-[scale] duration-(--motion-moderate-exit) ease-spring active:scale-[0.98] active:duration-(--motion-moderate) [-webkit-tap-highlight-color:transparent]",
+            // and 80ms of it reads as a snap. The release springs back on the
+            // slow tier — longer than the press, like Button's, because the
+            // settle is what makes a press read as a spring rather than a
+            // switch.
+            "transition-[scale] duration-(--motion-slow) ease-spring active:scale-[0.98] active:duration-(--motion-moderate) [-webkit-tap-highlight-color:transparent]",
             // A tap holds :active for less than the press-in, so on touch the
             // picture was still going down when the finger lifted and the
             // transition flipped mid-flight, which reads as no easing at all.

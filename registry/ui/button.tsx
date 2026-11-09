@@ -31,11 +31,20 @@ const buttonVariants = cva(
     "group relative isolate inline-flex items-center justify-center outline-none cursor-pointer select-none font-medium",
     "rounded-[var(--radius-button,var(--radius,0.5rem))]",
     // The colour still lands in 80ms; the press dips the whole button — label,
-    // icon and ground together — on the moderate tier and releases a tier
-    // quicker, the same shape as Image's press. 0.96, never less: below that
-    // a control this small reads as flinching.
-    "transition-[color,scale] [transition-duration:80ms,var(--motion-moderate-exit)] ease-spring",
+    // icon and ground together — on the moderate tier and springs back on the
+    // slow one, the same shape as Image's press. The release is deliberately
+    // the LONGER leg, against the usual exit-one-tier-quicker rule: a spring
+    // back is not a dismissal. The curve front-loads its travel (96% of it in
+    // the first half), so the dip still lands at once and what the slow tier
+    // buys is the settle afterwards — the part of a Motion `whileTap` spring
+    // that reads as alive. 0.96, never less: below that a control this small
+    // reads as flinching.
+    "transition-[color,scale] [transition-duration:80ms,var(--motion-slow)] ease-spring",
     "active:scale-[0.96] active:[transition-duration:80ms,var(--motion-moderate)]",
+    // A tap holds :active for less than the press-in, so on touch the dip was
+    // still on its way down when the finger lifted and reversed mid-flight.
+    // Land it at once there; only the release animates.
+    "pointer-coarse:active:[transition-duration:80ms,0ms]",
     // Without its own layer the label is re-rasterised on the main thread at
     // every intermediate scale and snapped to the pixel grid each frame, so
     // the text judders through the dip. A compositor layer scales the cached
