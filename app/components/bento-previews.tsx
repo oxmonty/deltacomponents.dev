@@ -273,12 +273,15 @@ function EmbedPreview() {
 
 function ImagePreview() {
   return (
-    <div className="w-full max-w-[340px]">
+    // The zoom demo's portrait, narrow enough that its height plus the
+    // caption clears the tall tile's stage on the showcase (484px) and the
+    // landing wall (312px): 220 wide is 294 tall.
+    <div className="w-full max-w-[220px]">
       <Image
-        src="/images/editor-embed-sample.webp"
-        alt="A painted battle scene of knights on horseback in red, green and yellow"
-        width={1200}
-        height={672}
+        src="/images/image-zoom-sample.webp"
+        alt="A painting of sheep resting on an orange and green hillside among open laptops, with a figure in orange working on one under a blue sky"
+        width={560}
+        height={748}
         caption="Click or tap to enlarge"
       />
     </div>

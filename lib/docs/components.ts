@@ -50,7 +50,7 @@ export const componentList: ComponentEntry[] = [
   { slug: "tooltip", name: "Tooltip", gridSize: "small" },
   { slug: "alert", name: "Alert", gridSize: "medium" },
   { slug: "embed", name: "Embed", gridSize: "tall", gridClassName: "xl:col-start-1" },
-  { slug: "image", name: "Image", gridSize: "medium" },
+  { slug: "image", name: "Image", gridSize: "tall" },
   { slug: "glyph", name: "Glyph", gridSize: "small", draft: true },
   { slug: "mp3-player", name: "MP3Player", gridSize: "medium", draft: true },
 ];
